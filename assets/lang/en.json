@@ -1,0 +1,23 @@
+{
+    "app_name": "MediNest",
+    "tagline": "Healthcare at your doorstep",
+    "choose_language": "Choose your preferred language",
+    "get_started": "Get Started",
+    "next": "Next",
+    "skip": "Skip",
+    "onboarding_1_title": "One-Tap Booking",
+    "onboarding_1_desc": "Get medicines and health services delivered fast with intuitive one-tap booking.",
+    "onboarding_2_title": "Digital Prescriptions",
+    "onboarding_2_desc": "Securely upload and manage your prescriptions for accurate and timely medication.",
+    "onboarding_3_title": "Expert Consultations",
+    "onboarding_3_desc": "Connect with certified professionals for reliable medical advice and appointments.",
+    "login": "Login",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "otp": "OTP",
+    "welcome": "Welcome",
+    "book_test": "Book Blood Test",
+    "smart_recommendations": "Smart Test Recommendations",
+    "active_orders": "Active Orders"
+}
