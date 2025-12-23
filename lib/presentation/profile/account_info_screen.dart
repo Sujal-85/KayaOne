@@ -83,8 +83,14 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+              color: AppTheme.darkBlue),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: Text("Account Info",
-            style: GoogleFonts.outfit(fontWeight: FontWeight.w700)),
+            style: GoogleFonts.outfit(
+                fontWeight: FontWeight.w700, color: AppTheme.darkBlue)),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),

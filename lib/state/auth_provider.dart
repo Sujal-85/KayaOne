@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AuthProvider with ChangeNotifier {
   bool _isLoggedIn = false;
   bool _isProfileComplete = false;
+  bool _isOnboardingComplete = false;
   String? _userId;
   String? _phoneNumber;
   String? _userName;
@@ -11,9 +12,11 @@ class AuthProvider with ChangeNotifier {
   String? _profilePic;
   String? _city;
   String? _dob;
+  String? _bloodGroup;
 
   bool get isLoggedIn => _isLoggedIn;
   bool get isProfileComplete => _isProfileComplete;
+  bool get isOnboardingComplete => _isOnboardingComplete;
   String? get userId => _userId;
   String? get phoneNumber => _phoneNumber;
   String? get userName => _userName;
@@ -21,15 +24,20 @@ class AuthProvider with ChangeNotifier {
   String? get profilePic => _profilePic;
   String? get city => _city;
   String? get dob => _dob;
+  String? get bloodGroup => _bloodGroup;
 
   AuthProvider() {
     _loadSession();
   }
 
+  bool _isLoading = true;
+  bool get isLoading => _isLoading;
+
   Future<void> _loadSession() async {
     final prefs = await SharedPreferences.getInstance();
     _isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
     _isProfileComplete = prefs.getBool('isProfileComplete') ?? false;
+    _isOnboardingComplete = prefs.getBool('isOnboardingComplete') ?? false;
     _userId = prefs.getString('userId');
     _phoneNumber = prefs.getString('phoneNumber');
     _userName = prefs.getString('userName');
@@ -37,6 +45,8 @@ class AuthProvider with ChangeNotifier {
     _profilePic = prefs.getString('profilePic');
     _city = prefs.getString('city');
     _dob = prefs.getString('dob');
+    _bloodGroup = prefs.getString('bloodGroup');
+    _isLoading = false;
     notifyListeners();
   }
 
@@ -47,6 +57,7 @@ class AuthProvider with ChangeNotifier {
       String? profilePic,
       String? city,
       String? dob,
+      String? bloodGroup,
       bool isProfileComplete = false}) async {
     final prefs = await SharedPreferences.getInstance();
     _isLoggedIn = true;
@@ -58,6 +69,7 @@ class AuthProvider with ChangeNotifier {
     _profilePic = profilePic;
     _city = city;
     _dob = dob;
+    _bloodGroup = bloodGroup;
 
     await prefs.setBool('isLoggedIn', true);
     await prefs.setBool('isProfileComplete', isProfileComplete);
@@ -68,6 +80,7 @@ class AuthProvider with ChangeNotifier {
     if (profilePic != null) await prefs.setString('profilePic', profilePic);
     if (city != null) await prefs.setString('city', city);
     if (dob != null) await prefs.setString('dob', dob);
+    if (bloodGroup != null) await prefs.setString('bloodGroup', bloodGroup);
 
     notifyListeners();
   }
@@ -79,10 +92,50 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void updateUserInfo(String name) async {
+  void completeOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    _isOnboardingComplete = true;
+    await prefs.setBool('isOnboardingComplete', true);
+    notifyListeners();
+  }
+
+  void updateUserInfo({
+    required String name,
+    String? email,
+    String? city,
+    String? dob,
+    String? bloodGroup,
+  }) async {
     final prefs = await SharedPreferences.getInstance();
     _userName = name;
     await prefs.setString('userName', name);
+
+    if (email != null) {
+      _email = email;
+      await prefs.setString('email', email);
+    }
+    if (city != null) {
+      _city = city;
+      await prefs.setString('city', city);
+    }
+    if (dob != null) {
+      _dob = dob;
+      await prefs.setString('dob', dob);
+    }
+    if (bloodGroup != null) {
+      _bloodGroup = bloodGroup;
+      await prefs.setString('bloodGroup', bloodGroup);
+    }
+
+    notifyListeners();
+  }
+
+  void updateProfilePic(String url) async {
+    if (url.isEmpty || !url.startsWith('http')) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    _profilePic = url;
+    await prefs.setString('profilePic', url);
     notifyListeners();
   }
 

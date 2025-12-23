@@ -319,7 +319,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
 
     if (result != null) {
       if (!mounted) return;
-      authProvider.updateUserInfo(_nameController.text);
+      authProvider.updateUserInfo(name: _nameController.text);
       authProvider.completeProfile();
       _showWelcomeAnimation();
     } else {

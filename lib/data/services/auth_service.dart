@@ -26,6 +26,7 @@ class AuthService {
     required String dob,
     required String email,
     required String city,
+    String? bloodGroup,
     String? profilePic,
   }) async {
     try {
@@ -35,6 +36,7 @@ class AuthService {
         'dob': dob,
         'email': email,
         'city': city,
+        'bloodGroup': bloodGroup,
       };
       if (profilePic != null) data['profilePic'] = profilePic;
 

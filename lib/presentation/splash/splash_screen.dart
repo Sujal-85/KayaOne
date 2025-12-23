@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:medinest/core/localization/app_localizations.dart';
 import 'package:medinest/core/theme/app_theme.dart';
 import 'package:medinest/presentation/home/home_screen.dart';
-import 'package:medinest/presentation/onboarding/onboarding_screen.dart';
+import 'package:medinest/presentation/intro/video_intro_screen.dart';
+import 'package:medinest/presentation/language/language_screen.dart';
 import 'package:medinest/presentation/auth/personal_info_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:medinest/state/auth_provider.dart';
@@ -42,14 +43,21 @@ class _SplashScreenState extends State<SplashScreen>
       if (mounted) {
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
         final bool isLoggedIn = authProvider.isLoggedIn;
+        final bool isOnboardingComplete = authProvider.isOnboardingComplete;
 
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => isLoggedIn
-                ? (authProvider.isProfileComplete
+            pageBuilder: (context, animation, secondaryAnimation) {
+              if (isLoggedIn) {
+                return authProvider.isProfileComplete
                     ? const HomeScreen()
-                    : const PersonalInfoScreen())
-                : const OnboardingScreen(),
+                    : const PersonalInfoScreen();
+              } else {
+                return isOnboardingComplete
+                    ? const LanguageScreen()
+                    : const VideoIntroScreen();
+              }
+            },
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
               return FadeTransition(opacity: animation, child: child);

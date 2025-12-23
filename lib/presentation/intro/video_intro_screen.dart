@@ -72,7 +72,7 @@ class _VideoIntroScreenState extends State<VideoIntroScreen> {
             child: TextButton(
               onPressed: _navigateForward,
               style: TextButton.styleFrom(
-                backgroundColor: Colors.black.withOpacity(0.5),
+                backgroundColor: Colors.black.withValues(alpha: 0.5),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),

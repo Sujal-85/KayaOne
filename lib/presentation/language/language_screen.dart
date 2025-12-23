@@ -27,7 +27,7 @@ class LanguageScreen extends StatelessWidget {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppTheme.primaryGreen.withOpacity(0.15),
+                    AppTheme.primaryGreen.withValues(alpha: 0.15),
                     Colors.transparent,
                   ],
                 ),
@@ -44,7 +44,7 @@ class LanguageScreen extends StatelessWidget {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppTheme.darkBlue.withOpacity(0.1),
+                    AppTheme.darkBlue.withValues(alpha: 0.1),
                     Colors.transparent,
                   ],
                 ),
@@ -215,8 +215,9 @@ class LanguageScreen extends StatelessWidget {
         curve: Curves.easeInOut,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
-          color:
-              isSelected ? Colors.white : Colors.grey.shade50.withOpacity(0.5),
+          color: isSelected
+              ? Colors.white
+              : Colors.grey.shade50.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected ? AppTheme.primaryGreen : Colors.grey.shade100,
@@ -238,7 +239,7 @@ class LanguageScreen extends StatelessWidget {
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppTheme.primaryGreen.withOpacity(0.1)
+                    ? AppTheme.primaryGreen.withValues(alpha: 0.1)
                     : Colors.white,
                 shape: BoxShape.circle,
               ),

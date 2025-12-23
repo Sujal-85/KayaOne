@@ -8,7 +8,8 @@ import 'package:medinest/presentation/marketplace/cart_screen.dart';
 import 'package:medinest/presentation/marketplace/product_detail_screen.dart';
 
 class ProductListingScreen extends StatefulWidget {
-  const ProductListingScreen({super.key});
+  final String? initialSearchQuery;
+  const ProductListingScreen({super.key, this.initialSearchQuery});
 
   @override
   State<ProductListingScreen> createState() => _ProductListingScreenState();
@@ -17,12 +18,44 @@ class ProductListingScreen extends StatefulWidget {
 class _ProductListingScreenState extends State<ProductListingScreen> {
   String _selectedCategory = "All";
   final List<String> _categories = ["All", "Medicine", "Devices", "Wellness"];
+  late TextEditingController _searchController;
+  String _searchQuery = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _searchQuery = widget.initialSearchQuery ?? "";
+    _searchController = TextEditingController(text: _searchQuery);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final productProvider = Provider.of<ProductProvider>(context);
     final cartProvider = Provider.of<CartProvider>(context);
-    final products = productProvider.getProductsByCategory(_selectedCategory);
+
+    // Get base products by category
+    var products = productProvider.getProductsByCategory(_selectedCategory);
+
+    // Apply specific search filter if query exists
+    if (_searchQuery.isNotEmpty) {
+      products = products
+          .where((p) =>
+              p['name']
+                  .toString()
+                  .toLowerCase()
+                  .contains(_searchQuery.toLowerCase()) ||
+              p['category']
+                  .toString()
+                  .toLowerCase()
+                  .contains(_searchQuery.toLowerCase()))
+          .toList();
+    }
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
@@ -93,6 +126,12 @@ class _ProductListingScreenState extends State<ProductListingScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: TextField(
+                          controller: _searchController,
+                          onChanged: (val) {
+                            setState(() {
+                              _searchQuery = val;
+                            });
+                          },
                           decoration: InputDecoration(
                             border: InputBorder.none,
                             hintText: "Search medications, devices...",

@@ -3,9 +3,9 @@ import 'package:file_picker/file_picker.dart';
 import 'package:medinest/data/services/storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:medinest/data/services/auth_service.dart';
 import 'package:provider/provider.dart';
 import 'package:lottie/lottie.dart';
-import 'package:medinest/core/localization/app_localizations.dart';
 import 'package:medinest/core/theme/app_theme.dart';
 import 'package:medinest/state/auth_provider.dart';
 import 'package:medinest/state/booking_provider.dart';
@@ -21,8 +21,82 @@ class PrescriptionUploadScreen extends StatefulWidget {
 }
 
 class _PrescriptionUploadScreenState extends State<PrescriptionUploadScreen> {
+  int _currentStep = 0;
   bool _isPicking = false;
+  bool _isUpdatingProfile = false;
   final StorageService _storageService = StorageService();
+
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _cityController = TextEditingController();
+  String? _selectedBloodGroup;
+
+  final List<String> _bloodGroups = [
+    'A+',
+    'A-',
+    'B+',
+    'B-',
+    'AB+',
+    'AB-',
+    'O+',
+    'O-'
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    _nameController.text = auth.userName ?? '';
+    _emailController.text = auth.email ?? '';
+    _cityController.text = auth.city ?? '';
+    _selectedBloodGroup = auth.bloodGroup;
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _cityController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _updateProfileAndContinue() async {
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final booking = Provider.of<BookingProvider>(context, listen: false);
+    final authService = AuthService();
+
+    setState(() => _isUpdatingProfile = true);
+
+    try {
+      final success = await authService.updateProfile(
+        phoneNumber: auth.phoneNumber ?? '',
+        name: _nameController.text,
+        dob: auth.dob ?? '01-01-2000',
+        email: _emailController.text,
+        city: _cityController.text,
+        bloodGroup: _selectedBloodGroup,
+      );
+
+      if (success != null) {
+        auth.updateUserInfo(
+          name: _nameController.text,
+          email: _emailController.text,
+          city: _cityController.text,
+          bloodGroup: _selectedBloodGroup,
+        );
+        booking.setPatientDetails(_nameController.text, auth.phoneNumber ?? "");
+        setState(() => _currentStep = 1);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Failed to update profile")),
+        );
+      }
+    } catch (e) {
+      debugPrint("Update error: $e");
+    } finally {
+      setState(() => _isUpdatingProfile = false);
+    }
+  }
 
   Future<void> _pickFile(BookingProvider provider) async {
     final auth = Provider.of<AuthProvider>(context, listen: false);
@@ -40,6 +114,13 @@ class _PrescriptionUploadScreenState extends State<PrescriptionUploadScreen> {
         );
         if (publicUrl != null) {
           provider.setPrescription(publicUrl);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Upload failed. Please check Storage policies."),
+              backgroundColor: Colors.red,
+            ),
+          );
         }
       }
     } catch (e) {
@@ -49,86 +130,34 @@ class _PrescriptionUploadScreenState extends State<PrescriptionUploadScreen> {
     }
   }
 
-  Future<void> _showEditPatientDetailsDialog(BookingProvider provider) async {
-    final nameController = TextEditingController(text: provider.patientName);
-    final phoneController = TextEditingController(text: provider.patientPhone);
-
-    return showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: Text("Edit Patient Details",
-            style: GoogleFonts.outfit(fontWeight: FontWeight.w800)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: InputDecoration(
-                labelText: "Patient Name",
-                labelStyle: GoogleFonts.plusJakartaSans(),
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: phoneController,
-              keyboardType: TextInputType.phone,
-              decoration: InputDecoration(
-                labelText: "Phone Number",
-                labelStyle: GoogleFonts.plusJakartaSans(),
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text("Cancel",
-                style: GoogleFonts.plusJakartaSans(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              provider.setPatientDetails(
-                  nameController.text, phoneController.text);
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.darkBlue,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-            ),
-            child: Text("Save", style: GoogleFonts.plusJakartaSans()),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final bookingProvider = Provider.of<BookingProvider>(context);
-    final authProvider = Provider.of<AuthProvider>(context);
-    final loc = AppLocalizations.of(context);
-
-    // Auto-fill patient details if not already set
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (bookingProvider.patientName == null) {
-        bookingProvider.setPatientDetails(
-            authProvider.userName ?? "User", authProvider.phoneNumber ?? "");
-      }
-    });
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         title: Text(
-          loc?.translate('onboarding_2_title') ?? 'Upload Prescription',
+          _currentStep == 0 ? "Patient Details" : "Upload Prescription",
           style: GoogleFonts.outfit(fontWeight: FontWeight.w700),
         ),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        leading: (_currentStep == 0 && !Navigator.of(context).canPop())
+            ? null
+            : IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                    color: AppTheme.darkBlue),
+                onPressed: () {
+                  if (_currentStep == 1) {
+                    setState(() => _currentStep = 0);
+                  } else {
+                    if (Navigator.of(context).canPop()) {
+                      Navigator.of(context).pop();
+                    }
+                  }
+                },
+              ),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -136,209 +165,329 @@ class _PrescriptionUploadScreenState extends State<PrescriptionUploadScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const BookingStepIndicator(currentStep: 0),
-              const SizedBox(height: 16),
-              Text(
-                "Required for your tests",
-                style: GoogleFonts.outfit(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: AppTheme.darkBlue,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                "Uploading a doctor's prescription helps us verify your tests and ensures accuracy.",
-                style: GoogleFonts.plusJakartaSans(
-                  color: Colors.grey.shade600,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 32),
+              BookingStepIndicator(currentStep: _currentStep),
+              const SizedBox(height: 24),
+              if (_currentStep == 0)
+                _buildUserInfoStep()
+              else
+                _buildUploadStep(bookingProvider),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
-              // Patient Info Card (Auto-filled)
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border:
-                      Border.all(color: AppTheme.primaryGreen.withOpacity(0.1)),
-                  boxShadow: [
-                    BoxShadow(
-                        color: Colors.black.withOpacity(0.02), blurRadius: 10)
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppTheme.primaryGreen.withOpacity(0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.person_rounded,
-                          color: AppTheme.primaryGreen),
-                    ),
-                    const SizedBox(width: 16),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          bookingProvider.patientName ?? "Loading...",
-                          style: GoogleFonts.outfit(
-                              fontWeight: FontWeight.w700, fontSize: 16),
-                        ),
-                        Text(
-                          bookingProvider.patientPhone ?? "",
-                          style: GoogleFonts.plusJakartaSans(
-                              fontSize: 12, color: Colors.grey),
-                        ),
-                      ],
-                    ),
-                    const Spacer(),
-                    TextButton(
-                      onPressed: () =>
-                          _showEditPatientDetailsDialog(bookingProvider),
-                      child: Text("Change",
-                          style: GoogleFonts.plusJakartaSans(
-                              fontWeight: FontWeight.w700,
-                              color: AppTheme.primaryGreen)),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 32),
-
-              // Upload Container
-              GestureDetector(
-                onTap: _isPicking ? null : () => _pickFile(bookingProvider),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 40),
-                  decoration: BoxDecoration(
+  Widget _buildUserInfoStep() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Review Information",
+          style: GoogleFonts.outfit(
+            fontSize: 24,
+            fontWeight: FontWeight.w800,
+            color: AppTheme.darkBlue,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          "Ensure your medical details are up to date for better diagnostic accuracy.",
+          style: GoogleFonts.plusJakartaSans(
+            color: Colors.grey.shade600,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 32),
+        _buildTextField(
+            "Full Name", _nameController, Icons.person_outline_rounded),
+        const SizedBox(height: 20),
+        _buildTextField(
+            "Email Address", _emailController, Icons.email_outlined),
+        const SizedBox(height: 20),
+        _buildTextField("City", _cityController, Icons.location_on_outlined),
+        const SizedBox(height: 20),
+        _buildBloodGroupPicker(),
+        const SizedBox(height: 48),
+        ElevatedButton(
+          onPressed: _isUpdatingProfile ? null : _updateProfileAndContinue,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppTheme.darkBlue,
+            minimumSize: const Size(double.infinity, 64),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            elevation: 8,
+          ),
+          child: _isUpdatingProfile
+              ? const CircularProgressIndicator(color: Colors.white)
+              : Text(
+                  "Next Step",
+                  style: GoogleFonts.outfit(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(
-                        color: AppTheme.primaryGreen.withOpacity(0.2),
-                        style: BorderStyle.solid,
-                        width: 2),
                   ),
-                  child: Column(
-                    children: [
-                      if (_isPicking)
-                        const CircularProgressIndicator(
-                            color: AppTheme.primaryGreen)
-                      else ...[
-                        SizedBox(
-                          height: 100,
-                          child: Lottie.asset(
-                            'assets/lottie/upload.json',
-                            errorBuilder: (context, error, stackTrace) =>
-                                const Icon(Icons.cloud_upload_outlined,
-                                    size: 64, color: AppTheme.primaryGreen),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Text("Tap to Upload Prescription",
-                            style: GoogleFonts.outfit(
-                                fontWeight: FontWeight.w800,
-                                fontSize: 18,
-                                color: AppTheme.darkBlue)),
-                        const SizedBox(height: 4),
-                        Text("PDF, JPG, PNG (Max 5MB)",
-                            style: GoogleFonts.plusJakartaSans(
-                                color: Colors.grey,
-                                fontWeight: FontWeight.w600)),
-                      ],
-                    ],
+                ),
+        ),
+        const SizedBox(height: 40),
+      ],
+    );
+  }
+
+  Widget _buildTextField(
+      String label, TextEditingController controller, IconData icon) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: AppTheme.darkBlue.withOpacity(0.7),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: TextField(
+            controller: controller,
+            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w600),
+            decoration: InputDecoration(
+              prefixIcon: Icon(icon, color: AppTheme.primaryGreen),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: Colors.grey.shade100),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: Colors.grey.shade100),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: const BorderSide(color: AppTheme.primaryGreen),
+              ),
+              contentPadding: const EdgeInsets.symmetric(vertical: 18),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBloodGroupPicker() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Blood Group",
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: AppTheme.darkBlue.withOpacity(0.7),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: _bloodGroups.map((group) {
+            final isSelected = _selectedBloodGroup == group;
+            return GestureDetector(
+              onTap: () => setState(() => _selectedBloodGroup = group),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                decoration: BoxDecoration(
+                  color: isSelected ? AppTheme.primaryGreen : Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isSelected
+                        ? AppTheme.primaryGreen
+                        : Colors.grey.shade200,
+                  ),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                              color: AppTheme.primaryGreen.withOpacity(0.2),
+                              blurRadius: 10)
+                        ]
+                      : [],
+                ),
+                child: Text(
+                  group,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontWeight: FontWeight.bold,
+                    color: isSelected ? Colors.white : Colors.grey.shade700,
                   ),
                 ),
               ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
 
-              if (bookingProvider.prescriptionPath != null &&
-                  bookingProvider.prescriptionPath!.isNotEmpty) ...[
-                const SizedBox(height: 24),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryGreen.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                        color: AppTheme.primaryGreen.withOpacity(0.05)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.check_circle_rounded,
+  Widget _buildUploadStep(BookingProvider bookingProvider) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Upload Prescription",
+          style: GoogleFonts.outfit(
+            fontSize: 24,
+            fontWeight: FontWeight.w800,
+            color: AppTheme.darkBlue,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          "Uploading a doctor's prescription ensures accurate verification of your tests.",
+          style: GoogleFonts.plusJakartaSans(
+            color: Colors.grey.shade600,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 32),
+        GestureDetector(
+          onTap: _isPicking ? null : () => _pickFile(bookingProvider),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 50),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(
+                color: AppTheme.primaryGreen.withOpacity(0.3),
+                style: BorderStyle.solid,
+                width: 2,
+              ),
+            ),
+            child: Column(
+              children: [
+                if (_isPicking)
+                  const CircularProgressIndicator(color: AppTheme.primaryGreen)
+                else ...[
+                  SizedBox(
+                    height: 120,
+                    child: Lottie.asset(
+                      'assets/lottie/upload.json',
+                      errorBuilder: (context, error, stackTrace) => const Icon(
+                          Icons.cloud_upload_outlined,
+                          size: 72,
                           color: AppTheme.primaryGreen),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          bookingProvider.prescriptionPath!.split('/').last,
-                          style: GoogleFonts.plusJakartaSans(
-                              fontWeight: FontWeight.w700, fontSize: 14),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete_sweep_rounded,
-                            color: Colors.redAccent),
-                        onPressed: () => bookingProvider.setPrescription(null),
-                      ),
-                    ],
+                    ),
                   ),
+                  const SizedBox(height: 20),
+                  Text("Tap to Select File",
+                      style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 20,
+                          color: AppTheme.darkBlue)),
+                  const SizedBox(height: 6),
+                  Text("Supports PDF, JPG, PNG",
+                      style: GoogleFonts.plusJakartaSans(
+                          color: Colors.grey, fontWeight: FontWeight.w600)),
+                ],
+              ],
+            ),
+          ),
+        ),
+        if (bookingProvider.prescriptionPath != null &&
+            bookingProvider.prescriptionPath!.isNotEmpty) ...[
+          const SizedBox(height: 24),
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryGreen.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+              border:
+                  Border.all(color: AppTheme.primaryGreen.withOpacity(0.05)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.check_circle_rounded,
+                    color: AppTheme.primaryGreen, size: 28),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    bookingProvider.prescriptionPath!.split('/').last,
+                    style: GoogleFonts.plusJakartaSans(
+                        fontWeight: FontWeight.w700, fontSize: 14),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete_outline_rounded,
+                      color: Colors.red),
+                  onPressed: () => bookingProvider.setPrescription(null),
                 ),
               ],
-
-              const SizedBox(height: 48),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextButton(
-                      onPressed: () {
+            ),
+          ),
+        ],
+        const SizedBox(height: 60),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                        builder: (_) => const AddressSelectionScreen()),
+                  );
+                },
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 64),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                  side: BorderSide(color: Colors.grey.shade300),
+                ),
+                child: Text("Skip",
+                    style: GoogleFonts.plusJakartaSans(
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w800)),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: (bookingProvider.prescriptionPath == null ||
+                        bookingProvider.prescriptionPath == "")
+                    ? null
+                    : () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
                               builder: (_) => const AddressSelectionScreen()),
                         );
                       },
-                      child: Text("Skip for now",
-                          style: GoogleFonts.plusJakartaSans(
-                              color: Colors.grey.shade500,
-                              fontWeight: FontWeight.w700)),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: (bookingProvider.prescriptionPath == null ||
-                              bookingProvider.prescriptionPath == "")
-                          ? null
-                          : () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                    builder: (_) =>
-                                        const AddressSelectionScreen()),
-                              );
-                            },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.darkBlue,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16)),
-                        minimumSize: const Size(double.infinity, 56),
-                      ),
-                      child: Text("Continue",
-                          style:
-                              GoogleFonts.outfit(fontWeight: FontWeight.w800)),
-                    ),
-                  ),
-                ],
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.darkBlue,
+                  minimumSize: const Size(double.infinity, 64),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                ),
+                child: Text("Continue",
+                    style: GoogleFonts.outfit(
+                        fontWeight: FontWeight.w800, color: Colors.white)),
               ),
-              const SizedBox(height: 120),
-            ],
-          ),
+            ),
+          ],
         ),
-      ),
+        const SizedBox(height: 40),
+      ],
     );
   }
 }

@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:medinest/core/localization/app_localizations.dart';
 import 'package:medinest/core/theme/app_theme.dart';
 import 'package:medinest/presentation/language/language_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:medinest/state/auth_provider.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -190,6 +192,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   void _navigateToLanguage() {
+    Provider.of<AuthProvider>(context, listen: false).completeOnboarding();
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>

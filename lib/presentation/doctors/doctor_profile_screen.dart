@@ -7,6 +7,7 @@ import 'package:medinest/state/doctor_provider.dart';
 import 'package:medinest/state/auth_provider.dart';
 import 'package:medinest/data/services/doctor_service.dart';
 import 'package:medinest/presentation/booking/booking_success_screen.dart';
+import 'package:medinest/data/services/notification_service.dart';
 
 class DoctorProfileScreen extends StatefulWidget {
   const DoctorProfileScreen({super.key});
@@ -54,6 +55,12 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
     setState(() => _isBooking = false);
 
     if (success) {
+      NotificationService().showNotification(
+        title: "Appointment Confirm!",
+        body:
+            "Your appointment with ${doctor['name']} on ${DateFormat('EEE, dd MMM').format(_projectedDates[_selectedDateIndex])} at $_selectedSlot is confirmed.",
+      );
+
       if (!context.mounted) return;
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => const BookingSuccessScreen()),
