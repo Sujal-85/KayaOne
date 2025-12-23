@@ -7,6 +7,7 @@ import 'package:medinest/state/auth_provider.dart';
 import 'package:medinest/data/services/booking_service.dart';
 import 'package:medinest/presentation/booking/booking_success_screen.dart';
 import 'package:medinest/presentation/booking/widgets/booking_step_indicator.dart';
+import 'package:medinest/data/services/notification_service.dart';
 
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
@@ -29,6 +30,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     setState(() => _isBooking = false);
 
     if (success) {
+      // Notification
+      NotificationService().showNotification(
+        title: "Booking Confirmed! ✅",
+        body:
+            "Your booking for ${booking.selectedDate} at ${booking.selectedSlot} has been confirmed.",
+      );
+
       booking.clear();
       if (!context.mounted) return;
       Navigator.of(context).pushAndRemoveUntil(

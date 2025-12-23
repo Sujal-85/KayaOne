@@ -5,7 +5,7 @@ const { ChatGoogleGenerativeAI } = require('@langchain/google-genai');
 const { SystemMessage, HumanMessage } = require('@langchain/core/messages');
 
 const model = new ChatGoogleGenerativeAI({
-    model: "gemini-1.5-flash",
+    model: "gemini-3-pro-preview",
     apiKey: process.env.GEMINI_API_KEY,
     temperature: 0.5,
 });

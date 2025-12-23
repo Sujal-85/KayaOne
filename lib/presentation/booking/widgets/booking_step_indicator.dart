@@ -8,40 +8,52 @@ class BookingStepIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // Background Line
-          Container(
-            height: 2,
-            width: MediaQuery.of(context).size.width * 0.7,
-            color: Colors.grey.shade200,
-          ),
-          // Active Line
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Container(
-              margin: EdgeInsets.only(
-                  left: MediaQuery.of(context).size.width * 0.15),
-              height: 2,
-              width:
-                  (MediaQuery.of(context).size.width * 0.7) * (currentStep / 3),
-              color: AppTheme.primaryGreen,
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+      child: LayoutBuilder(builder: (context, constraints) {
+        // 4 dots spaced evenly. The space between first and last dot centers.
+        // Dot width approx 32 + border/padding ~ 48.
+        // Roughly, the line should span from first dot center to last dot center.
+
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            // Background Line (spanning all dots)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Container(
+                height: 2,
+                width: double.infinity,
+                color: Colors.grey.shade200,
+              ),
             ),
-          ),
-          // Dots
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildStepDot(0, Icons.upload_file_rounded),
-              _buildStepDot(1, Icons.location_on_rounded),
-              _buildStepDot(2, Icons.calendar_today_rounded),
-              _buildStepDot(3, Icons.check_circle_rounded),
-            ],
-          ),
-        ],
-      ),
+            // Active Line
+            if (currentStep > 0)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: FractionallySizedBox(
+                    widthFactor: currentStep / 3,
+                    child: Container(
+                      height: 2,
+                      color: AppTheme.primaryGreen,
+                    ),
+                  ),
+                ),
+              ),
+            // Dots
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildStepDot(0, Icons.upload_file_rounded),
+                _buildStepDot(1, Icons.location_on_rounded),
+                _buildStepDot(2, Icons.calendar_today_rounded),
+                _buildStepDot(3, Icons.check_circle_rounded),
+              ],
+            ),
+          ],
+        );
+      }),
     );
   }
 

@@ -170,7 +170,7 @@ class _AddressSelectionScreenState extends State<AddressSelectionScreen> {
                           areaController.text.isNotEmpty &&
                           cityController.text.isNotEmpty) {
                         final fullAddress =
-                            "${houseController.text}, ${landmarkController.text.isNotEmpty ? landmarkController.text + ', ' : ''}${areaController.text}, ${cityController.text} - ${pincodeController.text}";
+                            "${houseController.text}, ${landmarkController.text.isNotEmpty ? '${landmarkController.text}, ' : ''}${areaController.text}, ${cityController.text} - ${pincodeController.text}";
                         provider.addSavedAddress({
                           'type': selectedType,
                           'address': fullAddress,
@@ -208,7 +208,7 @@ class _AddressSelectionScreenState extends State<AddressSelectionScreen> {
       TextInputType keyboardType = TextInputType.text}) {
     if (items != null) {
       return DropdownButtonFormField<String>(
-        value: initialValue,
+        initialValue: initialValue,
         decoration: InputDecoration(
           labelText: label,
           labelStyle: GoogleFonts.plusJakartaSans(color: Colors.grey),

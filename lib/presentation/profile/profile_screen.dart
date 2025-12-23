@@ -61,6 +61,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           auth.userId ?? 'guest', File(image.path));
 
       if (url != null) {
+        // Update in state first
+        auth.updateProfilePic(url);
+
         // Update in MongoDB via backend
         await _authService.updateProfile(
           phoneNumber: auth.phoneNumber!,
@@ -68,11 +71,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
           dob: auth.dob ?? "",
           email: auth.email ?? "",
           city: auth.city ?? "",
-          // Note: Backend updateProfile might need to be extended to support profilePic
-          // For now we assume updateProfile handles it or we add a new endpoint
+          profilePic: url,
         );
-        // Refresh local state
-        _refreshProfile();
+
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Profile picture updated!"),
+            backgroundColor: AppTheme.primaryGreen,
+          ),
+        );
+      } else {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Upload failed. Please check your connection."),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
       }
       setState(() => _isUploading = false);
     }
@@ -189,10 +205,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: CircleAvatar(
                   radius: 55,
                   backgroundColor: Colors.white10,
-                  backgroundImage: auth.profilePic != null
+                  backgroundImage: (auth.profilePic != null &&
+                          auth.profilePic!.isNotEmpty &&
+                          auth.profilePic!.startsWith('http'))
                       ? NetworkImage(auth.profilePic!)
                       : null,
-                  child: auth.profilePic == null
+                  child: (auth.profilePic == null ||
+                          auth.profilePic!.isEmpty ||
+                          !auth.profilePic!.startsWith('http'))
                       ? const Icon(Icons.person_rounded,
                           size: 55, color: Colors.white24)
                       : null,

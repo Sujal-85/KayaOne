@@ -1,13 +1,45 @@
 import 'package:flutter/material.dart';
+import 'package:medinest/presentation/home/home_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:medinest/core/theme/app_theme.dart';
 import 'package:medinest/state/auth_provider.dart';
 import 'package:medinest/data/services/doctor_service.dart';
+import 'package:medinest/data/services/booking_service.dart';
 import 'package:medinest/presentation/doctors/doctor_listing_screen.dart';
+import 'package:medinest/presentation/prescription/prescription_upload_screen.dart';
+import 'package:intl/intl.dart';
+import 'package:shimmer/shimmer.dart'; // Add to pubspec: shimmer: ^3.0.0
+
+enum AppointmentType { doctor, lab }
+
+class AppointmentItem {
+  final AppointmentType type;
+  final String id;
+  final String title;
+  final String subtitle;
+  final String fee;
+  final DateTime dateTime;
+  final String status; // "upcoming", "completed", "cancelled"
+  final Map<String, dynamic> rawData;
+
+  AppointmentItem({
+    required this.type,
+    required this.id,
+    required this.title,
+    required this.subtitle,
+    required this.fee,
+    required this.dateTime,
+    required this.status,
+    required this.rawData,
+  });
+}
 
 class MyAppointmentsScreen extends StatefulWidget {
-  const MyAppointmentsScreen({super.key});
+  final AppointmentType? filterType;
+  final bool isEmbedded;
+  const MyAppointmentsScreen(
+      {super.key, this.filterType, this.isEmbedded = false});
 
   @override
   State<MyAppointmentsScreen> createState() => _MyAppointmentsScreenState();
@@ -15,8 +47,12 @@ class MyAppointmentsScreen extends StatefulWidget {
 
 class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
   final DoctorService _doctorService = DoctorService();
+  final BookingService _bookingService = BookingService();
+
   bool _isLoading = true;
-  List<dynamic> _appointments = [];
+  bool _isRefreshing = false;
+  String? _errorMessage;
+  List<AppointmentItem> _appointments = [];
 
   @override
   void initState() {
@@ -24,106 +60,498 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
     _fetchAppointments();
   }
 
-  Future<void> _fetchAppointments() async {
-    final auth = Provider.of<AuthProvider>(context, listen: false);
-    if (auth.userId != null) {
-      final results = await _doctorService.getUserAppointments(auth.userId!);
-      if (results != null) {
+  Future<void> _fetchAppointments({bool isRefresh = false}) async {
+    if (!isRefresh) {
+      if (mounted) {
         setState(() {
-          _appointments = results;
-          _isLoading = false;
+          _isLoading = true;
+          _errorMessage = null;
         });
       }
     } else {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isRefreshing = true);
     }
+
+    try {
+      final auth = Provider.of<AuthProvider>(context, listen: false);
+      if (auth.userId == null) {
+        // User not logged in, show empty state instead of error
+        if (mounted) {
+          setState(() {
+            _appointments = [];
+            _isLoading = false;
+            _isRefreshing = false;
+          });
+        }
+        return;
+      }
+
+      final doctorAppointments =
+          await _doctorService.getUserAppointments(auth.userId!);
+      final labBookings = await _bookingService.getUserBookings(auth.userId!);
+
+      final List<AppointmentItem> allAppointments = [];
+
+      // Process doctor appointments
+      if (doctorAppointments != null) {
+        for (var apt in doctorAppointments) {
+          try {
+            final dateStr = apt['appointmentDate']?.toString();
+            final slot = apt['appointmentSlot']?.toString();
+            if (dateStr == null || slot == null) continue;
+
+            final dateTime = _parseDateTime(dateStr, slot);
+
+            allAppointments.add(AppointmentItem(
+              type: AppointmentType.doctor,
+              id: apt['id']?.toString() ??
+                  DateTime.now().millisecondsSinceEpoch.toString(),
+              title: apt['doctorName']?.toString() ?? 'Doctor Consultation',
+              subtitle: 'In-Person/Video Consultation',
+              fee: apt['fee']?.toString() ?? '0',
+              dateTime: dateTime,
+              status:
+                  dateTime.isAfter(DateTime.now()) ? 'upcoming' : 'completed',
+              rawData: apt,
+            ));
+          } catch (e) {
+            debugPrint("Error parsing doctor appointment: $e");
+          }
+        }
+      }
+
+      // Process lab bookings
+      if (labBookings != null) {
+        for (var booking in labBookings) {
+          try {
+            final dateStr = booking['date']?.toString();
+            final slot = booking['slot']?.toString();
+            final dateTime = _parseDateTime(
+                dateStr ?? DateFormat('yyyy-MM-dd').format(DateTime.now()),
+                slot ?? '10:00 AM');
+
+            allAppointments.add(AppointmentItem(
+              type: AppointmentType.lab,
+              id: booking['id']?.toString() ??
+                  DateTime.now().millisecondsSinceEpoch.toString(),
+              title: 'Sample Collection',
+              subtitle: 'Home Sample Collection',
+              fee: booking['totalAmount']?.toString() ?? '0',
+              dateTime: dateTime,
+              status:
+                  dateTime.isAfter(DateTime.now()) ? 'upcoming' : 'completed',
+              rawData: booking,
+            ));
+          } catch (e) {
+            debugPrint("Error parsing lab booking: $e");
+          }
+        }
+      }
+
+      // Filter based on widget.filterType
+      if (widget.filterType != null) {
+        allAppointments.retainWhere((item) => item.type == widget.filterType);
+      }
+
+      // Sort: Upcoming first, then by date descending
+      allAppointments.sort((a, b) {
+        if (a.status == 'upcoming' && b.status != 'upcoming') return -1;
+        if (b.status == 'upcoming' && a.status != 'upcoming') return 1;
+        return b.dateTime.compareTo(a.dateTime);
+      });
+
+      if (mounted) {
+        setState(() {
+          _appointments = allAppointments;
+          _isLoading = false;
+          _isRefreshing = false;
+        });
+      }
+    } catch (e) {
+      debugPrint("Error fetching appointments: $e");
+      if (mounted) {
+        setState(() {
+          _errorMessage = "Failed to load appointments. Tap to retry.";
+          _isLoading = false;
+          _isRefreshing = false;
+        });
+      }
+    }
+  }
+
+  DateTime _parseDateTime(String dateStr, String slot) {
+    try {
+      DateTime date;
+      try {
+        date = DateFormat('yyyy-MM-dd').parse(dateStr);
+      } catch (_) {
+        date = DateTime.now(); // Fallback
+      }
+
+      // Safe slot parsing
+      int hour = 9;
+      int minute = 0;
+
+      if (slot.contains('-')) {
+        // Handle range like "06:00 AM - 07:00 AM" -> take start time
+        final startTime = slot.split('-')[0].trim();
+        final isPM = startTime.toUpperCase().contains('PM');
+        final timeClean = startTime.replaceAll(RegExp(r'[A-Za-z]'), '').trim();
+        final parts = timeClean.split(':');
+        if (parts.isNotEmpty) {
+          hour = int.tryParse(parts[0]) ?? 9;
+          if (parts.length > 1) minute = int.tryParse(parts[1]) ?? 0;
+          if (isPM && hour != 12) hour += 12;
+          if (!isPM && hour == 12) hour = 0;
+        }
+      } else {
+        // Fallback for simple formats
+        final isPM = slot.toUpperCase().contains('PM');
+        final parts =
+            slot.replaceAll(RegExp(r'[A-Za-z]'), '').trim().split(':');
+        if (parts.isNotEmpty) {
+          hour = int.tryParse(parts[0]) ?? 9;
+          if (parts.length > 1) minute = int.tryParse(parts[1]) ?? 0;
+          if (isPM && hour != 12) hour += 12;
+          if (!isPM && hour == 12) hour = 0;
+        }
+      }
+
+      return DateTime(date.year, date.month, date.day, hour, minute);
+    } catch (e) {
+      debugPrint("Date parsing error: $e for date: $dateStr slot: $slot");
+      return DateTime.now();
+    }
+  }
+
+  Future<void> _cancelAppointment(AppointmentItem appointment) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text("Cancel Appointment?",
+            style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        content: Text("This action cannot be undone."),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text("No")),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child:
+                const Text("Yes, Cancel", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      // TODO: Call actual cancel API based on type
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Appointment cancelled successfully")),
+      );
+      _fetchAppointments(isRefresh: true);
+    }
+  }
+
+  String get _title {
+    if (widget.filterType == AppointmentType.lab) return "Blood Collections";
+    if (widget.filterType == AppointmentType.doctor) return "My Doctors";
+    return "All Bookings";
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
-      appBar: AppBar(
-        title: Text("My Appointments",
-            style: GoogleFonts.outfit(fontWeight: FontWeight.w700)),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          IconButton(
-            onPressed: () {
+    if (widget.isEmbedded) {
+      return Column(
+        children: [
+          _buildEmbeddedHeader(),
+          Expanded(child: _buildContent()),
+        ],
+      );
+    }
+    return _buildScaffold();
+  }
+
+  Widget _buildEmbeddedHeader() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 48, 24, 16),
+      color: AppTheme.backgroundColor,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            widget.filterType == AppointmentType.lab
+                ? "My Bookings"
+                : "My Doctors",
+            style: GoogleFonts.outfit(
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.darkBlue,
+            ),
+          ),
+          if (widget.filterType == AppointmentType.lab)
+            _buildNewBookingButton("Book New", () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const PrescriptionUploadScreen()));
+            }),
+          if (widget.filterType == AppointmentType.doctor)
+            _buildNewBookingButton("Find Doctor", () {
               Navigator.push(
                   context,
                   MaterialPageRoute(
                       builder: (_) => const DoctorListingScreen()));
-            },
-            icon: const Icon(Icons.add_circle_outline_rounded,
-                color: AppTheme.primaryGreen),
-          ),
+            }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNewBookingButton(String label, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: AppTheme.primaryGreen.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppTheme.primaryGreen),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.add, size: 18, color: AppTheme.primaryGreen),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.primaryGreen,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildScaffold() {
+    return Scaffold(
+      backgroundColor: AppTheme.backgroundColor,
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+              color: AppTheme.darkBlue),
+          onPressed: () async {
+            final didPop = await Navigator.maybePop(context);
+            if (!didPop) HomeScreenState.of(context)?.setIndex(0);
+          },
+        ),
+        title: Text(_title,
+            style: GoogleFonts.outfit(
+                fontWeight: FontWeight.w700, color: AppTheme.darkBlue)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          if (widget.filterType == AppointmentType.lab ||
+              widget.filterType == null)
+            IconButton(
+              icon: const Icon(Icons.add_a_photo_outlined,
+                  color: AppTheme.primaryGreen),
+              onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const PrescriptionUploadScreen())),
+            ),
+          if (widget.filterType == AppointmentType.doctor)
+            IconButton(
+              icon: const Icon(Icons.add_circle_outline_rounded,
+                  color: AppTheme.primaryGreen),
+              onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const DoctorListingScreen())),
+            ),
           const SizedBox(width: 8),
         ],
       ),
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppTheme.primaryGreen))
-          : _appointments.isEmpty
-              ? _buildEmptyState()
-              : ListView.builder(
-                  padding: const EdgeInsets.all(24),
-                  itemCount: _appointments.length + 1,
-                  itemBuilder: (context, index) {
-                    if (index == _appointments.length) {
-                      return const SizedBox(height: 120);
-                    }
-                    final appointment = _appointments[index];
-                    return _buildAppointmentCard(appointment);
-                  },
-                ),
+      body: _buildContent(),
+    );
+  }
+
+  Widget _buildContent() {
+    if (_isLoading) {
+      return _buildShimmerLoading();
+    }
+
+    if (_errorMessage != null) {
+      return Center(
+        child: GestureDetector(
+          onTap: () => _fetchAppointments(),
+          child:
+              Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
+        ),
+      );
+    }
+
+    if (_appointments.isEmpty) {
+      return _buildEmptyState();
+    }
+
+    return RefreshIndicator(
+      onRefresh: () => _fetchAppointments(isRefresh: true),
+      color: AppTheme.primaryGreen,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(24),
+        itemCount: _appointments.length + 1,
+        itemBuilder: (context, index) {
+          if (index == _appointments.length) return const SizedBox(height: 120);
+          return _buildAdvancedAppointmentCard(_appointments[index]);
+        },
+      ),
+    );
+  }
+
+  Widget _buildShimmerLoading() {
+    return ListView.builder(
+      padding: const EdgeInsets.all(24),
+      itemCount: 5,
+      itemBuilder: (_, __) => Shimmer.fromColors(
+        baseColor: Colors.grey[300]!,
+        highlightColor: Colors.grey[100]!,
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 20),
+          height: 140,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+          ),
+        ),
+      ),
     );
   }
 
   Widget _buildEmptyState() {
+    String title = "No Active Bookings";
+    String subtitle = "Schedule a service to manage your health";
+
+    if (widget.filterType == AppointmentType.doctor) {
+      title = "No Doctor Visits";
+      subtitle = "Book an appointment with top specialists";
+    } else if (widget.filterType == AppointmentType.lab) {
+      title = "No Blood Collections";
+      subtitle = "Book home collection for blood tests";
+    }
+
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.calendar_today_outlined,
-              size: 80, color: Colors.grey.shade300),
-          const SizedBox(height: 24),
-          Text("No Appointments Found",
-              style: GoogleFonts.outfit(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                  color: AppTheme.darkBlue)),
-          const SizedBox(height: 8),
-          Text("Book your first doctor consultation today!",
-              style: GoogleFonts.plusJakartaSans(color: Colors.grey)),
-          const SizedBox(height: 32),
-          SizedBox(
-            width: 180,
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => const DoctorListingScreen()));
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.darkBlue,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)),
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.event_busy_rounded,
+                size: 100, color: Colors.grey.shade300),
+            const SizedBox(height: 32),
+            Text(title,
+                style: GoogleFonts.outfit(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.darkBlue)),
+            const SizedBox(height: 12),
+            Text(subtitle,
+                style: GoogleFonts.plusJakartaSans(color: Colors.grey[600])),
+            const SizedBox(height: 40),
+            if (widget.filterType == AppointmentType.doctor ||
+                widget.filterType == null) ...[
+              Center(
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.7,
+                  child: _buildActionCard(
+                    "Find a Doctor",
+                    Icons.person_search_rounded,
+                    AppTheme.primaryGreen,
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const DoctorListingScreen())),
+                  ),
+                ),
               ),
-              child: Text("Find a Doctor",
-                  style: GoogleFonts.outfit(
-                      fontWeight: FontWeight.w800, color: Colors.white)),
-            ),
-          ),
-        ],
+              const SizedBox(height: 16),
+            ],
+            if (widget.filterType == AppointmentType.lab ||
+                widget.filterType == null) ...[
+              Center(
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.7,
+                  child: _buildActionCard(
+                    "Book Slot Now",
+                    Icons.bloodtype_outlined,
+                    Colors.redAccent,
+                    () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const PrescriptionUploadScreen())),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildAppointmentCard(dynamic appointment) {
+  Widget _buildActionCard(
+      String title, IconData icon, Color color, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.grey.shade200),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 10,
+                offset: const Offset(0, 4))
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(width: 16),
+            Text(title,
+                style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: AppTheme.darkBlue)),
+            const Spacer(),
+            Icon(Icons.arrow_forward_ios_rounded,
+                size: 16, color: Colors.grey.shade400),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAdvancedAppointmentCard(AppointmentItem appointment) {
+    final isUpcoming = appointment.status == 'upcoming';
+    final color = appointment.type == AppointmentType.doctor
+        ? AppTheme.primaryGreen
+        : Colors.blue;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       padding: const EdgeInsets.all(20),
@@ -132,9 +560,9 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.02),
-              blurRadius: 10,
-              offset: const Offset(0, 4)),
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 12,
+              offset: const Offset(0, 6))
         ],
       ),
       child: Column(
@@ -142,54 +570,78 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
         children: [
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryGreen.withOpacity(0.1),
-                  shape: BoxShape.circle,
+              CircleAvatar(
+                radius: 24,
+                backgroundColor: color.withOpacity(0.1),
+                child: Icon(
+                  appointment.type == AppointmentType.doctor
+                      ? Icons.person_search_rounded
+                      : Icons.science_rounded,
+                  color: color,
+                  size: 28,
                 ),
-                child: const Icon(Icons.person_search_rounded,
-                    color: AppTheme.primaryGreen, size: 24),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      appointment['doctorName'] ?? "Doctor",
-                      style: GoogleFonts.outfit(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 18,
-                          color: AppTheme.darkBlue),
-                    ),
-                    Text(
-                      "Consultation",
-                      style: GoogleFonts.plusJakartaSans(
-                          color: Colors.grey, fontSize: 13),
-                    ),
+                    Text(appointment.title,
+                        style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 18,
+                            color: AppTheme.darkBlue)),
+                    Text(appointment.subtitle,
+                        style: GoogleFonts.plusJakartaSans(
+                            fontSize: 13, color: Colors.grey[700])),
                   ],
                 ),
               ),
-              Text(
-                "₹${appointment['fee']}",
-                style: GoogleFonts.outfit(
-                    fontWeight: FontWeight.w900,
-                    fontSize: 18,
-                    color: AppTheme.primaryGreen),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text("₹${appointment.fee}",
+                      style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 18,
+                          color: color)),
+                  const SizedBox(height: 4),
+                  Chip(
+                    label: Text(isUpcoming ? "Upcoming" : "Completed",
+                        style: TextStyle(
+                            fontSize: 10,
+                            color:
+                                isUpcoming ? Colors.white : Colors.grey[700])),
+                    backgroundColor: isUpcoming ? color : Colors.grey[200],
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                  ),
+                ],
               ),
             ],
           ),
-          const Divider(height: 32),
+          const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _infoTile(Icons.calendar_month_rounded,
-                  appointment['appointmentDate'] ?? ""),
+                  DateFormat('EEE, MMM d').format(appointment.dateTime)),
               _infoTile(Icons.access_time_rounded,
-                  appointment['appointmentSlot'] ?? ""),
+                  DateFormat('h:mm a').format(appointment.dateTime)),
             ],
           ),
+          if (isUpcoming) ...[
+            const SizedBox(height: 16),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: () => _cancelAppointment(appointment),
+                icon: const Icon(Icons.cancel_outlined,
+                    size: 18, color: Colors.red),
+                label:
+                    const Text("Cancel", style: TextStyle(color: Colors.red)),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -198,13 +650,13 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
   Widget _infoTile(IconData icon, String text) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: AppTheme.primaryGreen),
+        Icon(icon, size: 18, color: AppTheme.primaryGreen),
         const SizedBox(width: 8),
         Text(text,
             style: GoogleFonts.plusJakartaSans(
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: AppTheme.darkBlue.withOpacity(0.8))),
+                color: AppTheme.darkBlue)),
       ],
     );
   }

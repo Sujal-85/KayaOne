@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:medinest/core/theme/app_theme.dart';
 import 'package:medinest/state/cart_provider.dart';
 import 'package:medinest/presentation/booking/booking_success_screen.dart';
+import 'package:medinest/data/services/notification_service.dart';
 
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
@@ -140,6 +141,13 @@ class CartScreen extends StatelessWidget {
                       const SizedBox(height: 24),
                       ElevatedButton(
                         onPressed: () {
+                          // Notification
+                          NotificationService().showNotification(
+                            title: "Order Placed! 🛍️",
+                            body:
+                                "Your order of ₹${cartProvider.totalAmount.toStringAsFixed(0)} has been successfully placed.",
+                          );
+
                           cartProvider.clearCart();
                           Navigator.of(context).pushAndRemoveUntil(
                             MaterialPageRoute(
