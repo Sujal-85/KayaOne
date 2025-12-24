@@ -265,7 +265,13 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
       return Column(
         children: [
           _buildEmbeddedHeader(),
-          Expanded(child: _buildContent()),
+          Expanded(
+            child: RefreshIndicator(
+              color: AppTheme.primaryGreen,
+              onRefresh: () => _fetchAppointments(isRefresh: true),
+              child: _buildContent(),
+            ),
+          ),
         ],
       );
     }
@@ -289,20 +295,24 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
               color: AppTheme.darkBlue,
             ),
           ),
-          if (widget.filterType == AppointmentType.lab)
-            _buildNewBookingButton("Book New", () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) => const PrescriptionUploadScreen()));
-            }),
-          if (widget.filterType == AppointmentType.doctor)
-            _buildNewBookingButton("Find Doctor", () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) => const DoctorListingScreen()));
-            }),
+          Row(
+            children: [
+              if (widget.filterType == AppointmentType.lab)
+                _buildNewBookingButton("Book", () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const PrescriptionUploadScreen()));
+                }),
+              if (widget.filterType == AppointmentType.doctor)
+                _buildNewBookingButton("Find", () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const DoctorListingScreen()));
+                }),
+            ],
+          ),
         ],
       ),
     );
@@ -376,7 +386,11 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
           const SizedBox(width: 8),
         ],
       ),
-      body: _buildContent(),
+      body: RefreshIndicator(
+        color: AppTheme.primaryGreen,
+        onRefresh: () => _fetchAppointments(isRefresh: true),
+        child: _buildContent(),
+      ),
     );
   }
 
@@ -509,7 +523,7 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
@@ -524,22 +538,25 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: color.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: color, size: 24),
+              child: Icon(icon, color: color, size: 20),
             ),
-            const SizedBox(width: 16),
-            Text(title,
-                style: GoogleFonts.outfit(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: AppTheme.darkBlue)),
-            const Spacer(),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(title,
+                  style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: AppTheme.darkBlue),
+                  overflow: TextOverflow.ellipsis),
+            ),
+            const SizedBox(width: 8),
             Icon(Icons.arrow_forward_ios_rounded,
-                size: 16, color: Colors.grey.shade400),
+                size: 14, color: Colors.grey.shade400),
           ],
         ),
       ),
@@ -552,99 +569,108 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
         ? AppTheme.primaryGreen
         : Colors.blue;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 12,
-              offset: const Offset(0, 6))
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 24,
-                backgroundColor: color.withOpacity(0.1),
-                child: Icon(
-                  appointment.type == AppointmentType.doctor
-                      ? Icons.person_search_rounded
-                      : Icons.science_rounded,
-                  color: color,
-                  size: 28,
+    return LayoutBuilder(builder: (context, constraints) {
+      final isSmall = constraints.maxWidth < 340;
+      return Container(
+        margin: const EdgeInsets.only(bottom: 20),
+        padding: EdgeInsets.all(isSmall ? 16 : 20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 12,
+                offset: const Offset(0, 6))
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: isSmall ? 20 : 24,
+                  backgroundColor: color.withOpacity(0.1),
+                  child: Icon(
+                    appointment.type == AppointmentType.doctor
+                        ? Icons.person_search_rounded
+                        : Icons.science_rounded,
+                    color: color,
+                    size: isSmall ? 22 : 28,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(appointment.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.w800,
+                              fontSize: isSmall ? 16 : 18,
+                              color: AppTheme.darkBlue)),
+                      Text(appointment.subtitle,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.plusJakartaSans(
+                              fontSize: isSmall ? 12 : 13,
+                              color: Colors.grey[700])),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(appointment.title,
+                    Text("₹${appointment.fee}",
                         style: GoogleFonts.outfit(
-                            fontWeight: FontWeight.w800,
-                            fontSize: 18,
-                            color: AppTheme.darkBlue)),
-                    Text(appointment.subtitle,
-                        style: GoogleFonts.plusJakartaSans(
-                            fontSize: 13, color: Colors.grey[700])),
+                            fontWeight: FontWeight.w900,
+                            fontSize: isSmall ? 16 : 18,
+                            color: color)),
+                    const SizedBox(height: 4),
+                    Chip(
+                      label: Text(isUpcoming ? "Upcoming" : "Completed",
+                          style: TextStyle(
+                              fontSize: 10,
+                              color: isUpcoming
+                                  ? Colors.white
+                                  : Colors.grey[700])),
+                      backgroundColor: isUpcoming ? color : Colors.grey[200],
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                    ),
                   ],
                 ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text("₹${appointment.fee}",
-                      style: GoogleFonts.outfit(
-                          fontWeight: FontWeight.w900,
-                          fontSize: 18,
-                          color: color)),
-                  const SizedBox(height: 4),
-                  Chip(
-                    label: Text(isUpcoming ? "Upcoming" : "Completed",
-                        style: TextStyle(
-                            fontSize: 10,
-                            color:
-                                isUpcoming ? Colors.white : Colors.grey[700])),
-                    backgroundColor: isUpcoming ? color : Colors.grey[200],
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _infoTile(Icons.calendar_month_rounded,
-                  DateFormat('EEE, MMM d').format(appointment.dateTime)),
-              _infoTile(Icons.access_time_rounded,
-                  DateFormat('h:mm a').format(appointment.dateTime)),
-            ],
-          ),
-          if (isUpcoming) ...[
-            const SizedBox(height: 16),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton.icon(
-                onPressed: () => _cancelAppointment(appointment),
-                icon: const Icon(Icons.cancel_outlined,
-                    size: 18, color: Colors.red),
-                label:
-                    const Text("Cancel", style: TextStyle(color: Colors.red)),
-              ),
+              ],
             ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _infoTile(Icons.calendar_month_rounded,
+                    DateFormat('EEE, MMM d').format(appointment.dateTime)),
+                _infoTile(Icons.access_time_rounded,
+                    DateFormat('h:mm a').format(appointment.dateTime)),
+              ],
+            ),
+            if (isUpcoming) ...[
+              const SizedBox(height: 16),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  onPressed: () => _cancelAppointment(appointment),
+                  icon: const Icon(Icons.cancel_outlined,
+                      size: 18, color: Colors.red),
+                  label:
+                      const Text("Cancel", style: TextStyle(color: Colors.red)),
+                ),
+              ),
+            ],
           ],
-        ],
-      ),
-    );
+        ),
+      );
+    });
   }
 
   Widget _infoTile(IconData icon, String text) {
