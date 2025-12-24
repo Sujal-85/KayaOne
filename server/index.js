@@ -2,6 +2,9 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
+const cron = require('node-cron');
+const axios = require('axios');
+
 
 const authRoutes = require('./routes/auth');
 const bookingRoutes = require('./routes/booking');
@@ -22,6 +25,12 @@ app.use('/api/doctor', doctorRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/diet', dietRoutes);
 
+// Health check endpoint
+app.get('/ping', (req, res) => {
+    res.status(200).send('pong');
+});
+
+
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log('Connected to MongoDB'))
@@ -30,4 +39,17 @@ mongoose.connect(process.env.MONGODB_URI)
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
+
+    // Cron job to keep the server awake on Render (runs every 14 minutes)
+    cron.schedule('*/14 * * * *', async () => {
+        const publicUrl = process.env.PUBLIC_URL || `http://localhost:${PORT}`;
+        console.log(`[Cron] Pinging server at ${publicUrl}/ping to keep it awake...`);
+        try {
+            const response = await axios.get(`${publicUrl}/ping`);
+            console.log(`[Cron] Ping successful: ${response.data}`);
+        } catch (error) {
+            console.error(`[Cron] Ping failed: ${error.message}`);
+        }
+    });
 });
+
