@@ -230,7 +230,7 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
       builder: (ctx) => AlertDialog(
         title: Text("Cancel Appointment?",
             style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-        content: Text("This action cannot be undone."),
+        content: const Text("This action cannot be undone."),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
@@ -320,7 +320,7 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
         ),
         child: Row(
           children: [
-            Icon(Icons.add, size: 18, color: AppTheme.primaryGreen),
+            const Icon(Icons.add, size: 18, color: AppTheme.primaryGreen),
             const SizedBox(width: 6),
             Text(
               label,

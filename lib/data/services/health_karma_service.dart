@@ -9,7 +9,7 @@ class HealthKarmaService {
   Future<HealthKarmaResult> analyzeHealthData(
       Map<String, dynamic> responses) async {
     try {
-      final String endpoint = '${ApiConfig.baseUrl}/ai/analyze';
+      const String endpoint = '${ApiConfig.baseUrl}/ai/analyze';
       debugPrint("Calling HealthKarma Analysis Endpoint: $endpoint");
       debugPrint("Responses: $responses");
 
