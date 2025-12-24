@@ -66,7 +66,8 @@ router.post('/analyze', async (req, res) => {
         }
 
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        // Use gemini-1.5-flash for better speed and reliability
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         const prompt = `
         You are a professional medical AI assistant. Analyze the following lifestyle and health data from a user survey:
@@ -125,7 +126,11 @@ router.post('/analyze', async (req, res) => {
 
         res.json(data);
     } catch (err) {
-        console.error("AI Analysis Error:", err);
+        console.error("AI Analysis Error Detail:", err);
+        // Check for specific API errors
+        if (err.message && err.message.includes('API key')) {
+            return res.status(500).json({ message: 'Invalid or missing API Key', error: err.message });
+        }
         res.status(500).json({ message: 'AI Analysis failed', error: err.message });
     }
 });

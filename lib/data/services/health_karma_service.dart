@@ -29,8 +29,22 @@ class HealthKarmaService {
         debugPrint("AI Analysis Result: $data");
         return HealthKarmaResult.fromJson(data);
       } else {
-        throw Exception(
-            "Failed to analyze health data: ${response.statusCode}");
+        String errorMessage = "Failed to analyze health data";
+        try {
+          // Try to parse the error message from the server
+          if (response.data is Map && response.data['message'] != null) {
+            errorMessage += ": ${response.data['message']}";
+            if (response.data['error'] != null) {
+              errorMessage += " (${response.data['error']})";
+            }
+          } else {
+            errorMessage += ": Status ${response.statusCode}";
+          }
+        } catch (_) {
+          errorMessage += ": Status ${response.statusCode} (Unknown error)";
+        }
+
+        throw Exception(errorMessage);
       }
     } catch (e) {
       debugPrint("Error in analyzeHealthData: $e");
