@@ -352,84 +352,94 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
       extendBody: true,
       floatingActionButton: _buildFloatingCallButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          // 1️⃣ TOP HEADER + SEARCH
-          SliverAppBar(
-            pinned: true,
-            expandedHeight: 160,
-            automaticallyImplyLeading: false,
-            backgroundColor: AppTheme.backgroundColor,
-            elevation: 0,
-            flexibleSpace: FlexibleSpaceBar(
-              collapseMode: CollapseMode.pin,
-              background: _buildHeaderSection(firstName),
-              titlePadding:
-                  const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-              title: LayoutBuilder(builder: (context, constraints) {
-                final top = constraints.biggest.height;
-                final isCollapsed = top <= 120; // Heuristic for collapsed state
-                return isCollapsed
-                    ? _buildCollapsedSearch()
-                    : const SizedBox.shrink();
-              }),
+      body: RefreshIndicator(
+        color: AppTheme.primaryGreen,
+        onRefresh: () async {
+          setState(() => _isBookingsLoading = true);
+          await _fetchRecentBookings();
+        },
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            // 1️⃣ TOP HEADER + SEARCH
+            SliverAppBar(
+              pinned: true,
+              expandedHeight: 160,
+              automaticallyImplyLeading: false,
+              backgroundColor: AppTheme.backgroundColor,
+              elevation: 0,
+              flexibleSpace: FlexibleSpaceBar(
+                collapseMode: CollapseMode.pin,
+                background: _buildHeaderSection(firstName),
+                titlePadding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                title: LayoutBuilder(builder: (context, constraints) {
+                  final top = constraints.biggest.height;
+                  final isCollapsed =
+                      top <= 120; // Heuristic for collapsed state
+                  return isCollapsed
+                      ? _buildCollapsedSearch()
+                      : const SizedBox.shrink();
+                }),
+              ),
             ),
-          ),
 
-          // 1.5️⃣ MY BOOKINGS (Dynamic)
-          _buildMyBookingsSection(),
+            // 1.5️⃣ MY BOOKINGS (Dynamic)
+            _buildMyBookingsSection(),
 
-          // 2️⃣ PRIMARY SERVICES (Full-width Banners)
-          SliverToBoxAdapter(
-              child: _buildSectionHeader("Our Services", isFirst: true)),
-          _buildPrimaryServicesSection(),
+            // 2️⃣ PRIMARY SERVICES (Full-width Banners)
+            SliverToBoxAdapter(
+                child: _buildSectionHeader("Our Services", isFirst: true)),
+            _buildPrimaryServicesSection(),
 
-          const SliverToBoxAdapter(child: SizedBox(height: 32)),
+            const SliverToBoxAdapter(child: SizedBox(height: 32)),
 
-          // 3️⃣ FEATURED HIGHLIGHTS
-          SliverToBoxAdapter(child: _buildSectionHeader("Featured Highlights")),
-          _buildFeaturedBannerSlider(),
+            // 3️⃣ FEATURED HIGHLIGHTS
+            SliverToBoxAdapter(
+                child: _buildSectionHeader("Featured Highlights")),
+            _buildFeaturedBannerSlider(),
 
-          const SliverToBoxAdapter(child: SizedBox(height: 40)),
+            const SliverToBoxAdapter(child: SizedBox(height: 40)),
 
-          // 4️⃣ HEALTHKARMA CORE SECTION
-          SliverToBoxAdapter(
-              child: _buildSectionHeader("Health Checkup Stats")),
-          _buildHealthKarmaSection(),
+            // 4️⃣ HEALTHKARMA CORE SECTION
+            SliverToBoxAdapter(
+                child: _buildSectionHeader("Health Checkup Stats")),
+            _buildHealthKarmaSection(),
 
-          const SliverToBoxAdapter(child: SizedBox(height: 40)),
+            const SliverToBoxAdapter(child: SizedBox(height: 40)),
 
-          // 5️⃣ QUICK ACTIONS GRID
-          SliverToBoxAdapter(child: _buildSectionHeader("Quick Actions")),
-          _buildQuickActionsGrid(),
+            // 5️⃣ QUICK ACTIONS GRID
+            SliverToBoxAdapter(child: _buildSectionHeader("Quick Actions")),
+            _buildQuickActionsGrid(),
 
-          const SliverToBoxAdapter(child: SizedBox(height: 40)),
+            const SliverToBoxAdapter(child: SizedBox(height: 40)),
 
-          // 6️⃣ HEALTHCARE PRODUCTS PREVIEW
-          SliverToBoxAdapter(child: _buildSectionHeader("Today's Top Picks")),
-          _buildProductsPreview(),
+            // 6️⃣ HEALTHCARE PRODUCTS PREVIEW
+            SliverToBoxAdapter(child: _buildSectionHeader("Today's Top Picks")),
+            _buildProductsPreview(),
 
-          const SliverToBoxAdapter(child: SizedBox(height: 40)),
+            const SliverToBoxAdapter(child: SizedBox(height: 40)),
 
-          // 7️⃣ AI ASSISTANT PROMO CARD
-          SliverToBoxAdapter(child: _buildSectionHeader("AI Health Assistant")),
-          _buildAIAssistantPromo(),
+            // 7️⃣ AI ASSISTANT PROMO CARD
+            SliverToBoxAdapter(
+                child: _buildSectionHeader("AI Health Assistant")),
+            _buildAIAssistantPromo(),
 
-          const SliverToBoxAdapter(child: SizedBox(height: 48)),
+            const SliverToBoxAdapter(child: SizedBox(height: 48)),
 
-          // 8️⃣ HEALTH ARTICLES SECTION
-          SliverToBoxAdapter(child: _buildSectionHeader("Health Insights")),
-          _buildArticlesSection(),
+            // 8️⃣ HEALTH ARTICLES SECTION
+            SliverToBoxAdapter(child: _buildSectionHeader("Health Insights")),
+            _buildArticlesSection(),
 
-          const SliverToBoxAdapter(child: SizedBox(height: 40)),
+            const SliverToBoxAdapter(child: SizedBox(height: 40)),
 
-          // 9️⃣ TRUST & SAFETY
-          SliverToBoxAdapter(child: _buildSectionHeader("Quality & Trust")),
-          _buildTrustSafetySection(),
+            // 9️⃣ TRUST & SAFETY
+            SliverToBoxAdapter(child: _buildSectionHeader("Quality & Trust")),
+            _buildTrustSafetySection(),
 
-          const SliverToBoxAdapter(child: SizedBox(height: 100)),
-        ],
+            const SliverToBoxAdapter(child: SizedBox(height: 100)),
+          ],
+        ),
       ),
     );
   }
@@ -454,6 +464,9 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                         fontWeight: FontWeight.w800,
                         color: AppTheme.darkBlue,
                       ),
+                      softWrap: true,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ).animate().fadeIn(duration: 600.ms).slideY(begin: -0.3),
                     const SizedBox(height: 4),
                     Row(
@@ -472,10 +485,6 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                     ),
                   ],
                 ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.wallet, color: AppTheme.darkBlue),
-                onPressed: () {},
               ),
               Consumer<NotificationProvider>(
                 builder: (context, provider, _) => IconButton(
@@ -545,7 +554,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
             borderRadius: BorderRadius.circular(30),
             borderSide: BorderSide.none,
           ),
-          contentPadding: const EdgeInsets.symmetric(vertical: 18),
+          contentPadding: const EdgeInsets.symmetric(vertical: 12),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
             borderSide: BorderSide(color: Colors.grey.shade200),
@@ -769,10 +778,13 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
         title: "Blood Collection\nat Doorstep",
         lottie: "assets/lottie/gps_navigation.json",
         gradient: [const Color(0xFF1A237E), const Color(0xFF3949AB)],
-        onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (_) => const PrescriptionUploadScreen())),
+        onTap: () async {
+          await Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => const PrescriptionUploadScreen()));
+          _fetchRecentBookings();
+        },
       ),
       _ServiceCardData(
         title: "Doctor\nAppointment",
@@ -997,123 +1009,138 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                         ),
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(28),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final isSmallScreen = constraints.maxWidth < 340;
+                        return Padding(
+                          padding: EdgeInsets.all(isSmallScreen ? 16 : 28),
+                          child: Column(
                             children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    "Your HealthKarma",
-                                    style: GoogleFonts.outfit(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white,
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "Your HealthKarma",
+                                          style: GoogleFonts.outfit(
+                                            fontSize: isSmallScreen ? 18 : 22,
+                                            fontWeight: FontWeight.w700,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          "AI-powered personal insights",
+                                          style: GoogleFonts.plusJakartaSans(
+                                            fontSize: isSmallScreen ? 11 : 13,
+                                            color: Colors.white
+                                                .withValues(alpha: 0.7),
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    "AI-powered personal insights",
-                                    style: GoogleFonts.plusJakartaSans(
-                                      fontSize: 13,
+                                  Container(
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
                                       color:
-                                          Colors.white.withValues(alpha: 0.7),
-                                      fontWeight: FontWeight.w500,
+                                          Colors.white.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Icon(Icons.auto_awesome,
+                                        color: AppTheme.primaryGreen,
+                                        size: isSmallScreen ? 20 : 24),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: isSmallScreen ? 16 : 24),
+                              Row(
+                                children: [
+                                  // Score Circle
+                                  Container(
+                                    width: isSmallScreen ? 60 : 80,
+                                    height: isSmallScreen ? 60 : 80,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                          color: AppTheme.primaryGreen,
+                                          width: 6),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        "$score",
+                                        style: GoogleFonts.outfit(
+                                          fontSize: isSmallScreen ? 20 : 28,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 20),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          status,
+                                          style: GoogleFonts.outfit(
+                                            fontSize: isSmallScreen ? 16 : 18,
+                                            fontWeight: FontWeight.w600,
+                                            color: AppTheme.primaryGreen,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          subText,
+                                          style: GoogleFonts.plusJakartaSans(
+                                            fontSize: isSmallScreen ? 11 : 12,
+                                            color: Colors.white
+                                                .withValues(alpha: 0.8),
+                                            height: 1.4,
+                                          ),
+                                          maxLines: 3,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],
                               ),
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: const Icon(Icons.auto_awesome,
-                                    color: AppTheme.primaryGreen, size: 24),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 24),
-                          Row(
-                            children: [
-                              // Score Circle
-                              Container(
-                                width: 80,
-                                height: 80,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                      color: AppTheme.primaryGreen, width: 6),
-                                ),
-                                child: Center(
+                              SizedBox(height: isSmallScreen ? 16 : 24),
+                              SizedBox(
+                                width: double.infinity,
+                                height: 48,
+                                child: ElevatedButton(
+                                  onPressed: onButtonPressed,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppTheme.primaryGreen,
+                                    foregroundColor: AppTheme.darkBlue,
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                  ),
                                   child: Text(
-                                    "$score",
-                                    style: GoogleFonts.outfit(
-                                      fontSize: 28,
+                                    buttonText,
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 14,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.white,
                                     ),
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 20),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      status,
-                                      style: GoogleFonts.outfit(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w600,
-                                        color: AppTheme.primaryGreen,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Text(
-                                      subText,
-                                      style: GoogleFonts.plusJakartaSans(
-                                        fontSize: 12,
-                                        color:
-                                            Colors.white.withValues(alpha: 0.8),
-                                        height: 1.4,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
                             ],
                           ),
-                          const SizedBox(height: 24),
-                          SizedBox(
-                            width: double.infinity,
-                            height: 48,
-                            child: ElevatedButton(
-                              onPressed: onButtonPressed,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppTheme.primaryGreen,
-                                foregroundColor: AppTheme.darkBlue,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                              ),
-                              child: Text(
-                                buttonText,
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -1143,7 +1170,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
           crossAxisCount: 2,
           mainAxisSpacing: 16,
           crossAxisSpacing: 16,
-          childAspectRatio: 1.4,
+          childAspectRatio: 1.15,
           children: actions
               .map((action) => _QuickActionCard(action: action))
               .toList(),
@@ -1265,66 +1292,76 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(32),
-            child: Stack(
-              children: [
-                Positioned(
-                  right: -20,
-                  top: -20,
-                  bottom: -20,
-                  child: Image.asset(
-                    'assets/images/ai_assistant_visual.png',
-                    width: 200,
-                    fit: BoxFit.contain,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(28),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "Ask MediNest AI",
-                        style: GoogleFonts.outfit(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isSmallScreen = constraints.maxWidth < 340;
+                return Stack(
+                  children: [
+                    Positioned(
+                      right: isSmallScreen ? -50 : -20,
+                      top: -20,
+                      bottom: -20,
+                      child: Opacity(
+                        opacity: isSmallScreen ? 0.3 : 1.0,
+                        child: Image.asset(
+                          'assets/images/ai_assistant_visual.png',
+                          width: isSmallScreen ? 180 : 200,
+                          fit: BoxFit.contain,
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        "Get instant health\nguidance 24/7",
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 14,
-                          color: Colors.white.withValues(alpha: 0.9),
-                          height: 1.2,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      SizedBox(
-                        width: 120,
-                        child: ElevatedButton(
-                          onPressed: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => const AiAssistantScreen())),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: const Color(0xFF00BCD4),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12)),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 0),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(28),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Ask MediNest AI",
+                            style: GoogleFonts.outfit(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                            ),
                           ),
-                          child: const Text("Start Chat",
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w800, fontSize: 13)),
-                        ),
+                          const SizedBox(height: 8),
+                          Text(
+                            "Get instant health\nguidance 24/7",
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 14,
+                              color: Colors.white.withValues(alpha: 0.9),
+                              height: 1.2,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          SizedBox(
+                            width: 120,
+                            child: ElevatedButton(
+                              onPressed: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) =>
+                                          const AiAssistantScreen())),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                foregroundColor: const Color(0xFF00BCD4),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12)),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 0),
+                              ),
+                              child: const Text("Start Chat",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 13)),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-              ],
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         ),

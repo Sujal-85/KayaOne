@@ -230,102 +230,109 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
                       ),
                     ],
                   ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Find Your HealthKarma",
-                              style: GoogleFonts.outfit(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w800,
-                                color: const Color(0xFF1A1A1A),
+                  child: LayoutBuilder(builder: (context, constraints) {
+                    final isSmall = constraints.maxWidth < 360;
+                    final iconSize = isSmall ? 60.0 : 80.0;
+                    final fontSizeQuestion = isSmall ? 32.0 : 40.0;
+                    final padding = isSmall ? 16.0 : 24.0;
+
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Find Your HealthKarma",
+                                style: GoogleFonts.outfit(
+                                  fontSize: isSmall ? 18 : 20,
+                                  fontWeight: FontWeight.w800,
+                                  color: const Color(0xFF1A1A1A),
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              "Your HealthKarma score will help us understand your health status better",
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 14,
-                                color: Colors.grey.shade600,
-                                height: 1.4,
+                              const SizedBox(height: 12),
+                              Text(
+                                "Your HealthKarma score will help us understand your health status better",
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: isSmall ? 13 : 14,
+                                  color: Colors.grey.shade600,
+                                  height: 1.4,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 20),
-                            ElevatedButton(
-                              onPressed: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) => const QuestionFlowScreen()),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF00897B),
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12)),
-                                elevation: 0,
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Flexible(
-                                    child: Text(
-                                      "Calculate Your Score",
-                                      overflow: TextOverflow.ellipsis,
-                                      style: GoogleFonts.plusJakartaSans(
-                                        fontWeight: FontWeight.w800,
-                                        fontSize: 14,
+                              const SizedBox(height: 20),
+                              ElevatedButton(
+                                onPressed: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) =>
+                                          const QuestionFlowScreen()),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF00897B),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12)),
+                                  elevation: 0,
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        "Calculate Your Score",
+                                        overflow: TextOverflow.ellipsis,
+                                        style: GoogleFonts.plusJakartaSans(
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 14,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  const Icon(Icons.chevron_right, size: 18),
-                                ],
+                                    const SizedBox(width: 4),
+                                    const Icon(Icons.chevron_right, size: 18),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      // Styled "?" Icon
-                      Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF5F5F5),
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 10,
-                              offset: const Offset(4, 4),
-                            ),
-                            const BoxShadow(
-                              color: Colors.white,
-                              blurRadius: 10,
-                              offset: Offset(-4, -4),
-                            ),
-                          ],
-                        ),
-                        child: const Center(
-                          child: Text(
-                            "?",
-                            style: TextStyle(
-                              fontSize: 40,
-                              fontWeight: FontWeight.w900,
-                              color: Color(0xFF00897B),
+                        SizedBox(width: isSmall ? 12 : 16),
+                        // Styled "?" Icon
+                        Container(
+                          width: iconSize,
+                          height: iconSize,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF5F5F5),
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 10,
+                                offset: const Offset(4, 4),
+                              ),
+                              const BoxShadow(
+                                color: Colors.white,
+                                blurRadius: 10,
+                                offset: Offset(-4, -4),
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Text(
+                              "?",
+                              style: TextStyle(
+                                fontSize: fontSizeQuestion,
+                                fontWeight: FontWeight.w900,
+                                color: const Color(0xFF00897B),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ).animate().fadeIn(delay: 100.ms).slideY(begin: 0.1, end: 0),
-
+                      ],
+                    );
+                  }).animate().fadeIn(delay: 100.ms).slideY(begin: 0.1, end: 0),
+                ),
                 const SizedBox(height: 40),
 
                 // 3. Health Supplements Section
@@ -628,57 +635,63 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
         ? Colors.green.shade400
         : (result.score >= 40 ? Colors.orange.shade400 : Colors.red.shade400);
 
-    return Container(
-      decoration: const BoxDecoration(
-        color: AppTheme.backgroundColor,
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const SizedBox(height: 60),
-          Text(
-            "Hi, $firstName",
-            style: GoogleFonts.plusJakartaSans(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: Colors.teal.shade700),
-          ),
-          const SizedBox(height: 32),
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              SizedBox(
-                width: 220,
-                height: 220,
-                child: CircularProgressIndicator(
-                  value: result.score / 100,
-                  strokeWidth: 15,
-                  backgroundColor: Colors.teal.shade50,
-                  valueColor: AlwaysStoppedAnimation(color),
-                ),
-              ).animate().rotate(duration: 2.seconds),
-              Column(
-                children: [
-                  Text(
-                    "${result.score}%",
-                    style: GoogleFonts.outfit(
-                        fontSize: 64,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.teal.shade900),
-                  ).animate().scale(),
-                  Text(
-                    "Overall Score",
-                    style: GoogleFonts.plusJakartaSans(
-                        fontWeight: FontWeight.w600,
-                        color: Colors.teal.shade600),
+    return LayoutBuilder(builder: (context, constraints) {
+      final isSmall = constraints.maxWidth < 360;
+      final progressSize = isSmall ? 160.0 : 220.0;
+      final fontSizeScore = isSmall ? 48.0 : 64.0;
+
+      return Container(
+        decoration: const BoxDecoration(
+          color: AppTheme.backgroundColor,
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(height: isSmall ? 48 : 60),
+            Text(
+              "Hi, $firstName",
+              style: GoogleFonts.plusJakartaSans(
+                  fontSize: isSmall ? 16 : 18,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.teal.shade700),
+            ),
+            const SizedBox(height: 24),
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  width: progressSize,
+                  height: progressSize,
+                  child: CircularProgressIndicator(
+                    value: result.score / 100,
+                    strokeWidth: isSmall ? 10 : 15,
+                    backgroundColor: Colors.teal.shade50,
+                    valueColor: AlwaysStoppedAnimation(color),
                   ),
-                ],
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
+                ).animate().rotate(duration: 2.seconds),
+                Column(
+                  children: [
+                    Text(
+                      "${result.score}%",
+                      style: GoogleFonts.outfit(
+                          fontSize: fontSizeScore,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.teal.shade900),
+                    ).animate().scale(),
+                    Text(
+                      "Overall Score",
+                      style: GoogleFonts.plusJakartaSans(
+                          fontWeight: FontWeight.w600,
+                          color: Colors.teal.shade600),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   Widget _buildRiskList(HealthKarmaResult result) {

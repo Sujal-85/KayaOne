@@ -80,7 +80,7 @@ class _AIAnalysisScreenState extends State<AIAnalysisScreen> {
                         end: const Offset(1.2, 1.2))
                     .fadeOut(),
                 Lottie.asset(
-                  'assets/lottie/robot_hello.json', // Placeholder
+                  'assets/lottie/Face scanning.json', // Placeholder
                   width: 150,
                   fit: BoxFit.contain,
                 ),

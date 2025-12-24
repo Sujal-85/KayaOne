@@ -141,90 +141,96 @@ class _QuestionFlowScreenState extends State<QuestionFlowScreen> {
 
   Widget _buildQuestionCard(
       HealthKarmaQuestion question, HealthKarmaProvider provider) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            question.title,
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 16,
-              color: Colors.teal.shade600,
-              fontWeight: FontWeight.w600,
-            ),
-          ).animate().fadeIn().slideX(),
-          const SizedBox(height: 8),
-          Text(
-            question.questionText,
-            style: GoogleFonts.outfit(
-              fontSize: 28,
-              fontWeight: FontWeight.w800,
-              color: Colors.teal.shade900,
-              height: 1.2,
-            ),
-          ).animate().fadeIn(delay: 100.ms).slideX(),
-          const SizedBox(height: 40),
+    return LayoutBuilder(builder: (context, constraints) {
+      final isSmall = constraints.maxWidth < 360;
+      final questionSize = isSmall ? 22.0 : 28.0;
+      final optionSize = isSmall ? 14.0 : 16.0;
+      final verticalSpacing = isSmall ? 16.0 : 40.0;
+      final padding = isSmall ? 16.0 : 24.0;
 
-          const SizedBox(height: 20),
+      return Padding(
+        padding: EdgeInsets.symmetric(horizontal: padding),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              question.title,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: isSmall ? 14 : 16,
+                color: Colors.teal.shade600,
+                fontWeight: FontWeight.w600,
+              ),
+            ).animate().fadeIn().slideX(),
+            const SizedBox(height: 8),
+            Text(
+              question.questionText,
+              style: GoogleFonts.outfit(
+                fontSize: questionSize,
+                fontWeight: FontWeight.w800,
+                color: Colors.teal.shade900,
+                height: 1.2,
+              ),
+            ).animate().fadeIn(delay: 100.ms).slideX(),
+            SizedBox(height: verticalSpacing),
 
-          // Options
-          Expanded(
-            child: ListView.separated(
-              itemCount: question.options.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (context, idx) {
-                final option = question.options[idx];
-                final isSelected = provider.userResponses[question.id] ==
-                    option; // Simplified for single select
+            // Options
+            Expanded(
+              child: ListView.separated(
+                itemCount: question.options.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                itemBuilder: (context, idx) {
+                  final option = question.options[idx];
+                  final isSelected = provider.userResponses[question.id] ==
+                      option; // Simplified for single select
 
-                return InkWell(
-                  onTap: () => provider.setResponse(question.id, option),
-                  child: AnimatedContainer(
-                    duration: 200.ms,
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: isSelected ? Colors.teal.shade400 : Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: isSelected
-                            ? Colors.teal.shade400
-                            : Colors.teal.shade50,
-                        width: 2,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.02),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
+                  return InkWell(
+                    onTap: () => provider.setResponse(question.id, option),
+                    child: AnimatedContainer(
+                      duration: 200.ms,
+                      padding: EdgeInsets.all(isSmall ? 16 : 20),
+                      decoration: BoxDecoration(
+                        color: isSelected ? Colors.teal.shade400 : Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isSelected
+                              ? Colors.teal.shade400
+                              : Colors.teal.shade50,
+                          width: 2,
                         ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            option,
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: isSelected
-                                  ? Colors.white
-                                  : Colors.teal.shade900,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.02),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              option,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: optionSize,
+                                fontWeight: FontWeight.w700,
+                                color: isSelected
+                                    ? Colors.white
+                                    : Colors.teal.shade900,
+                              ),
                             ),
                           ),
-                        ),
-                        if (isSelected)
-                          const Icon(Icons.check_circle, color: Colors.white),
-                      ],
+                          if (isSelected)
+                            const Icon(Icons.check_circle, color: Colors.white),
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    });
   }
 }

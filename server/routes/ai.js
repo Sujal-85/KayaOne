@@ -103,8 +103,12 @@ router.post('/analyze', async (req, res) => {
         const response = await result.response;
         const text = response.text();
 
-        // Clean up markdown code blocks if present (just in case)
-        const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
+        // Robust JSON extraction
+        let jsonStr = text;
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+            jsonStr = jsonMatch[0];
+        }
 
         let data;
         try {
@@ -113,7 +117,10 @@ router.post('/analyze', async (req, res) => {
             console.error("JSON Parse Error:", e);
             console.error("Raw Text:", text);
             // Fallback text if JSON fails
-            return res.status(500).json({ message: 'Failed to parse AI response' });
+            return res.status(500).json({
+                message: 'Failed to parse AI response',
+                raw: text
+            });
         }
 
         res.json(data);
