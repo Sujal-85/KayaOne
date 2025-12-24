@@ -67,7 +67,7 @@ router.post('/analyze', async (req, res) => {
 
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         // Use gemini-1.5-flash for better speed and reliability
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-3-pro-preview" });
 
         const prompt = `
         You are a professional medical AI assistant. Analyze the following lifestyle and health data from a user survey:
