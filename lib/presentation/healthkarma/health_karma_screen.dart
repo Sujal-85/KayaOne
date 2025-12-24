@@ -234,7 +234,6 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
                     final isSmall = constraints.maxWidth < 360;
                     final iconSize = isSmall ? 60.0 : 80.0;
                     final fontSizeQuestion = isSmall ? 32.0 : 40.0;
-                    final padding = isSmall ? 16.0 : 24.0;
 
                     return Row(
                       children: [
