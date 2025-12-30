@@ -7,6 +7,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:310652879120:android:1473a700a752d01be72595",
+        "android_client_info": {
+          "package_name": "com.example.kayaone"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCrNqPKzftPicgZ-loS05qtk2uomK0FpQQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:310652879120:android:a1062bb846377d8fe72595",
         "android_client_info": {
           "package_name": "com.example.medinest"

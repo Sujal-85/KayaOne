@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:medinest/core/theme/app_theme.dart';
-import 'package:medinest/state/auth_provider.dart';
-import 'package:medinest/data/services/auth_service.dart';
+import 'package:kayaone/core/theme/app_theme.dart';
+import 'package:kayaone/state/auth_provider.dart';
+import 'package:kayaone/data/services/auth_service.dart';
 
 class AccountInfoScreen extends StatefulWidget {
   const AccountInfoScreen({super.key});

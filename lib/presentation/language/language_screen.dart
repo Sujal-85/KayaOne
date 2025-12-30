@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:medinest/core/localization/app_localizations.dart';
-import 'package:medinest/core/theme/app_theme.dart';
-import 'package:medinest/state/language_provider.dart';
-import 'package:medinest/presentation/auth/login_screen.dart';
+import 'package:kayaone/core/localization/app_localizations.dart';
+import 'package:kayaone/core/theme/app_theme.dart';
+import 'package:kayaone/state/language_provider.dart';
+import 'package:kayaone/presentation/auth/login_screen.dart';
 
 class LanguageScreen extends StatelessWidget {
   const LanguageScreen({super.key});
@@ -68,7 +68,7 @@ class LanguageScreen extends StatelessWidget {
                         fontWeight: FontWeight.w500),
                   ),
                   Text(
-                    "MediNest",
+                    "kayaone",
                     style: TextStyle(
                       fontSize: MediaQuery.of(context).size.width * 0.1,
                       fontWeight: FontWeight.bold,

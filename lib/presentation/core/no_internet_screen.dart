@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:lottie/lottie.dart';
-import 'package:medinest/core/theme/app_theme.dart';
+import 'package:kayaone/core/theme/app_theme.dart';
 
 class NoInternetScreen extends StatelessWidget {
   const NoInternetScreen({super.key});

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:medinest/data/services/diet_service.dart';
+import 'package:kayaone/data/services/diet_service.dart';
 
 class DietProvider with ChangeNotifier {
   final DietService _dietService = DietService();

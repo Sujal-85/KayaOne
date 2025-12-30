@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:medinest/core/theme/app_theme.dart';
-import 'package:medinest/state/language_provider.dart';
+import 'package:kayaone/core/theme/app_theme.dart';
+import 'package:kayaone/state/language_provider.dart';
 
 class ProfileLanguageScreen extends StatelessWidget {
   const ProfileLanguageScreen({super.key});

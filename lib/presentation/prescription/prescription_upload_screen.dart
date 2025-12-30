@@ -1,16 +1,17 @@
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
-import 'package:medinest/data/services/storage_service.dart';
+import 'package:kayaone/data/services/storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:medinest/data/services/auth_service.dart';
+import 'package:kayaone/data/services/auth_service.dart';
 import 'package:provider/provider.dart';
 import 'package:lottie/lottie.dart';
-import 'package:medinest/core/theme/app_theme.dart';
-import 'package:medinest/state/auth_provider.dart';
-import 'package:medinest/state/booking_provider.dart';
-import 'package:medinest/presentation/booking/address_selection_screen.dart';
-import 'package:medinest/presentation/booking/widgets/booking_step_indicator.dart';
+import 'package:kayaone/core/theme/app_theme.dart';
+import 'package:kayaone/state/auth_provider.dart';
+import 'package:kayaone/state/booking_provider.dart';
+import 'package:kayaone/presentation/booking/address_selection_screen.dart';
+import 'package:kayaone/presentation/booking/widgets/booking_step_indicator.dart';
+import 'package:kayaone/core/localization/app_localizations.dart';
 
 class PrescriptionUploadScreen extends StatefulWidget {
   const PrescriptionUploadScreen({super.key});
@@ -133,12 +134,17 @@ class _PrescriptionUploadScreenState extends State<PrescriptionUploadScreen> {
   @override
   Widget build(BuildContext context) {
     final bookingProvider = Provider.of<BookingProvider>(context);
+    var appLocalizations = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         title: Text(
-          _currentStep == 0 ? "Patient Details" : "Upload Prescription",
+          _currentStep == 0
+              ? (appLocalizations?.translate('patient_details_title') ??
+                  "Patient Details")
+              : (appLocalizations?.translate('upload_prescription_title') ??
+                  "Upload Prescription"),
           style: GoogleFonts.outfit(fontWeight: FontWeight.w700),
         ),
         elevation: 0,
@@ -168,9 +174,9 @@ class _PrescriptionUploadScreenState extends State<PrescriptionUploadScreen> {
               BookingStepIndicator(currentStep: _currentStep),
               const SizedBox(height: 24),
               if (_currentStep == 0)
-                _buildUserInfoStep()
+                _buildUserInfoStep(appLocalizations)
               else
-                _buildUploadStep(bookingProvider),
+                _buildUploadStep(bookingProvider, appLocalizations),
             ],
           ),
         ),
@@ -178,12 +184,12 @@ class _PrescriptionUploadScreenState extends State<PrescriptionUploadScreen> {
     );
   }
 
-  Widget _buildUserInfoStep() {
+  Widget _buildUserInfoStep(AppLocalizations? loc) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Review Information",
+          loc?.translate('review_info') ?? "Review Information",
           style: GoogleFonts.outfit(
             fontSize: 24,
             fontWeight: FontWeight.w800,
@@ -192,22 +198,27 @@ class _PrescriptionUploadScreenState extends State<PrescriptionUploadScreen> {
         ),
         const SizedBox(height: 8),
         Text(
-          "Ensure your medical details are up to date for better diagnostic accuracy.",
+          loc?.translate('review_info_desc') ??
+              "Ensure your medical details are up to date for better diagnostic accuracy.",
           style: GoogleFonts.plusJakartaSans(
             color: Colors.grey.shade600,
             fontWeight: FontWeight.w500,
           ),
         ),
         const SizedBox(height: 32),
-        _buildTextField(
-            "Full Name", _nameController, Icons.person_outline_rounded),
+        _buildTextField(loc?.translate('full_name') ?? "Full Name",
+            _nameController, Icons.person_outline_rounded),
         const SizedBox(height: 20),
         _buildTextField(
-            "Email Address", _emailController, Icons.email_outlined),
+            loc?.translate('email_id') ??
+                "E-mail ID", // Using existing key for email
+            _emailController,
+            Icons.email_outlined),
         const SizedBox(height: 20),
-        _buildTextField("City", _cityController, Icons.location_on_outlined),
+        _buildTextField(loc?.translate('city') ?? "City", _cityController,
+            Icons.location_on_outlined),
         const SizedBox(height: 20),
-        _buildBloodGroupPicker(),
+        _buildBloodGroupPicker(loc),
         const SizedBox(height: 48),
         ElevatedButton(
           onPressed: _isUpdatingProfile ? null : _updateProfileAndContinue,
@@ -221,7 +232,7 @@ class _PrescriptionUploadScreenState extends State<PrescriptionUploadScreen> {
           child: _isUpdatingProfile
               ? const CircularProgressIndicator(color: Colors.white)
               : Text(
-                  "Next Step",
+                  loc?.translate('next_step') ?? "Next Step",
                   style: GoogleFonts.outfit(
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
@@ -285,12 +296,12 @@ class _PrescriptionUploadScreenState extends State<PrescriptionUploadScreen> {
     );
   }
 
-  Widget _buildBloodGroupPicker() {
+  Widget _buildBloodGroupPicker(AppLocalizations? loc) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Blood Group",
+          loc?.translate('blood_group') ?? "Blood Group",
           style: GoogleFonts.plusJakartaSans(
             fontSize: 14,
             fontWeight: FontWeight.w700,
@@ -340,12 +351,13 @@ class _PrescriptionUploadScreenState extends State<PrescriptionUploadScreen> {
     );
   }
 
-  Widget _buildUploadStep(BookingProvider bookingProvider) {
+  Widget _buildUploadStep(
+      BookingProvider bookingProvider, AppLocalizations? loc) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Upload Prescription",
+          loc?.translate('upload_prescription_hero') ?? "Upload Prescription",
           style: GoogleFonts.outfit(
             fontSize: 24,
             fontWeight: FontWeight.w800,
@@ -354,7 +366,8 @@ class _PrescriptionUploadScreenState extends State<PrescriptionUploadScreen> {
         ),
         const SizedBox(height: 8),
         Text(
-          "Uploading a doctor's prescription ensures accurate verification of your tests.",
+          loc?.translate('upload_prescription_desc') ??
+              "Uploading a doctor's prescription ensures accurate verification of your tests.",
           style: GoogleFonts.plusJakartaSans(
             color: Colors.grey.shade600,
             fontWeight: FontWeight.w500,
@@ -391,13 +404,15 @@ class _PrescriptionUploadScreenState extends State<PrescriptionUploadScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  Text("Tap to Select File",
+                  Text(loc?.translate('tap_to_select') ?? "Tap to Select File",
                       style: GoogleFonts.outfit(
                           fontWeight: FontWeight.w800,
                           fontSize: 20,
                           color: AppTheme.darkBlue)),
                   const SizedBox(height: 6),
-                  Text("Supports PDF, JPG, PNG",
+                  Text(
+                      loc?.translate('upload_supports') ??
+                          "Supports PDF, JPG, PNG",
                       style: GoogleFonts.plusJakartaSans(
                           color: Colors.grey, fontWeight: FontWeight.w600)),
                 ],
@@ -455,7 +470,7 @@ class _PrescriptionUploadScreenState extends State<PrescriptionUploadScreen> {
                       borderRadius: BorderRadius.circular(20)),
                   side: BorderSide(color: Colors.grey.shade300),
                 ),
-                child: Text("Skip",
+                child: Text(loc?.translate('skip') ?? "Skip",
                     style: GoogleFonts.plusJakartaSans(
                         color: Colors.grey.shade600,
                         fontWeight: FontWeight.w800)),
@@ -479,7 +494,7 @@ class _PrescriptionUploadScreenState extends State<PrescriptionUploadScreen> {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20)),
                 ),
-                child: Text("Continue",
+                child: Text(loc?.translate('continue') ?? "Continue",
                     style: GoogleFonts.outfit(
                         fontWeight: FontWeight.w800, color: Colors.white)),
               ),

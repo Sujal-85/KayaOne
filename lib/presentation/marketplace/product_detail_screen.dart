@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:medinest/core/theme/app_theme.dart';
-import 'package:medinest/state/cart_provider.dart';
+import 'package:kayaone/core/theme/app_theme.dart';
+import 'package:kayaone/state/cart_provider.dart';
 
 class ProductDetailScreen extends StatelessWidget {
   final Map<String, dynamic> product;

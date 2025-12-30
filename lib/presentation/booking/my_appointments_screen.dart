@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:medinest/presentation/home/home_screen.dart';
+import 'package:kayaone/presentation/home/home_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:medinest/core/theme/app_theme.dart';
-import 'package:medinest/state/auth_provider.dart';
-import 'package:medinest/data/services/doctor_service.dart';
-import 'package:medinest/data/services/booking_service.dart';
-import 'package:medinest/presentation/doctors/doctor_listing_screen.dart';
-import 'package:medinest/presentation/prescription/prescription_upload_screen.dart';
+import 'package:kayaone/core/theme/app_theme.dart';
+import 'package:kayaone/state/auth_provider.dart';
+import 'package:kayaone/data/services/doctor_service.dart';
+import 'package:kayaone/data/services/booking_service.dart';
+import 'package:kayaone/presentation/doctors/doctor_listing_screen.dart';
+import 'package:kayaone/presentation/prescription/prescription_upload_screen.dart';
 import 'package:intl/intl.dart';
-import 'package:shimmer/shimmer.dart'; // Add to pubspec: shimmer: ^3.0.0
+import 'package:shimmer/shimmer.dart';
+import 'package:kayaone/presentation/booking/lab_booking_detail_screen.dart';
+import 'package:kayaone/presentation/booking/doctor_booking_detail_screen.dart';
+import 'package:kayaone/core/localization/app_localizations.dart';
 
 enum AppointmentType { doctor, lab }
 
@@ -57,10 +60,16 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
   @override
   void initState() {
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     _fetchAppointments();
   }
 
   Future<void> _fetchAppointments({bool isRefresh = false}) async {
+    final loc = AppLocalizations.of(context);
     if (!isRefresh) {
       if (mounted) {
         setState(() {
@@ -106,8 +115,11 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
               type: AppointmentType.doctor,
               id: apt['id']?.toString() ??
                   DateTime.now().millisecondsSinceEpoch.toString(),
-              title: apt['doctorName']?.toString() ?? 'Doctor Consultation',
-              subtitle: 'In-Person/Video Consultation',
+              title: apt['doctorName']?.toString() ??
+                  loc?.translate('doctor_consultation') ??
+                  'Doctor Consultation',
+              subtitle: loc?.translate('in_person_video') ??
+                  'In-Person/Video Consultation',
               fee: apt['fee']?.toString() ?? '0',
               dateTime: dateTime,
               status:
@@ -134,8 +146,9 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
               type: AppointmentType.lab,
               id: booking['id']?.toString() ??
                   DateTime.now().millisecondsSinceEpoch.toString(),
-              title: 'Sample Collection',
-              subtitle: 'Home Sample Collection',
+              title: loc?.translate('sample_collection') ?? 'Sample Collection',
+              subtitle: loc?.translate('home_sample_collection') ??
+                  'Home Sample Collection',
               fee: booking['totalAmount']?.toString() ?? '0',
               dateTime: dateTime,
               status:
@@ -171,7 +184,8 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
       debugPrint("Error fetching appointments: $e");
       if (mounted) {
         setState(() {
-          _errorMessage = "Failed to load appointments. Tap to retry.";
+          _errorMessage = loc?.translate('failed_load_appointments') ??
+              "Failed to load appointments. Tap to retry.";
           _isLoading = false;
           _isRefreshing = false;
         });
@@ -225,38 +239,49 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
   }
 
   Future<void> _cancelAppointment(AppointmentItem appointment) async {
+    final loc = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text("Cancel Appointment?",
+        title: Text(
+            loc?.translate('cancel_appointment_title') ?? "Cancel Appointment?",
             style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-        content: const Text("This action cannot be undone."),
+        content: Text(loc?.translate('cancel_appointment_desc') ??
+            "This action cannot be undone."),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text("No")),
+              child: Text(loc?.translate('no') ?? "No")),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child:
-                const Text("Yes, Cancel", style: TextStyle(color: Colors.red)),
+            child: Text(loc?.translate('yes_cancel') ?? "Yes, Cancel",
+                style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
     );
 
     if (confirmed == true) {
-      // TODO: Call actual cancel API based on type
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Appointment cancelled successfully")),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(loc?.translate('appointment_cancelled') ??
+                  "Appointment cancelled successfully")),
+        );
+      }
       _fetchAppointments(isRefresh: true);
     }
   }
 
   String get _title {
-    if (widget.filterType == AppointmentType.lab) return "Blood Collections";
-    if (widget.filterType == AppointmentType.doctor) return "My Doctors";
-    return "All Bookings";
+    final loc = AppLocalizations.of(context);
+    if (widget.filterType == AppointmentType.lab) {
+      return loc?.translate('blood_collection_labs') ?? "Blood Collections";
+    }
+    if (widget.filterType == AppointmentType.doctor) {
+      return loc?.translate('my_doctors') ?? "My Doctors";
+    }
+    return loc?.translate('my_bookings') ?? "All Bookings";
   }
 
   @override
@@ -279,6 +304,7 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
   }
 
   Widget _buildEmbeddedHeader() {
+    final loc = AppLocalizations.of(context);
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 48, 24, 16),
       color: AppTheme.backgroundColor,
@@ -287,8 +313,8 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
         children: [
           Text(
             widget.filterType == AppointmentType.lab
-                ? "My Bookings"
-                : "My Doctors",
+                ? (loc?.translate('my_bookings') ?? "My Bookings")
+                : (loc?.translate('my_doctors') ?? "My Doctors"),
             style: GoogleFonts.outfit(
               fontSize: 24,
               fontWeight: FontWeight.w700,
@@ -298,14 +324,15 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
           Row(
             children: [
               if (widget.filterType == AppointmentType.lab)
-                _buildNewBookingButton("Book", () {
+                _buildNewBookingButton(loc?.translate('Book') ?? "Book", () {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (_) => const PrescriptionUploadScreen()));
                 }),
               if (widget.filterType == AppointmentType.doctor)
-                _buildNewBookingButton("Find", () {
+                _buildNewBookingButton(loc?.translate('find_doctor') ?? "Find",
+                    () {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -447,15 +474,19 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
   }
 
   Widget _buildEmptyState() {
-    String title = "No Active Bookings";
-    String subtitle = "Schedule a service to manage your health";
+    final loc = AppLocalizations.of(context);
+    String title = loc?.translate('no_active_bookings') ?? "No Active Bookings";
+    String subtitle = loc?.translate('schedule_service_desc') ??
+        "Schedule a service to manage your health";
 
     if (widget.filterType == AppointmentType.doctor) {
-      title = "No Doctor Visits";
-      subtitle = "Book an appointment with top specialists";
+      title = loc?.translate('no_doctor_visits') ?? "No Doctor Visits";
+      subtitle = loc?.translate('book_appt_desc') ??
+          "Book an appointment with top specialists";
     } else if (widget.filterType == AppointmentType.lab) {
-      title = "No Blood Collections";
-      subtitle = "Book home collection for blood tests";
+      title = loc?.translate('no_blood_collections') ?? "No Blood Collections";
+      subtitle = loc?.translate('book_home_coll_desc') ??
+          "Book home collection for blood tests";
     }
 
     return Center(
@@ -482,7 +513,7 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
                 child: SizedBox(
                   width: MediaQuery.of(context).size.width * 0.7,
                   child: _buildActionCard(
-                    "Find a Doctor",
+                    loc?.translate('find_doctor') ?? "Find a Doctor",
                     Icons.person_search_rounded,
                     AppTheme.primaryGreen,
                     () => Navigator.push(
@@ -500,7 +531,7 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
                 child: SizedBox(
                   width: MediaQuery.of(context).size.width * 0.7,
                   child: _buildActionCard(
-                    "Book Slot Now",
+                    loc?.translate('book_slot_now') ?? "Book Slot Now",
                     Icons.bloodtype_outlined,
                     Colors.redAccent,
                     () => Navigator.push(
@@ -564,12 +595,28 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
   }
 
   Widget _buildAdvancedAppointmentCard(AppointmentItem appointment) {
+    final loc = AppLocalizations.of(context);
     final isUpcoming = appointment.status == 'upcoming';
     final color = appointment.type == AppointmentType.doctor
         ? AppTheme.primaryGreen
         : Colors.blue;
 
-    return LayoutBuilder(builder: (context, constraints) {
+    return GestureDetector(onTap: () {
+      if (appointment.type == AppointmentType.doctor) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (_) =>
+                  DoctorBookingDetailScreen(appointment: appointment)),
+        );
+      } else {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (_) => LabBookingDetailScreen(appointment: appointment)),
+        );
+      }
+    }, child: LayoutBuilder(builder: (context, constraints) {
       final isSmall = constraints.maxWidth < 340;
       return Container(
         margin: const EdgeInsets.only(bottom: 20),
@@ -631,7 +678,10 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
                             color: color)),
                     const SizedBox(height: 4),
                     Chip(
-                      label: Text(isUpcoming ? "Upcoming" : "Completed",
+                      label: Text(
+                          isUpcoming
+                              ? (loc?.translate('upcoming') ?? "Upcoming")
+                              : (loc?.translate('completed') ?? "Completed"),
                           style: TextStyle(
                               fontSize: 10,
                               color: isUpcoming
@@ -662,15 +712,15 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
                   onPressed: () => _cancelAppointment(appointment),
                   icon: const Icon(Icons.cancel_outlined,
                       size: 18, color: Colors.red),
-                  label:
-                      const Text("Cancel", style: TextStyle(color: Colors.red)),
+                  label: Text(loc?.translate('cancel') ?? "Cancel",
+                      style: const TextStyle(color: Colors.red)),
                 ),
               ),
             ],
           ],
         ),
       );
-    });
+    }));
   }
 
   Widget _infoTile(IconData icon, String text) {

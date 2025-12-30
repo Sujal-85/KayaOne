@@ -1,12 +1,13 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:medinest/core/localization/app_localizations.dart';
-import 'package:medinest/core/theme/app_theme.dart';
-import 'package:medinest/presentation/home/home_screen.dart';
-import 'package:medinest/presentation/intro/video_intro_screen.dart';
-import 'package:medinest/presentation/language/language_screen.dart';
-import 'package:medinest/presentation/auth/personal_info_screen.dart';
+import 'package:kayaone/core/localization/app_localizations.dart';
+import 'package:kayaone/core/theme/app_theme.dart';
+import 'package:kayaone/presentation/home/home_screen.dart';
+import 'package:kayaone/presentation/intro/video_intro_screen.dart';
+import 'package:kayaone/presentation/language/language_screen.dart';
+import 'package:kayaone/presentation/auth/personal_info_screen.dart';
 import 'package:provider/provider.dart';
-import 'package:medinest/state/auth_provider.dart';
+import 'package:kayaone/state/auth_provider.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -20,10 +21,22 @@ class _SplashScreenState extends State<SplashScreen>
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
+  late String _backgroundImage;
+
+  final List<String> _splashImages = [
+    'assets/images/splash_images/image.png',
+    'assets/images/splash_images/image1.png',
+    'assets/images/splash_images/image2.png',
+    'assets/images/splash_images/image3.png',
+  ];
 
   @override
   void initState() {
     super.initState();
+    // Select a random image
+    _backgroundImage = _splashImages[Random().nextInt(_splashImages.length)];
+    // Precache logic could go here, but sticking to simple first
+
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2000),
@@ -39,11 +52,12 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
 
-    Future.delayed(const Duration(seconds: 3), () {
+    Future.delayed(const Duration(seconds: 4), () {
+      // Extended for debug visibility
       if (mounted) {
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
-        final bool isLoggedIn = authProvider.isLoggedIn;
-        final bool isOnboardingComplete = authProvider.isOnboardingComplete;
+        final isLoggedIn = authProvider.isLoggedIn;
+        final isOnboardingComplete = authProvider.isOnboardingComplete;
 
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
@@ -81,41 +95,48 @@ class _SplashScreenState extends State<SplashScreen>
 
     return Scaffold(
       backgroundColor: AppTheme.milkyWhite,
-      body: Container(
-        width: double.infinity,
-        decoration: const BoxDecoration(
-          color: AppTheme.milkyWhite,
-        ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            // Background Decorative Circles
-            Positioned(
-              top: -100,
-              right: -100,
-              child: Container(
-                width: 300,
-                height: 300,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppTheme.primaryGreen.withValues(alpha: 0.1),
-                ),
-              ),
-            ),
-            Positioned(
-              bottom: -50,
-              left: -50,
-              child: Container(
-                width: 200,
-                height: 200,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppTheme.accentGreen.withValues(alpha: 0.1),
-                ),
-              ),
-            ),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Debug layer - if this shows, image isn't covering it
+          Container(color: Colors.purple),
 
-            FadeTransition(
+          /*
+          // Background Image
+          Image.asset(
+            // FORCING SMALL IMAGE FOR DEBUGGING
+            'assets/images/splash_images/image.png',
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+               // ... error builder content
+               return Container(); // Simplified for comment
+            },
+          ),
+          
+          // Dark Overlay
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withOpacity(0.3),
+                  Colors.black.withOpacity(0.7),
+                ],
+              ),
+            ),
+          ),
+          */
+          const Center(
+              child: Text("DEBUG MODE\nSHOULD BE PURPLE",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold))),
+          // Content
+          Center(
+            child: FadeTransition(
               opacity: _fadeAnimation,
               child: ScaleTransition(
                 scale: _scaleAnimation,
@@ -124,52 +145,78 @@ class _SplashScreenState extends State<SplashScreen>
                   children: [
                     // Official App Logo with Glow
                     Container(
+                      padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: AppTheme.primaryGreen.withValues(alpha: 0.2),
-                            blurRadius: 40,
-                            spreadRadius: 10,
+                            color: Colors.white.withOpacity(0.2),
+                            blurRadius: 50,
+                            spreadRadius: 20,
                           ),
                         ],
                       ),
                       child: ClipOval(
-                        child: Image.asset(
-                          'assets/images/logo.png',
-                          height: 180,
-                          width: 180,
-                          fit: BoxFit.cover,
+                        child: Container(
+                          color: Colors.white,
+                          padding: const EdgeInsets.all(16.0),
+                          child: Image.asset(
+                            'assets/images/logo_removebg.png', // Preferred transparent logo
+                            height: 140,
+                            width: 140,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) =>
+                                Image.asset(
+                              'assets/images/logo.png',
+                              height: 140,
+                              width: 140,
+                              fit: BoxFit.contain,
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 48),
                     Text(
-                      loc?.translate('app_name') ?? 'MediNest',
+                      loc?.translate('app_name') ?? 'KayaOne',
                       style: TextStyle(
-                        fontSize: MediaQuery.of(context).size.width * 0.08,
+                        fontSize: MediaQuery.of(context).size.width * 0.1,
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.darkBlue,
-                        letterSpacing: 1.5,
+                        color: Colors.white,
+                        letterSpacing: 2,
+                        shadows: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.5),
+                            offset: const Offset(0, 4),
+                            blurRadius: 10,
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
+                          horizontal: 24, vertical: 10),
                       decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15),
                         border: Border.all(
-                            color:
-                                AppTheme.primaryGreen.withValues(alpha: 0.5)),
-                        borderRadius: BorderRadius.circular(20),
+                            color: Colors.white.withOpacity(0.3), width: 1),
+                        borderRadius: BorderRadius.circular(30),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 10,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
                       ),
                       child: Text(
                         loc?.translate('tagline') ??
                             'Healthcare at your doorstep',
                         style: TextStyle(
-                          color: AppTheme.primaryGreen,
-                          fontSize: MediaQuery.of(context).size.width * 0.03,
-                          fontWeight: FontWeight.bold,
+                          color: Colors.white.withOpacity(0.95),
+                          fontSize: MediaQuery.of(context).size.width * 0.035,
+                          fontWeight: FontWeight.w600,
                           letterSpacing: 1.2,
                         ),
                       ),
@@ -178,8 +225,28 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+          // Loading Indicator at Bottom
+          Positioned(
+            bottom: 60,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: FadeTransition(
+                opacity: _fadeAnimation,
+                child: SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                        Colors.white.withOpacity(0.8)),
+                    strokeWidth: 3,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

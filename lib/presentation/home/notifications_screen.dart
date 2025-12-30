@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:medinest/core/theme/app_theme.dart';
+import 'package:kayaone/core/theme/app_theme.dart';
 import 'package:provider/provider.dart';
-import 'package:medinest/state/notification_provider.dart';
+import 'package:kayaone/state/notification_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 
@@ -54,7 +54,7 @@ class NotificationsScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Lottie.asset(
-                    'assets/lottie/No Data Animation.json',
+                    'assets/lottie/no_doctor.json',
                     width: 200,
                     height: 200,
                   ),

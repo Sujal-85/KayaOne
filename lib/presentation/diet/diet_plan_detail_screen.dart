@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:medinest/core/theme/app_theme.dart';
-import 'package:medinest/state/diet_provider.dart';
+import 'package:kayaone/core/theme/app_theme.dart';
+import 'package:kayaone/state/diet_provider.dart';
 
 class DietPlanDetailScreen extends StatelessWidget {
   const DietPlanDetailScreen({super.key});

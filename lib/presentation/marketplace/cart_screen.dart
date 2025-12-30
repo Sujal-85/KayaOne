@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:medinest/core/theme/app_theme.dart';
-import 'package:medinest/state/cart_provider.dart';
-import 'package:medinest/presentation/booking/booking_success_screen.dart';
-import 'package:medinest/data/services/notification_service.dart';
+import 'package:kayaone/core/theme/app_theme.dart';
+import 'package:kayaone/state/cart_provider.dart';
+import 'package:kayaone/presentation/booking/booking_success_screen.dart';
+import 'package:kayaone/data/services/notification_service.dart';
 
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});

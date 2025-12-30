@@ -24,7 +24,7 @@ router.post('/chat', async (req, res) => {
         }
 
         const systemMessage = new SystemMessage(
-            "You are MediGuide, a premium AI health assistant for the MediNest platform. " +
+            "You are MediGuide, a premium AI health assistant for the kayaone platform. " +
             "Provide helpful, empathetic, and professional health guidance. " +
             "Always clarify that you are an AI and not a substitute for professional medical advice. " +
             "Focus on wellness, preventative care, and explaining medical terms."

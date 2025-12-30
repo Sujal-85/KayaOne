@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:medinest/core/api_config.dart';
-import 'package:medinest/data/models/health_karma.dart';
+import 'package:kayaone/core/api_config.dart';
+import 'package:kayaone/data/models/health_karma.dart';
 import 'package:flutter/foundation.dart';
 
 class HealthKarmaService {
@@ -21,6 +21,7 @@ class HealthKarmaService {
         options: Options(
           sendTimeout: const Duration(seconds: 30),
           receiveTimeout: const Duration(seconds: 30),
+          validateStatus: (status) => status! < 600,
         ),
       );
 

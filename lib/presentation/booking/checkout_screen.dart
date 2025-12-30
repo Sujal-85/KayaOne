@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:medinest/core/theme/app_theme.dart';
-import 'package:medinest/state/booking_provider.dart';
-import 'package:medinest/state/auth_provider.dart';
-import 'package:medinest/data/services/booking_service.dart';
-import 'package:medinest/presentation/booking/booking_success_screen.dart';
-import 'package:medinest/presentation/booking/widgets/booking_step_indicator.dart';
-import 'package:medinest/data/services/notification_service.dart';
+import 'package:kayaone/core/theme/app_theme.dart';
+import 'package:kayaone/state/booking_provider.dart';
+import 'package:kayaone/state/auth_provider.dart';
+import 'package:kayaone/data/services/booking_service.dart';
+import 'package:kayaone/presentation/booking/booking_success_screen.dart';
+import 'package:kayaone/presentation/booking/widgets/booking_step_indicator.dart';
+import 'package:kayaone/data/services/notification_service.dart';
 
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});

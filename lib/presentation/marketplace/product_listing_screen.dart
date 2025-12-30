@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:medinest/core/theme/app_theme.dart';
-import 'package:medinest/state/product_provider.dart';
-import 'package:medinest/state/cart_provider.dart';
-import 'package:medinest/presentation/marketplace/cart_screen.dart';
-import 'package:medinest/presentation/marketplace/product_detail_screen.dart';
+import 'package:kayaone/core/theme/app_theme.dart';
+import 'package:kayaone/state/product_provider.dart';
+import 'package:kayaone/state/cart_provider.dart';
+import 'package:kayaone/presentation/marketplace/cart_screen.dart';
+import 'package:kayaone/presentation/marketplace/product_detail_screen.dart';
 
 class ProductListingScreen extends StatefulWidget {
   final String? initialSearchQuery;
@@ -60,7 +60,7 @@ class _ProductListingScreenState extends State<ProductListingScreen> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        title: Text("MediStore",
+        title: Text("KayaOne",
             style: GoogleFonts.outfit(
                 fontWeight: FontWeight.w800, color: AppTheme.darkBlue)),
         actions: [
