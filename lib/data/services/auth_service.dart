@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import 'package:kayaone/core/api_config.dart';
 
@@ -43,6 +44,10 @@ class AuthService {
       final response = await _dio.post('/auth/update-profile', data: data);
       return response.data;
     } catch (e) {
+      debugPrint("Update Profile Error: $e");
+      if (e is DioException) {
+        debugPrint("Dio Error Response: ${e.response?.data}");
+      }
       return null;
     }
   }

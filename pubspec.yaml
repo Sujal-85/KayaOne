@@ -51,6 +51,8 @@ flutter:
   assets:
     - assets/lottie/
     - assets/images/
+    - assets/images/products/coming_soon/
+    - assets/images/services/
     - assets/images/splash_images/
     - assets/lottie/loading_animation.json
     - assets/images/products/

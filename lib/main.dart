@@ -19,7 +19,7 @@ import 'package:kayaone/presentation/home/home_screen.dart';
 import 'package:kayaone/presentation/core/no_internet_screen.dart';
 import 'package:kayaone/presentation/core/splash_screen.dart';
 import 'package:kayaone/presentation/auth/login_screen.dart';
-import 'package:kayaone/presentation/onboarding/onboarding_screen.dart';
+
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 void main() async {
@@ -109,26 +109,29 @@ class _AppInitializationWrapperState extends State<AppInitializationWrapper> {
 
   @override
   Widget build(BuildContext context) {
-    if (_showSplash) {
-      return const SplashScreen();
-    }
-
     // Check authentication and onboarding state
     final authProvider = Provider.of<AuthProvider>(context);
 
-    if (authProvider.isLoading) {
-      return const SplashScreen();
-    }
+    Widget content;
 
-    if (!authProvider.isLoggedIn && !authProvider.isOnboardingComplete) {
-      return const OnboardingScreen();
-    }
-
-    if (authProvider.isLoggedIn) {
-      return const ConnectivityWrapper(child: HomeScreen());
+    if (_showSplash || authProvider.isLoading) {
+      content = const SplashScreen(key: ValueKey('splash'));
+    } else if (authProvider.isLoggedIn) {
+      content =
+          const ConnectivityWrapper(key: ValueKey('home'), child: HomeScreen());
     } else {
-      return const LoginScreen();
+      content = const LoginScreen(key: ValueKey('login'));
     }
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 800),
+      switchInCurve: Curves.easeInOut,
+      switchOutCurve: Curves.easeInOut,
+      transitionBuilder: (child, animation) {
+        return FadeTransition(opacity: animation, child: child);
+      },
+      child: content,
+    );
   }
 }
 

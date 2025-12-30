@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:kayaone/core/theme/app_theme.dart';
 import 'package:kayaone/presentation/home/home_screen.dart';
 import 'package:kayaone/data/services/auth_service.dart';
 import 'package:kayaone/state/auth_provider.dart';
 import 'package:kayaone/core/localization/app_localizations.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
+import 'package:kayaone/presentation/auth/login_screen.dart';
 
 class PersonalInfoScreen extends StatefulWidget {
   const PersonalInfoScreen({super.key});
@@ -101,139 +103,194 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded,
-              color: AppTheme.darkBlue),
-          onPressed: () => Navigator.pop(context),
+          icon:
+              const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+          onPressed: () async {
+            await FirebaseAuth.instance.signOut();
+            if (context.mounted) {
+              Provider.of<AuthProvider>(context, listen: false).logout();
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+                (route) => false,
+              );
+            }
+          },
         ),
       ),
-      body: LayoutBuilder(builder: (context, constraints) {
-        final isSmall =
-            constraints.maxWidth < 400 || constraints.maxHeight < 700;
-        final titleScale = isSmall ? 0.065 : 0.075;
-        final subTitleScale = isSmall ? 0.032 : 0.038;
-        final buttonHeight = isSmall ? 50.0 : 64.0;
-        final buttonFontSize = isSmall ? 18.0 : 20.0;
-
-        return SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 10),
-              Text(
-                appLocalizations?.translate('almost_there') ?? "Almost There!",
-                style: TextStyle(
-                  fontSize: MediaQuery.of(context).size.width * titleScale,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.darkBlue,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                appLocalizations?.translate('personalize_experience') ??
-                    "Help us personalize your healthcare experience",
-                style: TextStyle(
-                  fontSize: MediaQuery.of(context).size.width * subTitleScale,
-                  color: Colors.grey,
-                ),
-              ),
-              const SizedBox(height: 32),
-              _buildLabel(appLocalizations?.translate('address_you') ??
-                  "How should we address you?"),
-              Row(
-                children: [
-                  _buildTitleChip("Mr.", isSmall),
-                  const SizedBox(width: 12),
-                  _buildTitleChip("Ms.", isSmall),
-                  const SizedBox(width: 12),
-                  _buildTitleChip("Dr.", isSmall),
-                ],
-              ),
-              const SizedBox(height: 32),
-              _buildInputField(
-                label: appLocalizations?.translate('full_name') ?? "Full Name",
-                controller: _nameController,
-                hint: appLocalizations?.translate('enter_full_name') ??
-                    "Enter your full name",
-                icon: Icons.person_outline_rounded,
-                focusNode: _focusNodes['name']!,
-              ),
-              const SizedBox(height: 24),
-              _buildInputField(
-                label: appLocalizations?.translate('dob') ?? "Date of Birth",
-                controller: _dobController,
-                hint: appLocalizations?.translate('select_dob') ??
-                    "Select your DOB",
-                icon: Icons.calendar_today_outlined,
-                focusNode: _focusNodes['dob']!,
-                onTap: () async {
-                  final DateTime? picked = await showDatePicker(
-                    context: context,
-                    initialDate:
-                        DateTime.now().subtract(const Duration(days: 6570)),
-                    firstDate: DateTime(1900),
-                    lastDate: DateTime.now(),
-                  );
-                  if (picked != null) {
-                    setState(() {
-                      _dobController.text =
-                          "${picked.day}-${picked.month}-${picked.year}";
-                    });
-                  }
-                },
-              ),
-              const SizedBox(height: 24),
-              _buildInputField(
-                label: appLocalizations?.translate('email_id') ?? "E-mail ID",
-                controller: _emailController,
-                hint: appLocalizations?.translate('medical_reports_hint') ??
-                    "For medical reports",
-                icon: Icons.email_outlined,
-                focusNode: _focusNodes['email']!,
-              ),
-              const SizedBox(height: 24),
-              _buildInputField(
-                label: appLocalizations?.translate('city') ?? "City",
-                controller: _cityController,
-                hint: appLocalizations?.translate('detecting_city') ??
-                    "Detecting city...",
-                icon: Icons.location_on_outlined,
-                focusNode: _focusNodes['city']!,
-                suffixIcon: _isLocationLoading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2))
-                    : IconButton(
-                        icon: const Icon(Icons.my_location_rounded,
-                            color: AppTheme.primaryGreen),
-                        onPressed: _getCurrentLocation,
-                      ),
-              ),
-              const SizedBox(height: 60),
-              ElevatedButton(
-                onPressed: _saveAndContinue,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.darkBlue,
-                  minimumSize: Size(double.infinity, buttonHeight),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20)),
-                  elevation: 8,
-                ),
-                child: Text(
-                  appLocalizations?.translate('complete_profile') ??
-                      "Complete Profile",
-                  style: TextStyle(
-                      fontSize: buttonFontSize,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white),
-                ),
-              ),
-              const SizedBox(height: 40),
-            ],
+      extendBodyBehindAppBar: true,
+      body: Stack(
+        children: [
+          // Background
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/splash_images/image3.png',
+              fit: BoxFit.cover,
+            ),
           ),
-        );
-      }),
+          // Dark Overlay
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.4),
+                    Colors.black.withValues(alpha: 0.8),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          LayoutBuilder(builder: (context, constraints) {
+            final isSmall =
+                constraints.maxWidth < 400 || constraints.maxHeight < 700;
+            final buttonHeight = isSmall ? 56.0 : 64.0;
+            final buttonFontSize = isSmall ? 18.0 : 20.0;
+
+            return SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 10),
+                    Text(
+                      appLocalizations?.translate('almost_there') ??
+                          "Almost There!",
+                      style: GoogleFonts.outfit(
+                        fontSize: isSmall ? 32 : 40,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      appLocalizations?.translate('personalize_experience') ??
+                          "Help us personalize your healthcare experience",
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: isSmall ? 14 : 16,
+                        color: Colors.white70,
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    _buildLabel(appLocalizations?.translate('address_you') ??
+                        "How should we address you?"),
+                    Row(
+                      children: [
+                        _buildTitleChip("Mr.", isSmall),
+                        const SizedBox(width: 12),
+                        _buildTitleChip("Ms.", isSmall),
+                        const SizedBox(width: 12),
+                        _buildTitleChip("Dr.", isSmall),
+                      ],
+                    ),
+                    const SizedBox(height: 32),
+                    _buildInputField(
+                      label: appLocalizations?.translate('full_name') ??
+                          "Full Name",
+                      controller: _nameController,
+                      hint: appLocalizations?.translate('enter_full_name') ??
+                          "Enter your full name",
+                      icon: Icons.person_outline_rounded,
+                      focusNode: _focusNodes['name']!,
+                    ),
+                    const SizedBox(height: 24),
+                    _buildInputField(
+                      label:
+                          appLocalizations?.translate('dob') ?? "Date of Birth",
+                      controller: _dobController,
+                      hint: appLocalizations?.translate('select_dob') ??
+                          "Select your DOB",
+                      icon: Icons.calendar_today_outlined,
+                      focusNode: _focusNodes['dob']!,
+                      onTap: () async {
+                        final DateTime? picked = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now()
+                              .subtract(const Duration(days: 6570)),
+                          firstDate: DateTime(1900),
+                          lastDate: DateTime.now(),
+                          builder: (context, child) {
+                            return Theme(
+                              data: Theme.of(context).copyWith(
+                                colorScheme: const ColorScheme.light(
+                                  primary: AppTheme.primaryGreen,
+                                  onPrimary: Colors.white,
+                                  onSurface: AppTheme.darkBlue,
+                                ),
+                              ),
+                              child: child!,
+                            );
+                          },
+                        );
+                        if (picked != null) {
+                          setState(() {
+                            _dobController.text =
+                                "${picked.day}-${picked.month}-${picked.year}";
+                          });
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                    _buildInputField(
+                      label: appLocalizations?.translate('email_id') ??
+                          "E-mail ID",
+                      controller: _emailController,
+                      hint:
+                          appLocalizations?.translate('medical_reports_hint') ??
+                              "For medical reports",
+                      icon: Icons.email_outlined,
+                      focusNode: _focusNodes['email']!,
+                    ),
+                    const SizedBox(height: 24),
+                    _buildInputField(
+                      label: appLocalizations?.translate('city') ?? "City",
+                      controller: _cityController,
+                      hint: appLocalizations?.translate('detecting_city') ??
+                          "Detecting city...",
+                      icon: Icons.location_on_outlined,
+                      focusNode: _focusNodes['city']!,
+                      suffixIcon: _isLocationLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Colors.white))
+                          : IconButton(
+                              icon: const Icon(Icons.my_location_rounded,
+                                  color: Colors.white),
+                              onPressed: _getCurrentLocation,
+                            ),
+                    ),
+                    const SizedBox(height: 60),
+                    ElevatedButton(
+                      onPressed: _saveAndContinue,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.black,
+                        minimumSize: Size(double.infinity, buttonHeight),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20)),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        appLocalizations?.translate('complete_profile') ??
+                            "Complete Profile",
+                        style: GoogleFonts.outfit(
+                          fontSize: buttonFontSize,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 40),
+                  ],
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
     );
   }
 
@@ -242,10 +299,10 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
       padding: const EdgeInsets.only(bottom: 16.0),
       child: Text(
         text,
-        style: const TextStyle(
+        style: GoogleFonts.outfit(
           fontSize: 16,
           fontWeight: FontWeight.w600,
-          color: AppTheme.darkBlue,
+          color: Colors.white,
         ),
       ),
     );
@@ -264,15 +321,19 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
         padding: EdgeInsets.symmetric(
             horizontal: isSmall ? 20 : 28, vertical: isSmall ? 10 : 14),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.primaryGreen : Colors.grey.shade100,
+          color: isSelected ? Colors.white : Colors.white.withOpacity(0.1),
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? Colors.white : Colors.white24,
+            width: 1,
+          ),
         ),
         child: Text(
           label,
-          style: TextStyle(
+          style: GoogleFonts.outfit(
             fontSize: isSmall ? 14 : 16,
             fontWeight: FontWeight.bold,
-            color: isSelected ? Colors.white : Colors.grey.shade600,
+            color: isSelected ? Colors.black : Colors.white,
           ),
         ),
       ),
@@ -294,24 +355,28 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
         _buildLabel(label),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Colors.white.withOpacity(0.05),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-                color: focusNode.hasFocus
-                    ? AppTheme.primaryGreen
-                    : Colors.grey.shade200),
+              color: focusNode.hasFocus ? Colors.white : Colors.white24,
+              width: 1,
+            ),
           ),
           child: TextField(
             controller: controller,
             focusNode: focusNode,
             onTap: onTap,
             readOnly: onTap != null,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: Colors.white,
+            ),
             decoration: InputDecoration(
               hintText: hint,
+              hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
               prefixIcon: Icon(icon,
-                  color:
-                      focusNode.hasFocus ? AppTheme.primaryGreen : Colors.grey),
+                  color: focusNode.hasFocus ? Colors.white : Colors.white54),
               suffixIcon: suffixIcon,
               border: InputBorder.none,
               contentPadding:
@@ -328,6 +393,18 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final authService = AuthService();
 
+    debugPrint(
+        "Attempting to update profile for Phone: ${authProvider.phoneNumber}");
+
+    if (authProvider.phoneNumber == null || authProvider.phoneNumber!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content:
+                Text("Error: Phone number is missing. Please login again.")),
+      );
+      return;
+    }
+
     final result = await authService.updateProfile(
       phoneNumber: authProvider.phoneNumber ?? "",
       name: _nameController.text,
@@ -342,8 +419,10 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
       authProvider.completeProfile();
       _showWelcomeAnimation();
     } else {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Failed to save profile")),
+        const SnackBar(
+            content: Text("Failed to save profile. Check logs for details.")),
       );
     }
   }
@@ -351,45 +430,58 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
   void _showWelcomeAnimation() {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => Scaffold(
-          backgroundColor: Colors.white,
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Lottie.asset(
-                  'assets/lottie/welcome.json',
-                  repeat: false,
-                  onLoaded: (composition) {
-                    Future.delayed(composition.duration * 0.8, () {
-                      if (context.mounted) {
-                        Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(builder: (_) => const HomeScreen()),
-                          (route) => false,
-                        );
-                      }
-                    });
-                  },
-                ),
-                const SizedBox(height: 24),
-                const Text(
-                  "Welcome to kayaone!",
-                  style: TextStyle(
-                      fontSize: 24,
+        builder: (context) {
+          // Auto-navigate to Home
+          Future.delayed(const Duration(seconds: 2), () {
+            if (context.mounted) {
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const HomeScreen()),
+                (route) => false,
+              );
+            }
+          });
+
+          return Scaffold(
+            backgroundColor: AppTheme.darkBlue,
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white24, width: 2),
+                    ),
+                    child: const Icon(
+                      Icons.check_circle_rounded,
+                      color: AppTheme.primaryGreen,
+                      size: 80,
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  Text(
+                    "Welcome to KayaOne!",
+                    style: GoogleFonts.outfit(
+                      fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.darkBlue),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  "Your profile is ready",
-                  style: TextStyle(
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    "Your profile is ready",
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: 16,
-                      color: AppTheme.darkBlue.withValues(alpha: 0.5)),
-                ),
-              ],
+                      color: Colors.white70,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }

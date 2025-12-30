@@ -1,15 +1,13 @@
 import 'dart:async';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
-import 'package:lottie/lottie.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:kayaone/core/theme/app_theme.dart';
 import 'package:pinput/pinput.dart';
-import 'package:kayaone/presentation/auth/personal_info_screen.dart';
+import 'package:kayaone/presentation/language/language_screen.dart';
 import 'package:kayaone/data/services/auth_service.dart';
 import 'package:kayaone/state/auth_provider.dart';
-import 'package:kayaone/presentation/home/home_screen.dart';
 import 'package:kayaone/core/localization/app_localizations.dart';
 
 class OTPScreen extends StatefulWidget {
@@ -139,32 +137,51 @@ class _OTPScreenState extends State<OTPScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Lottie.asset(
-              'assets/lottie/done.json',
-              repeat: false,
-              onLoaded: (composition) {
-                Future.delayed(composition.duration, () {
-                  if (context.mounted) {
-                    Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(
-                          builder: (_) => isComplete
-                              ? const HomeScreen()
-                              : const PersonalInfoScreen()),
-                      (route) => false,
-                    );
-                  }
-                });
-              },
-            ),
-          ],
-        ),
-      ),
+      builder: (context) {
+        // Auto-navigate after delay
+        Future.delayed(const Duration(seconds: 2), () {
+          if (context.mounted) {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(
+                  builder: (_) =>
+                      LanguageScreen(isRegistrationComplete: isComplete)),
+              (route) => false,
+            );
+          }
+        });
+
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.check_rounded,
+                  color: Colors
+                      .green, // Using standard green for safety or AppTheme.primaryGreen if sure
+                  size: 64,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                "Verified!",
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -172,187 +189,180 @@ class _OTPScreenState extends State<OTPScreen> {
   Widget build(BuildContext context) {
     var appLocalizations = AppLocalizations.of(context);
     return Scaffold(
-      backgroundColor: AppTheme.milkyWhite,
-      body: LayoutBuilder(builder: (context, constraints) {
-        final isSmall =
-            constraints.maxWidth < 400 || constraints.maxHeight < 700;
-        final lottieHeight = isSmall ? 150.0 : 220.0;
-        final pinSize = isSmall ? 40.0 : 50.0;
-        final pinHeight = isSmall ? 45.0 : 56.0;
-        final titleSize = isSmall ? 24.0 : 28.0;
-        final buttonHeight = isSmall ? 50.0 : 64.0;
-        final buttonTextSize = isSmall ? 16.0 : 18.0;
-
-        return Stack(
-          children: [
-            // Background
-            Positioned.fill(
-              child: Container(color: AppTheme.milkyWhite),
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+        ),
+      ),
+      body: Stack(
+        children: [
+          // Background
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/splash_images/image2.png',
+              fit: BoxFit.cover,
             ),
+          ),
+          // Black Drop Overlay
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.3),
+                    Colors.black.withValues(alpha: 0.6),
+                    Colors.black.withValues(alpha: 0.8),
+                  ],
+                ),
+              ),
+            ),
+          ),
 
-            SafeArea(
-              bottom: false,
+          SafeArea(
+            bottom: false,
+            child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.only(left: 24, right: 24, bottom: 40),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 20),
-                    Row(
-                      children: [
-                        IconButton(
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.arrow_back_ios_new,
-                              color: AppTheme.darkBlue),
+                    // No Lottie, just clean text
+                    Text(
+                      appLocalizations?.translate('verify_phone') ??
+                          "Verify Phone",
+                      style: GoogleFonts.outfit(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      "${appLocalizations?.translate('enter_code_sent') ?? 'Enter the code sent to'}\n${widget.phoneNumber}",
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.plusJakartaSans(
+                        color: Colors.white.withValues(alpha: 0.8),
+                        fontSize: 16,
+                        height: 1.5,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+
+                    const SizedBox(height: 48),
+
+                    // OTP Input
+                    Pinput(
+                      length: 6,
+                      controller: _otpController,
+                      focusNode: _focusNode,
+                      autofillHints: const [AutofillHints.oneTimeCode],
+                      defaultPinTheme: PinTheme(
+                        width: 50,
+                        height: 60,
+                        textStyle: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black, // Changed to black
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-
-                    Lottie.asset(
-                      'assets/lottie/security.json',
-                      height: lottieHeight,
-                      fit: BoxFit.contain,
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    // Glassmorphic Card
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(32),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-                        child: Container(
-                          padding: EdgeInsets.all(isSmall ? 20 : 32),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.8),
-                            borderRadius: BorderRadius.circular(32),
-                            border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.5)),
-                          ),
-                          child: Column(
-                            children: [
-                              Text(
-                                appLocalizations?.translate('verify_phone') ??
-                                    "Verify Phone",
-                                style: TextStyle(
-                                  fontSize: titleSize,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppTheme.darkBlue,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                "${appLocalizations?.translate('enter_code_sent') ?? 'Enter the code sent to'}\n${widget.phoneNumber}",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color:
-                                      AppTheme.darkBlue.withValues(alpha: 0.6),
-                                  fontSize: isSmall ? 13 : 15,
-                                  height: 1.5,
-                                ),
-                              ),
-                              const SizedBox(height: 40),
-                              Pinput(
-                                length: 6,
-                                controller: _otpController,
-                                focusNode: _focusNode,
-                                autofillHints: const [
-                                  AutofillHints.oneTimeCode
-                                ],
-                                defaultPinTheme: PinTheme(
-                                  width: pinSize,
-                                  height: pinHeight,
-                                  textStyle: TextStyle(
-                                    fontSize: isSmall ? 18 : 22,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppTheme.darkBlue,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(12),
-                                    border:
-                                        Border.all(color: Colors.grey.shade200),
-                                  ),
-                                ),
-                                focusedPinTheme: PinTheme(
-                                  width: pinSize,
-                                  height: pinHeight,
-                                  textStyle: TextStyle(
-                                    fontSize: isSmall ? 18 : 22,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppTheme.darkBlue,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                        color: AppTheme.primaryGreen, width: 2),
-                                  ),
-                                ),
-                                onCompleted: (pin) => _verifyOTP(pin),
-                              ),
-                              const SizedBox(height: 40),
-                              if (_isLoading)
-                                const CircularProgressIndicator(
-                                    color: AppTheme.primaryGreen)
-                              else
-                                ElevatedButton(
-                                  onPressed: () =>
-                                      _verifyOTP(_otpController.text),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppTheme.darkBlue,
-                                    minimumSize:
-                                        Size(double.infinity, buttonHeight),
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(20)),
-                                    elevation: 0,
-                                  ),
-                                  child: Text(
-                                    appLocalizations?.translate('confirm') ??
-                                        "Confirm",
-                                    style: TextStyle(
-                                        fontSize: buttonTextSize,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                              const SizedBox(height: 24),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    "${appLocalizations?.translate('didnt_receive_code') ?? "Didn't receive code?"} ",
-                                    style: TextStyle(
-                                        color: AppTheme.darkBlue
-                                            .withValues(alpha: 0.6)),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      // Resend logic
-                                    },
-                                    child: Text(
-                                      appLocalizations?.translate('resend') ??
-                                          "Resend",
-                                      style: const TextStyle(
-                                        color: AppTheme.primaryGreen,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                        decoration: BoxDecoration(
+                          color: Colors.white
+                              .withValues(alpha: 0.9), // Increased opacity
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.3),
+                            width: 1.2,
                           ),
                         ),
                       ),
+                      focusedPinTheme: PinTheme(
+                        width: 50,
+                        height: 60,
+                        textStyle: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black, // Changed to black
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white, // Pure white for focus
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: AppTheme.primaryGreen,
+                            width: 2,
+                          ),
+                        ),
+                      ),
+                      onCompleted: (pin) => _verifyOTP(pin),
+                    ),
+
+                    const SizedBox(height: 48),
+
+                    if (_isLoading)
+                      const CircularProgressIndicator(color: Colors.white)
+                    else
+                      ElevatedButton(
+                        onPressed: () => _verifyOTP(_otpController.text),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: Colors.black,
+                          minimumSize: const Size(double.infinity, 64),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: Text(
+                          appLocalizations?.translate('confirm') ?? "Confirm",
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+
+                    const SizedBox(height: 32),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "${appLocalizations?.translate('didnt_receive_code') ?? "Didn't receive code?"} ",
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.7),
+                            fontSize: 14,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            // Resend logic
+                          },
+                          child: Text(
+                            appLocalizations?.translate('resend') ?? "Resend",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              decoration: TextDecoration.underline,
+                              decorationColor: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
             ),
-          ],
-        );
-      }),
+          ),
+        ],
+      ),
     );
   }
 }
