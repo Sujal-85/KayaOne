@@ -82,9 +82,9 @@ class NotificationService {
   }) async {
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
-      'medinest_channel_id',
-      'MediNest Notifications',
-      channelDescription: 'Main channel for MediNest notifications',
+      'kayaone_channel_id',
+      'kayaone Notifications',
+      channelDescription: 'Main channel for kayaone notifications',
       importance: Importance.max,
       priority: Priority.high,
       showWhen: true,

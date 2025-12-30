@@ -24,7 +24,7 @@ router.post('/chat', async (req, res) => {
         }
 
         const systemMessage = new SystemMessage(
-            "You are MediGuide, a premium AI health assistant for the MediNest platform. " +
+            "You are MediGuide, a premium AI health assistant for the kayaone platform. " +
             "Provide helpful, empathetic, and professional health guidance. " +
             "Always clarify that you are an AI and not a substitute for professional medical advice. " +
             "Focus on wellness, preventative care, and explaining medical terms."
@@ -67,7 +67,7 @@ router.post('/analyze', async (req, res) => {
 
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         // Use gemini-1.5-flash for better speed and reliability
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-3-pro-preview" });
 
         const prompt = `
         You are a professional medical AI assistant. Analyze the following lifestyle and health data from a user survey:

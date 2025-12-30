@@ -45,4 +45,14 @@ class HealthKarmaResult {
       date: DateTime.now(),
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'score': score,
+      'riskLevels': riskLevels,
+      'explanations': explanations,
+      'suggestions': suggestions,
+      'date': date.toIso8601String(),
+    };
+  }
 }

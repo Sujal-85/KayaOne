@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import 'package:medinest/presentation/onboarding/onboarding_screen.dart';
-import 'package:medinest/core/theme/app_theme.dart';
+import 'package:kayaone/presentation/onboarding/onboarding_screen.dart';
+import 'package:kayaone/core/theme/app_theme.dart';
 
 class VideoIntroScreen extends StatefulWidget {
   const VideoIntroScreen({super.key});

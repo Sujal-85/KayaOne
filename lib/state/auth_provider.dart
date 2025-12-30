@@ -139,7 +139,7 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void logout() async {
+  Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     _isLoggedIn = false;
     _isProfileComplete = false;

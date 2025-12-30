@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:medinest/core/theme/app_theme.dart';
-import 'package:medinest/state/booking_provider.dart';
-import 'package:medinest/presentation/booking/time_slot_screen.dart';
-import 'package:medinest/presentation/booking/widgets/booking_step_indicator.dart';
+import 'package:kayaone/core/theme/app_theme.dart';
+import 'package:kayaone/state/booking_provider.dart';
+import 'package:kayaone/presentation/booking/time_slot_screen.dart';
+import 'package:kayaone/presentation/booking/widgets/booking_step_indicator.dart';
+import 'package:kayaone/core/localization/app_localizations.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 
@@ -24,22 +25,27 @@ class _AddressSelectionScreenState extends State<AddressSelectionScreen> {
               String pincode)
           onLocationDetected) async {
     setState(() => _isDetectingLocation = true);
+    var appLocalizations = AppLocalizations.of(context);
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        throw 'Location services are disabled.';
+        throw appLocalizations?.translate('location_services_disabled') ??
+            'Location services are disabled.';
       }
 
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          throw 'Location permissions are denied';
+          throw appLocalizations?.translate('location_permissions_denied') ??
+              'Location permissions are denied';
         }
       }
 
       if (permission == LocationPermission.deniedForever) {
-        throw 'Location permissions are permanently denied';
+        throw appLocalizations
+                ?.translate('location_permissions_permanently_denied') ??
+            'Location permissions are permanently denied';
       }
 
       Position position = await Geolocator.getCurrentPosition();
@@ -57,11 +63,14 @@ class _AddressSelectionScreenState extends State<AddressSelectionScreen> {
         );
       }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString())),
       );
     } finally {
-      setState(() => _isDetectingLocation = false);
+      if (mounted) {
+        setState(() => _isDetectingLocation = false);
+      }
     }
   }
 
@@ -72,6 +81,7 @@ class _AddressSelectionScreenState extends State<AddressSelectionScreen> {
     final cityController = TextEditingController();
     final pincodeController = TextEditingController();
     String selectedType = 'Home';
+    var appLocalizations = AppLocalizations.of(context);
 
     return showModalBottomSheet(
       context: context,
@@ -100,7 +110,9 @@ class _AddressSelectionScreenState extends State<AddressSelectionScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text("Add New Address",
+                    Text(
+                        appLocalizations?.translate('add_new_address') ??
+                            "Add New Address",
                         style: GoogleFonts.outfit(
                             fontSize: 20, fontWeight: FontWeight.w800)),
                     IconButton(
@@ -125,7 +137,14 @@ class _AddressSelectionScreenState extends State<AddressSelectionScreen> {
                   },
                   icon: const Icon(Icons.my_location_rounded,
                       color: AppTheme.primaryGreen),
-                  label: Text("Use Current Location",
+                  label: Text(
+                      _isDetectingLocation
+                          ? (appLocalizations
+                                  ?.translate('detecting_location') ??
+                              "Detecting location...")
+                          : (appLocalizations
+                                  ?.translate('use_current_location') ??
+                              "Use Current Location"),
                       style: GoogleFonts.plusJakartaSans(
                           color: AppTheme.primaryGreen,
                           fontWeight: FontWeight.w700)),
@@ -134,7 +153,9 @@ class _AddressSelectionScreenState extends State<AddressSelectionScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                _buildAddressField("Address Type",
+                _buildAddressField(
+                    appLocalizations?.translate('address_type') ??
+                        "Address Type",
                     items: ['Home', 'Office', 'Other'],
                     initialValue: selectedType, onChanged: (val) {
                   setDialogState(() => selectedType = val!);
@@ -143,23 +164,32 @@ class _AddressSelectionScreenState extends State<AddressSelectionScreen> {
                 Row(
                   children: [
                     Expanded(
-                        child: _buildAddressField("House/Flat/Floor",
+                        child: _buildAddressField(
+                            appLocalizations?.translate('house_flat') ??
+                                "House/Flat/Floor",
                             controller: houseController)),
                     const SizedBox(width: 12),
                     Expanded(
-                        child: _buildAddressField("Pincode",
+                        child: _buildAddressField(
+                            appLocalizations?.translate('pincode') ?? "Pincode",
                             controller: pincodeController,
                             keyboardType: TextInputType.number)),
                   ],
                 ),
                 const SizedBox(height: 12),
-                _buildAddressField("Area/Street/Locality",
+                _buildAddressField(
+                    appLocalizations?.translate('area_street') ??
+                        "Area/Street/Locality",
                     controller: areaController),
                 const SizedBox(height: 12),
-                _buildAddressField("Landmark (Optional)",
+                _buildAddressField(
+                    appLocalizations?.translate('landmark') ??
+                        "Landmark (Optional)",
                     controller: landmarkController),
                 const SizedBox(height: 12),
-                _buildAddressField("City", controller: cityController),
+                _buildAddressField(
+                    appLocalizations?.translate('city') ?? "City",
+                    controller: cityController),
                 const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
@@ -184,7 +214,9 @@ class _AddressSelectionScreenState extends State<AddressSelectionScreen> {
                           borderRadius: BorderRadius.circular(16)),
                       elevation: 0,
                     ),
-                    child: Text("Save Address",
+                    child: Text(
+                        appLocalizations?.translate('save_address') ??
+                            "Save Address",
                         style: GoogleFonts.plusJakartaSans(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
@@ -236,11 +268,14 @@ class _AddressSelectionScreenState extends State<AddressSelectionScreen> {
   @override
   Widget build(BuildContext context) {
     final bookingProvider = Provider.of<BookingProvider>(context);
+    var appLocalizations = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        title: Text("Collection Address",
+        title: Text(
+            appLocalizations?.translate('collection_address') ??
+                "Collection Address",
             style: GoogleFonts.outfit(fontWeight: FontWeight.w700)),
       ),
       body: SingleChildScrollView(
@@ -252,7 +287,8 @@ class _AddressSelectionScreenState extends State<AddressSelectionScreen> {
               const BookingStepIndicator(currentStep: 1),
               const SizedBox(height: 16),
               Text(
-                "Where should we collect\nyour sample?",
+                appLocalizations?.translate('where_collect_sample') ??
+                    "Where should we collect\nyour sample?",
                 style: GoogleFonts.outfit(
                   fontSize: 24,
                   fontWeight: FontWeight.w800,
@@ -271,7 +307,8 @@ class _AddressSelectionScreenState extends State<AddressSelectionScreen> {
                             size: 64, color: Colors.grey.shade300),
                         const SizedBox(height: 16),
                         Text(
-                          "No saved addresses yet",
+                          appLocalizations?.translate('no_saved_addresses') ??
+                              "No saved addresses yet",
                           style: GoogleFonts.plusJakartaSans(
                               color: Colors.grey, fontWeight: FontWeight.w600),
                         ),
@@ -362,7 +399,9 @@ class _AddressSelectionScreenState extends State<AddressSelectionScreen> {
               OutlinedButton.icon(
                 onPressed: () => _showAddAddressDialog(bookingProvider),
                 icon: const Icon(Icons.add_location_alt_rounded, size: 20),
-                label: Text("Add New Address",
+                label: Text(
+                    appLocalizations?.translate('add_new_address') ??
+                        "Add New Address",
                     style: GoogleFonts.plusJakartaSans(
                         fontWeight: FontWeight.w700)),
                 style: OutlinedButton.styleFrom(
@@ -391,7 +430,9 @@ class _AddressSelectionScreenState extends State<AddressSelectionScreen> {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16)),
                 ),
-                child: Text("Proceed to Schedule",
+                child: Text(
+                    appLocalizations?.translate('proceed_schedule') ??
+                        "Proceed to Schedule",
                     style: GoogleFonts.outfit(fontWeight: FontWeight.w800)),
               ),
               const SizedBox(height: 100),

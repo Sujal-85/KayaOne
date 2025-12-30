@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:medinest/core/theme/app_theme.dart';
-import 'package:medinest/presentation/home/home_screen.dart';
+import 'package:kayaone/core/theme/app_theme.dart';
+import 'package:kayaone/presentation/home/home_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
-import 'package:medinest/state/health_karma_provider.dart';
-import 'package:medinest/data/models/health_karma.dart';
-import 'package:medinest/presentation/healthkarma/question_flow_screen.dart';
-import 'package:medinest/presentation/doctors/doctor_listing_screen.dart';
-import 'package:medinest/presentation/diet/diet_router.dart';
-import 'package:medinest/state/auth_provider.dart';
+import 'package:kayaone/state/health_karma_provider.dart';
+import 'package:kayaone/data/models/health_karma.dart';
+import 'package:kayaone/presentation/healthkarma/question_flow_screen.dart';
+import 'package:kayaone/presentation/doctors/doctor_listing_screen.dart';
+import 'package:kayaone/presentation/diet/diet_router.dart';
+import 'package:kayaone/state/auth_provider.dart';
+import 'package:kayaone/core/localization/app_localizations.dart';
 
 class HealthKarmaScreen extends StatefulWidget {
   const HealthKarmaScreen({super.key});
@@ -32,6 +33,7 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
   Widget build(BuildContext context) {
     final provider = Provider.of<HealthKarmaProvider>(context);
     final result = provider.result;
+    var appLocalizations = AppLocalizations.of(context);
 
     if (result == null) {
       return _buildEmptyState(context);
@@ -70,7 +72,8 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Your Probable Risks",
+                    appLocalizations?.translate('probable_risks') ??
+                        "Your Probable Risks",
                     style: GoogleFonts.outfit(
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
@@ -96,9 +99,13 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
                       unselectedLabelColor: Colors.teal.shade400,
                       labelStyle: GoogleFonts.plusJakartaSans(
                           fontWeight: FontWeight.w800),
-                      tabs: const [
-                        Tab(text: "High & Medium"),
-                        Tab(text: "Low Risk"),
+                      tabs: [
+                        Tab(
+                            text: appLocalizations?.translate('high_medium') ??
+                                "High & Medium"),
+                        Tab(
+                            text: appLocalizations?.translate('low_risk') ??
+                                "Low Risk"),
                       ],
                     ),
                   ),
@@ -118,7 +125,8 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => provider.resetQuiz(),
         backgroundColor: Colors.teal.shade400,
-        label: const Text("Retake Analysis"),
+        label: Text(appLocalizations?.translate('retake_analysis') ??
+            "Retake Analysis"),
         icon: const Icon(Icons.refresh),
       ),
     );
@@ -128,6 +136,7 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
     final authProvider = Provider.of<AuthProvider>(context);
     final userName = authProvider.userName ?? 'User';
     final firstName = userName.split(' ').first;
+    var appLocalizations = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
@@ -202,7 +211,8 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        "Welcome to HealthKarma!",
+                        appLocalizations?.translate('welcome_kayaone') ??
+                            "Welcome to kayaone!", // Using existing welcome message
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 16,
                           color: Colors.grey.shade600,
@@ -242,7 +252,9 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "Find Your HealthKarma",
+                                appLocalizations
+                                        ?.translate('find_your_healthkarma') ??
+                                    "Find Your HealthKarma",
                                 style: GoogleFonts.outfit(
                                   fontSize: isSmall ? 18 : 20,
                                   fontWeight: FontWeight.w800,
@@ -251,7 +263,9 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
                               ),
                               const SizedBox(height: 12),
                               Text(
-                                "Your HealthKarma score will help us understand your health status better",
+                                appLocalizations
+                                        ?.translate('healthkarma_desc') ??
+                                    "Your HealthKarma score will help us understand your health status better",
                                 style: GoogleFonts.plusJakartaSans(
                                   fontSize: isSmall ? 13 : 14,
                                   color: Colors.grey.shade600,
@@ -280,7 +294,9 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
                                   children: [
                                     Flexible(
                                       child: Text(
-                                        "Calculate Your Score",
+                                        appLocalizations?.translate(
+                                                'calculate_score') ??
+                                            "Calculate Your Score",
                                         overflow: TextOverflow.ellipsis,
                                         style: GoogleFonts.plusJakartaSans(
                                           fontWeight: FontWeight.w800,
@@ -428,7 +444,8 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
                               borderRadius: BorderRadius.circular(12)),
                         ),
                         child: Text(
-                          "Track Orders",
+                          appLocalizations?.translate('track_orders') ??
+                              "Track Orders",
                           style: GoogleFonts.plusJakartaSans(
                             fontWeight: FontWeight.w800,
                             color: const Color(0xFF00897B),
@@ -449,7 +466,7 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
                           elevation: 0,
                         ),
                         child: Text(
-                          "Explore",
+                          appLocalizations?.translate('explore') ?? "Explore",
                           style: GoogleFonts.plusJakartaSans(
                             fontWeight: FontWeight.w800,
                           ),
@@ -463,8 +480,9 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
 
                 // 4. Service Rows
                 _buildServiceRow(
-                  "Your Doctor",
-                  "Consult specialist doctors from\nthe comforts of your home",
+                  appLocalizations?.translate('your_doctor') ?? "Your Doctor",
+                  appLocalizations?.translate('consult_doctor_desc') ??
+                      "Consult specialist doctors from\nthe comforts of your home",
                   const Color(0xFFFFF3F5), // Light pink
                   const Color(0xFFFF5277), // Deep pink
                   Icons.medical_services_outlined,
@@ -478,8 +496,10 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
                 const SizedBox(height: 16),
 
                 _buildServiceRow(
-                  "Your Dietitian",
-                  "Book Diet Consultation\n@ Rs.299 only",
+                  appLocalizations?.translate('your_dietitian') ??
+                      "Your Dietitian",
+                  appLocalizations?.translate('book_diet_desc') ??
+                      "Book Diet Consultation\n@ Rs.299 only",
                   const Color(0xFFF1FAF2), // Light green
                   const Color(0xFF4CAF50), // Deep green
                   Icons.scale_outlined,
@@ -629,6 +649,7 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
     final authProvider = Provider.of<AuthProvider>(context);
     final userName = authProvider.userName ?? 'User';
     final firstName = userName.split(' ').first;
+    var appLocalizations = AppLocalizations.of(context);
 
     final color = result.score >= 70
         ? Colors.green.shade400
@@ -678,7 +699,8 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
                           color: Colors.teal.shade900),
                     ).animate().scale(),
                     Text(
-                      "Overall Score",
+                      appLocalizations?.translate('overall_score') ??
+                          "Overall Score",
                       style: GoogleFonts.plusJakartaSans(
                           fontWeight: FontWeight.w600,
                           color: Colors.teal.shade600),
@@ -695,6 +717,7 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
 
   Widget _buildRiskList(HealthKarmaResult result) {
     final risks = result.riskLevels.entries.toList();
+    var appLocalizations = AppLocalizations.of(context);
 
     return ListView.separated(
       shrinkWrap: true,
@@ -720,7 +743,7 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
                   fontWeight: FontWeight.w800, color: Colors.teal.shade900),
             ),
             subtitle: Text(
-              "${risk.value} Risk",
+              "${risk.value} ${appLocalizations?.translate('risk') ?? 'Risk'}",
               style: TextStyle(
                   color: _getRiskColor(risk.value),
                   fontWeight: FontWeight.w700),
@@ -736,6 +759,7 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
 
   void _showRiskDetails(
       BuildContext context, String riskName, List<String> explanations) {
+    var appLocalizations = AppLocalizations.of(context);
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -748,7 +772,7 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Potential key factors contributing to \n${riskName.toUpperCase().replaceAll('_', ' ')}",
+                "${appLocalizations?.translate('potential_factors') ?? 'Potential key factors contributing to'} \n${riskName.toUpperCase().replaceAll('_', ' ')}",
                 style: GoogleFonts.outfit(
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
@@ -780,7 +804,8 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16)),
                   ),
-                  child: const Text("Got it"),
+                  child:
+                      Text(appLocalizations?.translate('got_it') ?? "Got it"),
                 ),
               ),
             ],
@@ -802,13 +827,29 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
   }
 
   Widget _getRiskIcon(String level) {
+    IconData icon;
+    Color color;
+
+    switch (level) {
+      case 'High':
+        icon = Icons.warning_rounded;
+        color = Colors.red;
+        break;
+      case 'Medium':
+        icon = Icons.info_outline_rounded;
+        color = Colors.orange;
+        break;
+      default:
+        icon = Icons.check_circle_outline_rounded;
+        color = Colors.green;
+    }
+
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: _getRiskColor(level).withOpacity(0.1),
-        shape: BoxShape.circle,
-      ),
-      child: Icon(Icons.warning_amber_rounded, color: _getRiskColor(level)),
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12)),
+      child: Icon(icon, color: color),
     );
   }
 }

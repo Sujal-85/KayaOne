@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:medinest/core/theme/app_theme.dart';
+import 'package:kayaone/core/theme/app_theme.dart';
 
 class TrackingScreen extends StatelessWidget {
   const TrackingScreen({super.key});

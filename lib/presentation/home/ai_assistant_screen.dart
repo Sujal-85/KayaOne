@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:medinest/core/theme/app_theme.dart';
-import 'package:medinest/data/services/ai_service.dart';
+import 'package:kayaone/core/theme/app_theme.dart';
+import 'package:kayaone/data/services/ai_service.dart';
 
 class AiAssistantScreen extends StatefulWidget {
   const AiAssistantScreen({super.key});

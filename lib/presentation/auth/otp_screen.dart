@@ -4,12 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
-import 'package:medinest/core/theme/app_theme.dart';
+import 'package:kayaone/core/theme/app_theme.dart';
 import 'package:pinput/pinput.dart';
-import 'package:medinest/presentation/auth/personal_info_screen.dart';
-import 'package:medinest/data/services/auth_service.dart';
-import 'package:medinest/state/auth_provider.dart';
-import 'package:medinest/presentation/home/home_screen.dart';
+import 'package:kayaone/presentation/auth/personal_info_screen.dart';
+import 'package:kayaone/data/services/auth_service.dart';
+import 'package:kayaone/state/auth_provider.dart';
+import 'package:kayaone/presentation/home/home_screen.dart';
+import 'package:kayaone/core/localization/app_localizations.dart';
 
 class OTPScreen extends StatefulWidget {
   final String phoneNumber;
@@ -34,7 +35,6 @@ class _OTPScreenState extends State<OTPScreen> {
   @override
   void initState() {
     super.initState();
-    _otpController.text = "123456"; // Pre-filled for development
     _listenForAutoVerification();
   }
 
@@ -124,8 +124,10 @@ class _OTPScreenState extends State<OTPScreen> {
         setState(() => _isLoading = false);
         _otpController.clear();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text("Invalid OTP or Server Error. Please try again."),
+          SnackBar(
+              content: Text(AppLocalizations.of(context)
+                      ?.translate('invalid_otp_error') ??
+                  "Invalid OTP or Server Error. Please try again."),
               backgroundColor: Colors.redAccent),
         );
       }
@@ -168,186 +170,189 @@ class _OTPScreenState extends State<OTPScreen> {
 
   @override
   Widget build(BuildContext context) {
+    var appLocalizations = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: AppTheme.milkyWhite,
-      body: Stack(
-        children: [
-          // Background
-          Positioned.fill(
-            child: Container(color: AppTheme.milkyWhite),
-          ),
+      body: LayoutBuilder(builder: (context, constraints) {
+        final isSmall =
+            constraints.maxWidth < 400 || constraints.maxHeight < 700;
+        final lottieHeight = isSmall ? 150.0 : 220.0;
+        final pinSize = isSmall ? 40.0 : 50.0;
+        final pinHeight = isSmall ? 45.0 : 56.0;
+        final titleSize = isSmall ? 24.0 : 28.0;
+        final buttonHeight = isSmall ? 50.0 : 64.0;
+        final buttonTextSize = isSmall ? 16.0 : 18.0;
 
-          SafeArea(
-            bottom: false,
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.only(left: 24, right: 24, bottom: 40),
-              child: Column(
-                children: [
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      IconButton(
-                        onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.arrow_back_ios_new,
-                            color: AppTheme.darkBlue),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
+        return Stack(
+          children: [
+            // Background
+            Positioned.fill(
+              child: Container(color: AppTheme.milkyWhite),
+            ),
 
-                  Lottie.asset(
-                    'assets/lottie/security.json',
-                    height: 220,
-                    fit: BoxFit.contain,
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  // Glassmorphic Card
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(32),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-                      child: Container(
-                        padding: const EdgeInsets.all(32),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.8),
-                          borderRadius: BorderRadius.circular(32),
-                          border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.5)),
+            SafeArea(
+              bottom: false,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.only(left: 24, right: 24, bottom: 40),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.arrow_back_ios_new,
+                              color: AppTheme.darkBlue),
                         ),
-                        child: Column(
-                          children: [
-                            const Text(
-                              "Verify Phone",
-                              style: TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.w800,
-                                color: AppTheme.darkBlue,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              "Enter the code sent to\n${widget.phoneNumber}",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: AppTheme.darkBlue.withValues(alpha: 0.6),
-                                fontSize: 15,
-                                height: 1.5,
-                              ),
-                            ),
-                            const SizedBox(height: 40),
-                            Pinput(
-                              length: 6,
-                              controller: _otpController,
-                              focusNode: _focusNode,
-                              autofillHints: const [AutofillHints.oneTimeCode],
-                              defaultPinTheme: PinTheme(
-                                width: 50,
-                                height: 56,
-                                textStyle: const TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+
+                    Lottie.asset(
+                      'assets/lottie/security.json',
+                      height: lottieHeight,
+                      fit: BoxFit.contain,
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // Glassmorphic Card
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(32),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                        child: Container(
+                          padding: EdgeInsets.all(isSmall ? 20 : 32),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.8),
+                            borderRadius: BorderRadius.circular(32),
+                            border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.5)),
+                          ),
+                          child: Column(
+                            children: [
+                              Text(
+                                appLocalizations?.translate('verify_phone') ??
+                                    "Verify Phone",
+                                style: TextStyle(
+                                  fontSize: titleSize,
+                                  fontWeight: FontWeight.w800,
                                   color: AppTheme.darkBlue,
                                 ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border:
-                                      Border.all(color: Colors.grey.shade200),
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                "${appLocalizations?.translate('enter_code_sent') ?? 'Enter the code sent to'}\n${widget.phoneNumber}",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color:
+                                      AppTheme.darkBlue.withValues(alpha: 0.6),
+                                  fontSize: isSmall ? 13 : 15,
+                                  height: 1.5,
                                 ),
                               ),
-                              focusedPinTheme: PinTheme(
-                                width: 50,
-                                height: 56,
-                                textStyle: const TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppTheme.darkBlue,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                      color: AppTheme.primaryGreen, width: 2),
-                                ),
-                              ),
-                              onCompleted: (pin) => _verifyOTP(pin),
-                            ),
-                            const SizedBox(height: 40),
-                            if (_isLoading)
-                              const CircularProgressIndicator(
-                                  color: AppTheme.primaryGreen)
-                            else
-                              ElevatedButton(
-                                onPressed: () =>
-                                    _verifyOTP(_otpController.text),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppTheme.darkBlue,
-                                  minimumSize: const Size(double.infinity, 64),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(20)),
-                                  elevation: 0,
-                                ),
-                                child: const Text(
-                                  "Confirm",
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                            const SizedBox(height: 24),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  "Didn't receive code? ",
-                                  style: TextStyle(
-                                      color: AppTheme.darkBlue
-                                          .withValues(alpha: 0.6)),
-                                ),
-                                TextButton(
-                                  onPressed: () {
-                                    // Placeholder for resend logic
-                                    // This is where you would typically call a resend OTP function.
-                                    // Example:
-                                    // if (mounted) {
-                                    //   setState(() {
-                                    //     _isLoading = true;
-                                    //   });
-                                    //   // Call your resend OTP service
-                                    //   // await authService.resendOtp(widget.phoneNumber);
-                                    //   if (mounted) {
-                                    //     setState(() {
-                                    //       _isLoading = false;
-                                    //     });
-                                    //     ScaffoldMessenger.of(context).showSnackBar(
-                                    //       const SnackBar(content: Text("OTP Resent!")),
-                                    //     );
-                                    //   }
-                                    // }
-                                  },
-                                  child: const Text(
-                                    "Resend",
-                                    style: TextStyle(
-                                      color: AppTheme.primaryGreen,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                              const SizedBox(height: 40),
+                              Pinput(
+                                length: 6,
+                                controller: _otpController,
+                                focusNode: _focusNode,
+                                autofillHints: const [
+                                  AutofillHints.oneTimeCode
+                                ],
+                                defaultPinTheme: PinTheme(
+                                  width: pinSize,
+                                  height: pinHeight,
+                                  textStyle: TextStyle(
+                                    fontSize: isSmall ? 18 : 22,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.darkBlue,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border:
+                                        Border.all(color: Colors.grey.shade200),
                                   ),
                                 ),
-                              ],
-                            ),
-                          ],
+                                focusedPinTheme: PinTheme(
+                                  width: pinSize,
+                                  height: pinHeight,
+                                  textStyle: TextStyle(
+                                    fontSize: isSmall ? 18 : 22,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.darkBlue,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                        color: AppTheme.primaryGreen, width: 2),
+                                  ),
+                                ),
+                                onCompleted: (pin) => _verifyOTP(pin),
+                              ),
+                              const SizedBox(height: 40),
+                              if (_isLoading)
+                                const CircularProgressIndicator(
+                                    color: AppTheme.primaryGreen)
+                              else
+                                ElevatedButton(
+                                  onPressed: () =>
+                                      _verifyOTP(_otpController.text),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppTheme.darkBlue,
+                                    minimumSize:
+                                        Size(double.infinity, buttonHeight),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(20)),
+                                    elevation: 0,
+                                  ),
+                                  child: Text(
+                                    appLocalizations?.translate('confirm') ??
+                                        "Confirm",
+                                    style: TextStyle(
+                                        fontSize: buttonTextSize,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              const SizedBox(height: 24),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    "${appLocalizations?.translate('didnt_receive_code') ?? "Didn't receive code?"} ",
+                                    style: TextStyle(
+                                        color: AppTheme.darkBlue
+                                            .withValues(alpha: 0.6)),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      // Resend logic
+                                    },
+                                    child: Text(
+                                      appLocalizations?.translate('resend') ??
+                                          "Resend",
+                                      style: const TextStyle(
+                                        color: AppTheme.primaryGreen,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
-      ),
+          ],
+        );
+      }),
     );
   }
 }

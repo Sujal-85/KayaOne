@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:intl/intl.dart';
-import 'package:medinest/core/api_config.dart';
+import 'package:kayaone/core/api_config.dart';
 
 class DoctorService {
   final Dio _dio = Dio(BaseOptions(

@@ -1,4 +1,4 @@
-name: medinest
+name: kayaone
 description: A production-ready, multilingual medical application for healthcare.
 version: 1.0.0+1
 
@@ -37,6 +37,7 @@ dependencies:
   permission_handler: ^12.0.1
   flutter_local_notifications: ^19.5.0
   firebase_messaging: ^16.1.0
+  font_awesome_flutter: ^10.12.0
 
 dev_dependencies:
   flutter_test:
@@ -50,6 +51,7 @@ flutter:
   assets:
     - assets/lottie/
     - assets/images/
+    - assets/images/splash_images/
     - assets/lottie/loading_animation.json
     - assets/images/products/
     - assets/lang/
@@ -62,7 +64,6 @@ flutter:
     - assets/video.mp4
     - assets/lottie/robot_hello.json
     - assets/lottie/blood_donor.json
-    - assets/images/logo-removebg.png
     - assets/images/med_product_1.png
     - assets/images/med_product_2.png
     - assets/images/med_product_3.png
@@ -76,6 +77,6 @@ flutter:
     - assets/images/article_sleep.png
     - assets/images/healthkarma_visual.png
     - assets/images/ai_assistant_visual.png
-    - assets/images/logo_removebg.png
+    - assets/images/splash_images/
     - assets/lottie/Face scanning.json
     - assets/lottie/Health.json

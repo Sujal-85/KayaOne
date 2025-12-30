@@ -3,22 +3,23 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
-import 'package:medinest/core/localization/app_localizations.dart';
-import 'package:medinest/core/theme/app_theme.dart';
-import 'package:medinest/state/language_provider.dart';
-import 'package:medinest/state/auth_provider.dart';
-import 'package:medinest/state/booking_provider.dart';
-import 'package:medinest/state/doctor_provider.dart';
-import 'package:medinest/state/product_provider.dart';
-import 'package:medinest/state/cart_provider.dart';
-import 'package:medinest/state/diet_provider.dart';
-import 'package:medinest/state/health_karma_provider.dart';
-import 'package:medinest/state/notification_provider.dart';
-import 'package:medinest/presentation/home/home_screen.dart';
-import 'package:medinest/presentation/core/no_internet_screen.dart';
-import 'package:medinest/presentation/core/splash_screen.dart';
-import 'package:medinest/presentation/auth/login_screen.dart';
-import 'package:medinest/presentation/onboarding/onboarding_screen.dart';
+import 'package:kayaone/core/localization/app_localizations.dart';
+import 'package:kayaone/core/theme/app_theme.dart';
+import 'package:kayaone/state/language_provider.dart';
+import 'package:kayaone/state/auth_provider.dart';
+import 'package:kayaone/state/booking_provider.dart';
+import 'package:kayaone/state/doctor_provider.dart';
+import 'package:kayaone/state/product_provider.dart';
+import 'package:kayaone/state/cart_provider.dart';
+import 'package:kayaone/state/diet_provider.dart';
+import 'package:kayaone/state/health_karma_provider.dart';
+import 'package:kayaone/state/notification_provider.dart';
+import 'package:kayaone/state/location_provider.dart';
+import 'package:kayaone/presentation/home/home_screen.dart';
+import 'package:kayaone/presentation/core/no_internet_screen.dart';
+import 'package:kayaone/presentation/core/splash_screen.dart';
+import 'package:kayaone/presentation/auth/login_screen.dart';
+import 'package:kayaone/presentation/onboarding/onboarding_screen.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 void main() async {
@@ -44,21 +45,22 @@ void main() async {
         ChangeNotifierProvider(create: (_) => DietProvider()),
         ChangeNotifierProvider(create: (_) => HealthKarmaProvider()),
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
+        ChangeNotifierProvider(create: (_) => LocationProvider()),
       ],
-      child: const MediNestApp(),
+      child: const kayaoneApp(),
     ),
   );
 }
 
-class MediNestApp extends StatelessWidget {
-  const MediNestApp({super.key});
+class kayaoneApp extends StatelessWidget {
+  const kayaoneApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     final languageProvider = Provider.of<LanguageProvider>(context);
 
     return MaterialApp(
-      title: 'MediNest',
+      title: 'KayaOne',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       locale: languageProvider.appLocale,

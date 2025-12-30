@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:medinest/core/localization/app_localizations.dart';
-import 'package:medinest/core/theme/app_theme.dart';
-import 'package:medinest/presentation/language/language_screen.dart';
+import 'package:kayaone/core/localization/app_localizations.dart';
+import 'package:kayaone/core/theme/app_theme.dart';
+import 'package:kayaone/presentation/language/language_screen.dart';
 import 'package:provider/provider.dart';
-import 'package:medinest/state/auth_provider.dart';
+import 'package:kayaone/state/auth_provider.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -237,44 +237,51 @@ class OnboardingContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
-      child: Column(
-        children: [
-          const Spacer(),
-          SizedBox(
-            height: MediaQuery.of(context).size.height * 0.35,
-            child: Lottie.asset(
-              lottiePath,
-              fit: BoxFit.contain,
+    return LayoutBuilder(builder: (context, constraints) {
+      final isSmall = constraints.maxWidth < 400 || constraints.maxHeight < 700;
+      final lottieHeightFactor = isSmall ? 0.25 : 0.35;
+      final titleSize = isSmall ? 24.0 : 32.0;
+      final descSize = isSmall ? 14.0 : 16.0;
+
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          children: [
+            const Spacer(),
+            SizedBox(
+              height: MediaQuery.of(context).size.height * lottieHeightFactor,
+              child: Lottie.asset(
+                lottiePath,
+                fit: BoxFit.contain,
+              ),
             ),
-          ),
-          const Spacer(),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.darkBlue,
-              letterSpacing: -0.5,
-              height: 1.1,
+            const Spacer(),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: titleSize,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.darkBlue,
+                letterSpacing: -0.5,
+                height: 1.1,
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            description,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              color: AppTheme.darkBlue.withValues(alpha: 0.6),
-              height: 1.6,
-              fontWeight: FontWeight.w500,
+            const SizedBox(height: 16),
+            Text(
+              description,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: descSize,
+                color: AppTheme.darkBlue.withValues(alpha: 0.6),
+                height: 1.6,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-          ),
-          const Spacer(flex: 2),
-        ],
-      ),
-    );
+            const Spacer(flex: 2),
+          ],
+        ),
+      );
+    });
   }
 }

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:medinest/core/theme/app_theme.dart';
-import 'package:medinest/state/doctor_provider.dart';
-import 'package:medinest/presentation/doctors/doctor_profile_screen.dart';
+import 'package:kayaone/core/theme/app_theme.dart';
+import 'package:kayaone/state/doctor_provider.dart';
+import 'package:kayaone/presentation/doctors/doctor_profile_screen.dart';
+import 'package:kayaone/core/localization/app_localizations.dart';
+import 'package:shimmer/shimmer.dart';
 
 class DoctorListingScreen extends StatefulWidget {
   const DoctorListingScreen({super.key});
@@ -13,6 +15,7 @@ class DoctorListingScreen extends StatefulWidget {
 }
 
 class _DoctorListingScreenState extends State<DoctorListingScreen> {
+  bool _isLoading = true;
   String _selectedSpecialty = "All";
   final List<String> _specialties = [
     "All",
@@ -23,8 +26,47 @@ class _DoctorListingScreenState extends State<DoctorListingScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    // Simulate network delay for smooth transition
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    });
+  }
+
+  String _getLocalizedSpecialty(BuildContext context, String specialty) {
+    var appLocalizations = AppLocalizations.of(context);
+    switch (specialty) {
+      case "All":
+        return appLocalizations?.translate('specialty_all') ?? "All";
+      case "Cardiology":
+        return appLocalizations?.translate('specialty_cardiology') ??
+            "Cardiology";
+      case "Dermatology":
+        return appLocalizations?.translate('specialty_dermatology') ??
+            "Dermatology";
+      case "Neurology":
+        return appLocalizations?.translate('specialty_neurology') ??
+            "Neurology";
+      case "Pediatrics":
+        return appLocalizations?.translate('specialty_pediatrics') ??
+            "Pediatrics";
+      default:
+        // Try to translate if key matches lowercase specialty, otherwise return as is
+        return appLocalizations
+                ?.translate('specialty_${specialty.toLowerCase()}') ??
+            specialty;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final doctorProvider = Provider.of<DoctorProvider>(context);
+    var appLocalizations = AppLocalizations.of(context);
     final doctors = doctorProvider.doctors.where((doc) {
       if (_selectedSpecialty == "All") return true;
       return doc['specialty'] == _selectedSpecialty;
@@ -47,7 +89,8 @@ class _DoctorListingScreenState extends State<DoctorListingScreen> {
               elevation: 0,
               flexibleSpace: FlexibleSpaceBar(
                 title: Text(
-                  "Find Your Specialist",
+                  appLocalizations?.translate('find_specialist') ??
+                      "Find Your Specialist",
                   style: GoogleFonts.outfit(
                     fontWeight: FontWeight.w800,
                     color: AppTheme.darkBlue,
@@ -57,88 +100,107 @@ class _DoctorListingScreenState extends State<DoctorListingScreen> {
               ),
             ),
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Search Bar
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                              color: Colors.black.withOpacity(0.02),
-                              blurRadius: 10)
-                        ],
-                      ),
-                      child: TextField(
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          hintText: "Search doctors, specialties...",
-                          hintStyle:
-                              GoogleFonts.plusJakartaSans(color: Colors.grey),
-                          icon: const Icon(Icons.search_rounded,
-                              color: AppTheme.primaryGreen),
+              child: LayoutBuilder(builder: (context, constraints) {
+                final isSmall =
+                    constraints.maxWidth < 400 || constraints.maxHeight < 700;
+                final searchPadding = isSmall ? 12.0 : 16.0;
+                final chipHeight = isSmall ? 36.0 : 44.0;
+                final chipPadding = isSmall ? 12.0 : 20.0;
+                final chipFontSize = isSmall ? 11.0 : 13.0;
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Search Bar
+                      Container(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: searchPadding),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                                color: Colors.black.withOpacity(0.02),
+                                blurRadius: 10)
+                          ],
+                        ),
+                        child: TextField(
+                          decoration: InputDecoration(
+                            border: InputBorder.none,
+                            hintText: appLocalizations
+                                    ?.translate('search_doctors_hint') ??
+                                "Search doctors...",
+                            hintStyle: GoogleFonts.plusJakartaSans(
+                                color: Colors.grey,
+                                fontSize: isSmall ? 13 : null),
+                            icon: const Icon(Icons.search_rounded,
+                                color: AppTheme.primaryGreen),
+                            contentPadding: EdgeInsets.symmetric(
+                                vertical: isSmall ? 8 : 12),
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 24),
+                      const SizedBox(height: 24),
 
-                    // Specialty Filter
-                    SizedBox(
-                      height: 44,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: _specialties.length,
-                        itemBuilder: (context, index) {
-                          bool isSelected =
-                              _selectedSpecialty == _specialties[index];
-                          return GestureDetector(
-                            onTap: () => setState(
-                                () => _selectedSpecialty = _specialties[index]),
-                            child: Container(
-                              margin: const EdgeInsets.only(right: 10),
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 20),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? AppTheme.primaryGreen
-                                    : Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                    color: isSelected
-                                        ? Colors.transparent
-                                        : Colors.grey.shade100),
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(
-                                _specialties[index],
-                                style: GoogleFonts.plusJakartaSans(
+                      // Specialty Filter
+                      SizedBox(
+                        height: chipHeight,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: _specialties.length,
+                          itemBuilder: (context, index) {
+                            bool isSelected =
+                                _selectedSpecialty == _specialties[index];
+                            return GestureDetector(
+                              onTap: () => setState(() =>
+                                  _selectedSpecialty = _specialties[index]),
+                              child: Container(
+                                margin: const EdgeInsets.only(right: 10),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: chipPadding),
+                                decoration: BoxDecoration(
                                   color: isSelected
-                                      ? Colors.white
-                                      : AppTheme.darkBlue,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 13,
+                                      ? AppTheme.primaryGreen
+                                      : Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                      color: isSelected
+                                          ? Colors.transparent
+                                          : Colors.grey.shade100),
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  _getLocalizedSpecialty(
+                                      context, _specialties[index]),
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: isSelected
+                                        ? Colors.white
+                                        : AppTheme.darkBlue,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: chipFontSize,
+                                  ),
                                 ),
                               ),
-                            ),
-                          );
-                        },
+                            );
+                          },
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 32),
-                  ],
-                ),
-              ),
+                      const SizedBox(height: 32),
+                    ],
+                  ),
+                );
+              }),
             ),
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
+                    if (_isLoading) {
+                      return _buildShimmerLoading();
+                    }
                     final doctor = doctors[index];
                     return GestureDetector(
                       onTap: () {
@@ -198,7 +260,8 @@ class _DoctorListingScreenState extends State<DoctorListingScreen> {
                                       ),
                                     ),
                                     Text(
-                                      doctor['specialty'],
+                                      _getLocalizedSpecialty(
+                                          context, doctor['specialty']),
                                       overflow: TextOverflow.ellipsis,
                                       style: GoogleFonts.plusJakartaSans(
                                         color: AppTheme.primaryGreen,
@@ -214,7 +277,7 @@ class _DoctorListingScreenState extends State<DoctorListingScreen> {
                                         const SizedBox(width: 4),
                                         Flexible(
                                           child: Text(
-                                            "${doctor['rating']} (${doctor['reviews']} Reviews)",
+                                            "${doctor['rating']} (${doctor['reviews']} ${appLocalizations?.translate('reviews') ?? 'Reviews'})",
                                             style: GoogleFonts.plusJakartaSans(
                                               fontSize: 11,
                                               color: Colors.grey,
@@ -232,7 +295,7 @@ class _DoctorListingScreenState extends State<DoctorListingScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
                                   Text(
-                                    "Fee",
+                                    appLocalizations?.translate('fee') ?? "Fee",
                                     style: GoogleFonts.plusJakartaSans(
                                       fontSize: 10,
                                       color: Colors.grey,
@@ -255,8 +318,60 @@ class _DoctorListingScreenState extends State<DoctorListingScreen> {
                       }),
                     );
                   },
-                  childCount: doctors.length,
+                  childCount: _isLoading ? 5 : doctors.length,
                 ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShimmerLoading() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Shimmer.fromColors(
+        baseColor: Colors.grey.shade300,
+        highlightColor: Colors.grey.shade100,
+        child: Row(
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: double.infinity,
+                    height: 16,
+                    color: Colors.white,
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    width: 100,
+                    height: 12,
+                    color: Colors.white,
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    width: 60,
+                    height: 12,
+                    color: Colors.white,
+                  ),
+                ],
               ),
             ),
           ],

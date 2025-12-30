@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 
-import 'package:medinest/core/api_config.dart';
+import 'package:kayaone/core/api_config.dart';
 
 class AuthService {
   final Dio _dio = Dio(BaseOptions(

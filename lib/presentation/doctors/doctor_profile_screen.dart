@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:medinest/core/theme/app_theme.dart';
-import 'package:medinest/state/doctor_provider.dart';
-import 'package:medinest/state/auth_provider.dart';
-import 'package:medinest/data/services/doctor_service.dart';
-import 'package:medinest/presentation/booking/booking_success_screen.dart';
-import 'package:medinest/data/services/notification_service.dart';
+import 'package:kayaone/core/theme/app_theme.dart';
+import 'package:kayaone/state/doctor_provider.dart';
+import 'package:kayaone/state/auth_provider.dart';
+import 'package:kayaone/data/services/doctor_service.dart';
+import 'package:kayaone/presentation/booking/booking_success_screen.dart';
+import 'package:kayaone/data/services/notification_service.dart';
+import 'package:kayaone/core/localization/app_localizations.dart';
 
 class DoctorProfileScreen extends StatefulWidget {
   const DoctorProfileScreen({super.key});
@@ -42,6 +43,8 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
   Future<void> _handleBooking(BuildContext context, AuthProvider auth,
       Map<String, dynamic> doctor) async {
     setState(() => _isBooking = true);
+    // Cache localizations before async
+    // However, we can use AppLocalizations.of(context) inside if mounted check passes.
 
     final success = await _doctorService.bookAppointment(
       userId: auth.userId ?? "guest_id",
@@ -54,23 +57,26 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
 
     setState(() => _isBooking = false);
 
+    if (!mounted) return;
+    var appLocalizations = AppLocalizations.of(context);
+
     if (success) {
       NotificationService().showNotification(
-        title: "Appointment Confirm!",
+        title: appLocalizations?.translate('appointment_confirmed') ??
+            "Appointment Confirmed!",
         body:
             "Your appointment with ${doctor['name']} on ${DateFormat('EEE, dd MMM').format(_projectedDates[_selectedDateIndex])} at $_selectedSlot is confirmed.",
-      );
+      ); // Parametrized string left as English for now as it contains dynamic data formatting. Ideally use a template.
 
-      if (!context.mounted) return;
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => const BookingSuccessScreen()),
         (route) => route.isFirst,
       );
     } else {
-      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text("Failed to book appointment. Please try again."),
+        SnackBar(
+            content: Text(appLocalizations?.translate('appointment_failed') ??
+                "Failed to book appointment. Please try again."),
             backgroundColor: Colors.redAccent),
       );
     }
@@ -81,6 +87,7 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
     final doctorProvider = Provider.of<DoctorProvider>(context);
     final authProvider = Provider.of<AuthProvider>(context);
     final doctor = doctorProvider.selectedDoctor;
+    var appLocalizations = AppLocalizations.of(context);
 
     if (doctor == null) return const Scaffold();
 
@@ -121,7 +128,9 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
                                   fontSize: 24,
                                   fontWeight: FontWeight.w800,
                                   color: AppTheme.darkBlue)),
-                          Text(doctor['specialty'],
+                          Text(
+                              doctor[
+                                  'specialty'], // Should be localized if possible, but comes from data
                               style: GoogleFonts.plusJakartaSans(
                                   color: AppTheme.primaryGreen,
                                   fontWeight: FontWeight.w700)),
@@ -146,13 +155,21 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _buildInfoStat("Exp", doctor['experience']),
-                      _buildInfoStat("Rating", doctor['rating'].toString()),
-                      _buildInfoStat("Reviews", doctor['reviews'].toString()),
+                      _buildInfoStat(
+                          appLocalizations?.translate('exp') ?? "Exp",
+                          doctor['experience']),
+                      _buildInfoStat(
+                          appLocalizations?.translate('rating') ?? "Rating",
+                          doctor['rating'].toString()),
+                      _buildInfoStat(
+                          appLocalizations?.translate('reviews') ?? "Reviews",
+                          doctor['reviews'].toString()),
                     ],
                   ),
                   const SizedBox(height: 32),
-                  Text("About Doctor",
+                  Text(
+                      appLocalizations?.translate('about_doctor') ??
+                          "About Doctor",
                       style: GoogleFonts.outfit(
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
@@ -164,7 +181,9 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
                         color: Colors.grey.shade600, height: 1.5),
                   ),
                   const SizedBox(height: 32),
-                  Text("Select Schedule",
+                  Text(
+                      appLocalizations?.translate('select_schedule') ??
+                          "Select Schedule",
                       style: GoogleFonts.outfit(
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
@@ -267,7 +286,8 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
                             width: 24,
                             child: CircularProgressIndicator(
                                 color: Colors.white, strokeWidth: 2))
-                        : Text("Book Appointment • ₹${doctor['fee']}",
+                        : Text(
+                            "${appLocalizations?.translate('book_appointment_btn') ?? 'Book Appointment'} • ₹${doctor['fee']}",
                             style: GoogleFonts.outfit(
                                 fontSize: 18, fontWeight: FontWeight.w800)),
                   ),

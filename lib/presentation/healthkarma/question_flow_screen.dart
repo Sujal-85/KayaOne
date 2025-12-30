@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:medinest/core/theme/app_theme.dart';
+import 'package:kayaone/core/theme/app_theme.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
-import 'package:medinest/state/health_karma_provider.dart';
-import 'package:medinest/data/models/health_karma.dart';
-import 'package:medinest/presentation/healthkarma/ai_analysis_screen.dart';
+import 'package:kayaone/state/health_karma_provider.dart';
+import 'package:kayaone/data/models/health_karma.dart';
+import 'package:kayaone/presentation/healthkarma/ai_analysis_screen.dart';
+import 'package:kayaone/core/localization/app_localizations.dart';
 
 class QuestionFlowScreen extends StatefulWidget {
   const QuestionFlowScreen({super.key});
@@ -21,6 +22,7 @@ class _QuestionFlowScreenState extends State<QuestionFlowScreen> {
     final question = provider.questions[provider.currentQuestionIndex];
     final progress =
         (provider.currentQuestionIndex + 1) / provider.questions.length;
+    var appLocalizations = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
@@ -40,7 +42,7 @@ class _QuestionFlowScreenState extends State<QuestionFlowScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          "Step ${provider.currentQuestionIndex + 1} of ${provider.questions.length}",
+                          "${appLocalizations?.translate('step') ?? 'Step'} ${provider.currentQuestionIndex + 1} ${appLocalizations?.translate('of') ?? 'of'} ${provider.questions.length}",
                           style: GoogleFonts.plusJakartaSans(
                             color: Colors.teal.shade700,
                             fontWeight: FontWeight.w700,
@@ -87,7 +89,7 @@ class _QuestionFlowScreenState extends State<QuestionFlowScreen> {
                       TextButton(
                         onPressed: provider.previousQuestion,
                         child: Text(
-                          "Previous",
+                          appLocalizations?.translate('previous') ?? "Previous",
                           style: GoogleFonts.plusJakartaSans(
                             color: Colors.teal.shade600,
                             fontWeight: FontWeight.w700,
@@ -121,8 +123,9 @@ class _QuestionFlowScreenState extends State<QuestionFlowScreen> {
                       child: Text(
                         provider.currentQuestionIndex ==
                                 provider.questions.length - 1
-                            ? "Finish"
-                            : "Next",
+                            ? (appLocalizations?.translate('finish') ??
+                                "Finish")
+                            : (appLocalizations?.translate('next') ?? "Next"),
                         style: GoogleFonts.plusJakartaSans(
                           fontWeight: FontWeight.w800,
                           fontSize: 16,
@@ -142,11 +145,14 @@ class _QuestionFlowScreenState extends State<QuestionFlowScreen> {
   Widget _buildQuestionCard(
       HealthKarmaQuestion question, HealthKarmaProvider provider) {
     return LayoutBuilder(builder: (context, constraints) {
-      final isSmall = constraints.maxWidth < 360;
+      final isSmall =
+          constraints.maxWidth < 400; // Increased threshold for better coverage
       final questionSize = isSmall ? 22.0 : 28.0;
       final optionSize = isSmall ? 14.0 : 16.0;
       final verticalSpacing = isSmall ? 16.0 : 40.0;
       final padding = isSmall ? 16.0 : 24.0;
+      // Ideally question title and options should also be localized.
+      // Currently using data from provider directly.
 
       return Padding(
         padding: EdgeInsets.symmetric(horizontal: padding),

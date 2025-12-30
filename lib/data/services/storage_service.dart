@@ -8,10 +8,10 @@ class StorageService {
   Future<void> _ensureBucketExists() async {
     try {
       final buckets = await _supabase.storage.listBuckets();
-      final exists = buckets.any((b) => b.id == 'medinest');
+      final exists = buckets.any((b) => b.id == 'kayaone');
       if (!exists) {
         await _supabase.storage
-            .createBucket('medinest', const BucketOptions(public: true));
+            .createBucket('kayaone', const BucketOptions(public: true));
       }
     } catch (_) {
       // Ignore if it fails (e.g. already exists or permissions issue)
@@ -26,14 +26,14 @@ class StorageService {
       final fileName = 'profile_$userId$fileExt';
       final filePath = 'avatars/$fileName';
 
-      await _supabase.storage.from('medinest').upload(
+      await _supabase.storage.from('kayaone').upload(
             filePath,
             file,
             fileOptions: const FileOptions(upsert: true),
           );
 
       final String publicUrl =
-          _supabase.storage.from('medinest').getPublicUrl(filePath);
+          _supabase.storage.from('kayaone').getPublicUrl(filePath);
       return publicUrl;
     } catch (e) {
       print('Error uploading profile pic: $e');
@@ -54,14 +54,14 @@ class StorageService {
           'prescription_${userId}_${DateTime.now().millisecondsSinceEpoch}$fileExt';
       final filePath = 'prescriptions/$fileName';
 
-      await _supabase.storage.from('medinest').upload(
+      await _supabase.storage.from('kayaone').upload(
             filePath,
             file,
             fileOptions: const FileOptions(upsert: true),
           );
 
       final String publicUrl =
-          _supabase.storage.from('medinest').getPublicUrl(filePath);
+          _supabase.storage.from('kayaone').getPublicUrl(filePath);
       return publicUrl;
     } catch (e) {
       print('Error uploading prescription: $e');

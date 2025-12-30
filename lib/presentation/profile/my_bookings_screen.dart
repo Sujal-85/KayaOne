@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:medinest/core/theme/app_theme.dart';
-import 'package:medinest/state/auth_provider.dart';
-import 'package:medinest/data/services/booking_service.dart';
+import 'package:kayaone/core/theme/app_theme.dart';
+import 'package:kayaone/state/auth_provider.dart';
+import 'package:kayaone/data/services/booking_service.dart';
+import 'package:kayaone/core/localization/app_localizations.dart';
 
 class MyBookingsScreen extends StatefulWidget {
   const MyBookingsScreen({super.key});
@@ -40,10 +41,11 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    var appLocalizations = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        title: Text("My Bookings",
+        title: Text(appLocalizations?.translate('my_bookings') ?? "My Bookings",
             style: GoogleFonts.outfit(fontWeight: FontWeight.w700)),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -65,6 +67,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
   }
 
   Widget _buildEmptyState() {
+    var appLocalizations = AppLocalizations.of(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -72,13 +75,17 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
           Icon(Icons.inventory_2_outlined,
               size: 80, color: Colors.grey.shade300),
           const SizedBox(height: 24),
-          Text("No Bookings Yet",
+          Text(
+              appLocalizations?.translate('no_bookings_yet') ??
+                  "No Bookings Yet",
               style: GoogleFonts.outfit(
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
                   color: AppTheme.darkBlue)),
           const SizedBox(height: 8),
-          Text("Your medical test history will appear here",
+          Text(
+              appLocalizations?.translate('medical_history_placeholder') ??
+                  "Your medical test history will appear here",
               style: GoogleFonts.plusJakartaSans(color: Colors.grey)),
         ],
       ),
@@ -86,6 +93,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
   }
 
   Widget _buildBookingCard(dynamic booking) {
+    var appLocalizations = AppLocalizations.of(context);
     final String status = booking['status'] ?? "Confirmed";
     final bool isCompleted = status == "Completed";
 
@@ -136,7 +144,8 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            "Blood Collection & Labs",
+            appLocalizations?.translate('blood_collection_labs') ??
+                "Blood Collection & Labs",
             style: GoogleFonts.outfit(
                 fontWeight: FontWeight.w800,
                 fontSize: 18,
@@ -144,7 +153,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            "${booking['tests']?.length ?? 0} Tests Selected",
+            "${booking['tests']?.length ?? 0} ${appLocalizations?.translate('tests_selected') ?? 'Tests Selected'}",
             style:
                 GoogleFonts.plusJakartaSans(color: Colors.grey, fontSize: 13),
           ),
@@ -156,7 +165,9 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  booking['address'] ?? "Collection Address",
+                  booking['address'] ??
+                      (appLocalizations?.translate('collection_address') ??
+                          "Collection Address"),
                   style: GoogleFonts.plusJakartaSans(
                       fontSize: 13, color: AppTheme.darkBlue.withOpacity(0.7)),
                   overflow: TextOverflow.ellipsis,

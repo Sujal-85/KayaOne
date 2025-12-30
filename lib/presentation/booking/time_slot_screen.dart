@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:medinest/core/theme/app_theme.dart';
-import 'package:medinest/state/booking_provider.dart';
-import 'package:medinest/presentation/booking/checkout_screen.dart';
-import 'package:medinest/presentation/booking/widgets/booking_step_indicator.dart';
+import 'package:kayaone/core/theme/app_theme.dart';
+import 'package:kayaone/state/booking_provider.dart';
+import 'package:kayaone/presentation/booking/checkout_screen.dart';
+import 'package:kayaone/presentation/booking/widgets/booking_step_indicator.dart';
 
 class TimeSlotScreen extends StatefulWidget {
   const TimeSlotScreen({super.key});

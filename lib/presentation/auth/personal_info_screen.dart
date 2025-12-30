@@ -3,10 +3,11 @@ import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
-import 'package:medinest/core/theme/app_theme.dart';
-import 'package:medinest/presentation/home/home_screen.dart';
-import 'package:medinest/data/services/auth_service.dart';
-import 'package:medinest/state/auth_provider.dart';
+import 'package:kayaone/core/theme/app_theme.dart';
+import 'package:kayaone/presentation/home/home_screen.dart';
+import 'package:kayaone/data/services/auth_service.dart';
+import 'package:kayaone/state/auth_provider.dart';
+import 'package:kayaone/core/localization/app_localizations.dart';
 
 class PersonalInfoScreen extends StatefulWidget {
   const PersonalInfoScreen({super.key});
@@ -93,6 +94,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    var appLocalizations = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: AppTheme.premiumBg,
       appBar: AppBar(
@@ -104,118 +106,134 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 10),
-            Text(
-              "Almost There!",
-              style: TextStyle(
-                fontSize: MediaQuery.of(context).size.width * 0.075,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.darkBlue,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "Help us personalize your healthcare experience",
-              style: TextStyle(
-                fontSize: MediaQuery.of(context).size.width * 0.038,
-                color: Colors.grey,
-              ),
-            ),
-            const SizedBox(height: 32),
-            _buildLabel("How should we address you?"),
-            Row(
-              children: [
-                _buildTitleChip("Mr."),
-                const SizedBox(width: 12),
-                _buildTitleChip("Ms."),
-                const SizedBox(width: 12),
-                _buildTitleChip("Dr."),
-              ],
-            ),
-            const SizedBox(height: 32),
-            _buildInputField(
-              label: "Full Name",
-              controller: _nameController,
-              hint: "Enter your full name",
-              icon: Icons.person_outline_rounded,
-              focusNode: _focusNodes['name']!,
-            ),
-            const SizedBox(height: 24),
-            _buildInputField(
-              label: "Date of Birth",
-              controller: _dobController,
-              hint: "Select your DOB",
-              icon: Icons.calendar_today_outlined,
-              focusNode: _focusNodes['dob']!,
-              onTap: () async {
-                final DateTime? picked = await showDatePicker(
-                  context: context,
-                  initialDate:
-                      DateTime.now().subtract(const Duration(days: 6570)),
-                  firstDate: DateTime(1900),
-                  lastDate: DateTime.now(),
-                );
-                if (picked != null) {
-                  setState(() {
-                    _dobController.text =
-                        "${picked.day}-${picked.month}-${picked.year}";
-                  });
-                }
-              },
-            ),
-            const SizedBox(height: 24),
-            _buildInputField(
-              label: "E-mail ID",
-              controller: _emailController,
-              hint: "For medical reports",
-              icon: Icons.email_outlined,
-              focusNode: _focusNodes['email']!,
-            ),
-            const SizedBox(height: 24),
-            _buildInputField(
-              label: "City",
-              controller: _cityController,
-              hint: "Detecting city...",
-              icon: Icons.location_on_outlined,
-              focusNode: _focusNodes['city']!,
-              suffixIcon: _isLocationLoading
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2))
-                  : IconButton(
-                      icon: const Icon(Icons.my_location_rounded,
-                          color: AppTheme.primaryGreen),
-                      onPressed: _getCurrentLocation,
-                    ),
-            ),
-            const SizedBox(height: 60),
-            ElevatedButton(
-              onPressed: _saveAndContinue,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.darkBlue,
-                minimumSize: const Size(double.infinity, 64),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20)),
-                elevation: 8,
-              ),
-              child: const Text(
-                "Complete Profile",
+      body: LayoutBuilder(builder: (context, constraints) {
+        final isSmall =
+            constraints.maxWidth < 400 || constraints.maxHeight < 700;
+        final titleScale = isSmall ? 0.065 : 0.075;
+        final subTitleScale = isSmall ? 0.032 : 0.038;
+        final buttonHeight = isSmall ? 50.0 : 64.0;
+        final buttonFontSize = isSmall ? 18.0 : 20.0;
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 10),
+              Text(
+                appLocalizations?.translate('almost_there') ?? "Almost There!",
                 style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white),
+                  fontSize: MediaQuery.of(context).size.width * titleScale,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.darkBlue,
+                ),
               ),
-            ),
-            const SizedBox(height: 40),
-          ],
-        ),
-      ),
+              const SizedBox(height: 8),
+              Text(
+                appLocalizations?.translate('personalize_experience') ??
+                    "Help us personalize your healthcare experience",
+                style: TextStyle(
+                  fontSize: MediaQuery.of(context).size.width * subTitleScale,
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(height: 32),
+              _buildLabel(appLocalizations?.translate('address_you') ??
+                  "How should we address you?"),
+              Row(
+                children: [
+                  _buildTitleChip("Mr.", isSmall),
+                  const SizedBox(width: 12),
+                  _buildTitleChip("Ms.", isSmall),
+                  const SizedBox(width: 12),
+                  _buildTitleChip("Dr.", isSmall),
+                ],
+              ),
+              const SizedBox(height: 32),
+              _buildInputField(
+                label: appLocalizations?.translate('full_name') ?? "Full Name",
+                controller: _nameController,
+                hint: appLocalizations?.translate('enter_full_name') ??
+                    "Enter your full name",
+                icon: Icons.person_outline_rounded,
+                focusNode: _focusNodes['name']!,
+              ),
+              const SizedBox(height: 24),
+              _buildInputField(
+                label: appLocalizations?.translate('dob') ?? "Date of Birth",
+                controller: _dobController,
+                hint: appLocalizations?.translate('select_dob') ??
+                    "Select your DOB",
+                icon: Icons.calendar_today_outlined,
+                focusNode: _focusNodes['dob']!,
+                onTap: () async {
+                  final DateTime? picked = await showDatePicker(
+                    context: context,
+                    initialDate:
+                        DateTime.now().subtract(const Duration(days: 6570)),
+                    firstDate: DateTime(1900),
+                    lastDate: DateTime.now(),
+                  );
+                  if (picked != null) {
+                    setState(() {
+                      _dobController.text =
+                          "${picked.day}-${picked.month}-${picked.year}";
+                    });
+                  }
+                },
+              ),
+              const SizedBox(height: 24),
+              _buildInputField(
+                label: appLocalizations?.translate('email_id') ?? "E-mail ID",
+                controller: _emailController,
+                hint: appLocalizations?.translate('medical_reports_hint') ??
+                    "For medical reports",
+                icon: Icons.email_outlined,
+                focusNode: _focusNodes['email']!,
+              ),
+              const SizedBox(height: 24),
+              _buildInputField(
+                label: appLocalizations?.translate('city') ?? "City",
+                controller: _cityController,
+                hint: appLocalizations?.translate('detecting_city') ??
+                    "Detecting city...",
+                icon: Icons.location_on_outlined,
+                focusNode: _focusNodes['city']!,
+                suffixIcon: _isLocationLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2))
+                    : IconButton(
+                        icon: const Icon(Icons.my_location_rounded,
+                            color: AppTheme.primaryGreen),
+                        onPressed: _getCurrentLocation,
+                      ),
+              ),
+              const SizedBox(height: 60),
+              ElevatedButton(
+                onPressed: _saveAndContinue,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.darkBlue,
+                  minimumSize: Size(double.infinity, buttonHeight),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                  elevation: 8,
+                ),
+                child: Text(
+                  appLocalizations?.translate('complete_profile') ??
+                      "Complete Profile",
+                  style: TextStyle(
+                      fontSize: buttonFontSize,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
+                ),
+              ),
+              const SizedBox(height: 40),
+            ],
+          ),
+        );
+      }),
     );
   }
 
@@ -233,7 +251,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
     );
   }
 
-  Widget _buildTitleChip(String label) {
+  Widget _buildTitleChip(String label, [bool isSmall = false]) {
     bool isSelected = _title == label;
     return GestureDetector(
       onTap: () {
@@ -243,7 +261,8 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
-        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+        padding: EdgeInsets.symmetric(
+            horizontal: isSmall ? 20 : 28, vertical: isSmall ? 10 : 14),
         decoration: BoxDecoration(
           color: isSelected ? AppTheme.primaryGreen : Colors.grey.shade100,
           borderRadius: BorderRadius.circular(16),
@@ -251,7 +270,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
         child: Text(
           label,
           style: TextStyle(
-            fontSize: 16,
+            fontSize: isSmall ? 14 : 16,
             fontWeight: FontWeight.bold,
             color: isSelected ? Colors.white : Colors.grey.shade600,
           ),
@@ -354,7 +373,7 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                 ),
                 const SizedBox(height: 24),
                 const Text(
-                  "Welcome to MediNest!",
+                  "Welcome to kayaone!",
                   style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
