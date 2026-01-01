@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -169,7 +168,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         // Logo & App Name
                         Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(
+                              16), // Increased padding for better breathing room
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.1),
                             shape: BoxShape.circle,
@@ -177,13 +177,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                 color: Colors.white.withValues(alpha: 0.3),
                                 width: 1),
                           ),
-                          child: ClipOval(
-                            child: Image.asset(
-                              'assets/images/logo.png',
-                              height: logoSize,
-                              width: logoSize,
-                              fit: BoxFit.cover,
-                            ),
+                          child: Image.asset(
+                            'assets/images/logo.png',
+                            height: logoSize,
+                            width: logoSize,
+                            fit: BoxFit.contain, // Ensure logo isn't cropped
                           ),
                         ),
                         const SizedBox(height: 48),
@@ -257,7 +255,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               hintText: AppLocalizations.of(context)
                                       ?.translate('phone_number_hint') ??
                                   "Phone Number",
-                              hintStyle: TextStyle(
+                              hintStyle: const TextStyle(
                                 letterSpacing: 0,
                                 fontWeight: FontWeight.w400,
                                 color: Colors

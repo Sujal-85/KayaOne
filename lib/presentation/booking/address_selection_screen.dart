@@ -272,172 +272,229 @@ class _AddressSelectionScreenState extends State<AddressSelectionScreen> {
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text(
             appLocalizations?.translate('collection_address') ??
                 "Collection Address",
-            style: GoogleFonts.outfit(fontWeight: FontWeight.w700)),
+            style: GoogleFonts.outfit(
+                fontWeight: FontWeight.w700, color: Colors.white)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: CircleAvatar(
+            backgroundColor: Colors.white.withOpacity(0.2),
+            child: const Icon(Icons.arrow_back_ios_new_rounded,
+                color: Colors.white, size: 18),
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const BookingStepIndicator(currentStep: 1),
-              const SizedBox(height: 16),
-              Text(
-                appLocalizations?.translate('where_collect_sample') ??
-                    "Where should we collect\nyour sample?",
-                style: GoogleFonts.outfit(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: AppTheme.darkBlue,
-                  height: 1.1,
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/home_bg_leaves.png'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Column(
+          children: [
+            const SizedBox(height: 20),
+            Expanded(
+              child: Container(
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(32),
+                    topRight: Radius.circular(32),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 15,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 24),
-              if (bookingProvider.savedAddresses.isEmpty)
-                Center(
+                child: SingleChildScrollView(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 40),
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.location_off_rounded,
-                            size: 64, color: Colors.grey.shade300),
+                        const BookingStepIndicator(currentStep: 1),
                         const SizedBox(height: 16),
                         Text(
-                          appLocalizations?.translate('no_saved_addresses') ??
-                              "No saved addresses yet",
-                          style: GoogleFonts.plusJakartaSans(
-                              color: Colors.grey, fontWeight: FontWeight.w600),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              else
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: bookingProvider.savedAddresses.length,
-                  itemBuilder: (context, index) {
-                    bool isSelected = _selectedAddressIndex == index;
-                    final address = bookingProvider.savedAddresses[index];
-                    return GestureDetector(
-                      onTap: () =>
-                          setState(() => _selectedAddressIndex = index),
-                      child: Container(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(
-                            color: isSelected
-                                ? AppTheme.primaryGreen
-                                : Colors.transparent,
-                            width: 2,
+                          appLocalizations?.translate('where_collect_sample') ??
+                              "Where should we collect\nyour sample?",
+                          style: GoogleFonts.outfit(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w800,
+                            color: AppTheme.darkBlue,
+                            height: 1.1,
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                                color: Colors.black.withOpacity(0.02),
-                                blurRadius: 15,
-                                offset: const Offset(0, 5))
-                          ],
                         ),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? AppTheme.primaryGreen.withOpacity(0.1)
-                                    : Colors.grey.shade100,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                address['type'] == 'Home'
-                                    ? Icons.home_rounded
-                                    : address['type'] == 'Office'
-                                        ? Icons.work_rounded
-                                        : Icons.location_on_rounded,
-                                color: isSelected
-                                    ? AppTheme.primaryGreen
-                                    : Colors.grey,
-                                size: 24,
-                              ),
-                            ),
-                            const SizedBox(width: 20),
-                            Expanded(
+                        const SizedBox(height: 24),
+                        if (bookingProvider.savedAddresses.isEmpty)
+                          Center(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 40),
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(address['type']!,
-                                      style: GoogleFonts.outfit(
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 16,
-                                          color: AppTheme.darkBlue)),
-                                  const SizedBox(height: 4),
-                                  Text(address['address']!,
-                                      style: GoogleFonts.plusJakartaSans(
-                                          color: Colors.grey.shade600,
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w500)),
+                                  Icon(Icons.location_off_rounded,
+                                      size: 64, color: Colors.grey.shade300),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    appLocalizations
+                                            ?.translate('no_saved_addresses') ??
+                                        "No saved addresses yet",
+                                    style: GoogleFonts.plusJakartaSans(
+                                        color: Colors.grey,
+                                        fontWeight: FontWeight.w600),
+                                  ),
                                 ],
                               ),
                             ),
-                            if (isSelected)
-                              const Icon(Icons.check_circle_rounded,
-                                  color: AppTheme.primaryGreen),
-                          ],
+                          )
+                        else
+                          ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: bookingProvider.savedAddresses.length,
+                            itemBuilder: (context, index) {
+                              bool isSelected = _selectedAddressIndex == index;
+                              final address =
+                                  bookingProvider.savedAddresses[index];
+                              return GestureDetector(
+                                onTap: () => setState(
+                                    () => _selectedAddressIndex = index),
+                                child: Container(
+                                  margin: const EdgeInsets.only(bottom: 16),
+                                  padding: const EdgeInsets.all(20),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(24),
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? AppTheme.primaryGreen
+                                          : Colors.transparent,
+                                      width: 2,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                          color: Colors.black.withOpacity(0.02),
+                                          blurRadius: 15,
+                                          offset: const Offset(0, 5))
+                                    ],
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: isSelected
+                                              ? AppTheme.primaryGreen
+                                                  .withOpacity(0.1)
+                                              : Colors.grey.shade100,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Icon(
+                                          address['type'] == 'Home'
+                                              ? Icons.home_rounded
+                                              : address['type'] == 'Office'
+                                                  ? Icons.work_rounded
+                                                  : Icons.location_on_rounded,
+                                          color: isSelected
+                                              ? AppTheme.primaryGreen
+                                              : Colors.grey,
+                                          size: 24,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 20),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(address['type']!,
+                                                style: GoogleFonts.outfit(
+                                                    fontWeight: FontWeight.w700,
+                                                    fontSize: 16,
+                                                    color: AppTheme.darkBlue)),
+                                            const SizedBox(height: 4),
+                                            Text(address['address']!,
+                                                style:
+                                                    GoogleFonts.plusJakartaSans(
+                                                        color: Colors
+                                                            .grey.shade600,
+                                                        fontSize: 13,
+                                                        fontWeight:
+                                                            FontWeight.w500)),
+                                          ],
+                                        ),
+                                      ),
+                                      if (isSelected)
+                                        const Icon(Icons.check_circle_rounded,
+                                            color: AppTheme.primaryGreen),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        OutlinedButton.icon(
+                          onPressed: () =>
+                              _showAddAddressDialog(bookingProvider),
+                          icon: const Icon(Icons.add_location_alt_rounded,
+                              size: 20),
+                          label: Text(
+                              appLocalizations?.translate('add_new_address') ??
+                                  "Add New Address",
+                              style: GoogleFonts.plusJakartaSans(
+                                  fontWeight: FontWeight.w700)),
+                          style: OutlinedButton.styleFrom(
+                            minimumSize: const Size(double.infinity, 56),
+                            foregroundColor: AppTheme.darkBlue,
+                            side: BorderSide(
+                                color: AppTheme.darkBlue.withOpacity(0.2)),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16)),
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                ),
-              OutlinedButton.icon(
-                onPressed: () => _showAddAddressDialog(bookingProvider),
-                icon: const Icon(Icons.add_location_alt_rounded, size: 20),
-                label: Text(
-                    appLocalizations?.translate('add_new_address') ??
-                        "Add New Address",
-                    style: GoogleFonts.plusJakartaSans(
-                        fontWeight: FontWeight.w700)),
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 56),
-                  foregroundColor: AppTheme.darkBlue,
-                  side: BorderSide(color: AppTheme.darkBlue.withOpacity(0.2)),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16)),
+                        const SizedBox(height: 24),
+                        ElevatedButton(
+                          onPressed: bookingProvider.savedAddresses.isEmpty
+                              ? null
+                              : () {
+                                  bookingProvider.setAddress(bookingProvider
+                                          .savedAddresses[_selectedAddressIndex]
+                                      ['address']!);
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                        builder: (_) => const TimeSlotScreen()),
+                                  );
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.darkBlue,
+                            minimumSize: const Size(double.infinity, 56),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16)),
+                          ),
+                          child: Text(
+                              appLocalizations?.translate('proceed_schedule') ??
+                                  "Proceed to Schedule",
+                              style: GoogleFonts.outfit(
+                                  fontWeight: FontWeight.w800)),
+                        ),
+                        const SizedBox(height: 100),
+                      ],
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: bookingProvider.savedAddresses.isEmpty
-                    ? null
-                    : () {
-                        bookingProvider.setAddress(bookingProvider
-                            .savedAddresses[_selectedAddressIndex]['address']!);
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                              builder: (_) => const TimeSlotScreen()),
-                        );
-                      },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.darkBlue,
-                  minimumSize: const Size(double.infinity, 56),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16)),
-                ),
-                child: Text(
-                    appLocalizations?.translate('proceed_schedule') ??
-                        "Proceed to Schedule",
-                    style: GoogleFonts.outfit(fontWeight: FontWeight.w800)),
-              ),
-              const SizedBox(height: 100),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

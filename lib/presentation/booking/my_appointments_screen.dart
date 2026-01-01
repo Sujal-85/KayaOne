@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:kayaone/presentation/home/home_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -287,17 +288,48 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
   @override
   Widget build(BuildContext context) {
     if (widget.isEmbedded) {
-      return Column(
-        children: [
-          _buildEmbeddedHeader(),
-          Expanded(
-            child: RefreshIndicator(
-              color: AppTheme.primaryGreen,
-              onRefresh: () => _fetchAppointments(isRefresh: true),
-              child: _buildContent(),
-            ),
+      return Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/home_bg_leaves.png'),
+            fit: BoxFit.cover,
           ),
-        ],
+        ),
+        child: Column(
+          children: [
+            const SizedBox(height: 50), // Top spacing for background visibility
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(32),
+                    topRight: Radius.circular(32),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 15,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    _buildEmbeddedHeader(),
+                    Expanded(
+                      child: RefreshIndicator(
+                        color: AppTheme.primaryGreen,
+                        onRefresh: () => _fetchAppointments(isRefresh: true),
+                        child: _buildContent(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       );
     }
     return _buildScaffold();
@@ -307,7 +339,7 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
     final loc = AppLocalizations.of(context);
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 48, 24, 16),
-      color: AppTheme.backgroundColor,
+      // color: AppTheme.backgroundColor, // Removed to show background
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -318,7 +350,7 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
             style: GoogleFonts.outfit(
               fontSize: 24,
               fontWeight: FontWeight.w700,
-              color: AppTheme.darkBlue,
+              color: AppTheme.darkBlue, // Reverted to dark blue
             ),
           ),
           Row(
@@ -375,7 +407,8 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
 
   Widget _buildScaffold() {
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: Colors.transparent, // Transparent for background
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded,
@@ -413,10 +446,41 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
           const SizedBox(width: 8),
         ],
       ),
-      body: RefreshIndicator(
-        color: AppTheme.primaryGreen,
-        onRefresh: () => _fetchAppointments(isRefresh: true),
-        child: _buildContent(),
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/home_bg_leaves.png'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Column(
+          children: [
+            const SizedBox(height: 100), // More space for Scaffold app bar
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(32),
+                    topRight: Radius.circular(32),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 15,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: RefreshIndicator(
+                  color: AppTheme.primaryGreen,
+                  onRefresh: () => _fetchAppointments(isRefresh: true),
+                  child: _buildContent(),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -495,18 +559,19 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.event_busy_rounded,
-                size: 100, color: Colors.grey.shade300),
-            const SizedBox(height: 32),
+            Lottie.asset('assets/lottie/No Data Animation.json',
+                width: 250, height: 250, fit: BoxFit.contain),
+            const SizedBox(height: 60),
             Text(title,
                 style: GoogleFonts.outfit(
                     fontSize: 24,
                     fontWeight: FontWeight.w800,
-                    color: AppTheme.darkBlue)),
-            const SizedBox(height: 12),
+                    color: Colors.white)), // White title
+            const SizedBox(height: 16),
             Text(subtitle,
-                style: GoogleFonts.plusJakartaSans(color: Colors.grey[600])),
-            const SizedBox(height: 40),
+                style: GoogleFonts.plusJakartaSans(
+                    color: Colors.white70)), // White subtitle
+            const SizedBox(height: 50),
             if (widget.filterType == AppointmentType.doctor ||
                 widget.filterType == null) ...[
               Center(

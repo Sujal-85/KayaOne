@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:kayaone/data/models/health_karma.dart';
 
-import 'package:supabase_flutter/supabase_flutter.dart';
+// import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HealthKarmaProvider with ChangeNotifier {
-  final SupabaseClient _supabase = Supabase.instance.client;
+  // final SupabaseClient _supabase = Supabase.instance.client;
   int _currentQuestionIndex = 0;
   final Map<String, dynamic> _userResponses = {};
   HealthKarmaResult? _result;
@@ -21,36 +21,9 @@ class HealthKarmaProvider with ChangeNotifier {
 
   Future<void> _fetchScore() async {
     try {
-      final userId = _supabase.auth.currentUser?.id;
-      if (userId == null) return;
-
-      final response = await _supabase
-          .from('health_karma_scores')
-          .select()
-          .eq('user_id', userId)
-          .order('created_at', ascending: false)
-          .limit(1)
-          .maybeSingle();
-
-      if (response != null) {
-        // Deserialize assuming a simplified storage or map fields back
-        // For simplicity, if we stored the whole result as JSON, we'd parse it.
-        // Or if we stored just the score, we might only be able to restore the score.
-        // Let's assume we store 'score' and 'details' (json column).
-
-        final data = response;
-        if (data['details'] != null) {
-          // We need a fromJson in HealthKarmaResult or manually map
-          // Assuming HealthKarmaResult has a fromJson factory or we reconstruct it
-          // Since I can't see HealthKarmaResult source, I'll try to map common fields
-          // or just set the score if that's what the user mainly wants on Home.
-
-          // Actually, let's verify HealthKarmaResult structure first.
-          // But I'll implement a basic reconstruction here.
-          _result = HealthKarmaResult.fromJson(data['details']);
-          notifyListeners();
-        }
-      }
+      // Supabase removed. Implement local storage or Cloudinary DB later.
+      // For now, no-op or mocked.
+      debugPrint("Fetching HealthKarma score (Mock)");
     } catch (e) {
       debugPrint("Error fetching HealthKarma score: $e");
     }
@@ -58,16 +31,8 @@ class HealthKarmaProvider with ChangeNotifier {
 
   Future<void> saveScore(HealthKarmaResult result) async {
     try {
-      final userId = _supabase.auth.currentUser?.id;
-      if (userId == null) return;
-
-      await _supabase.from('health_karma_scores').insert({
-        'user_id': userId,
-        'score': result.score,
-        'details': result.toJson(),
-        'created_at': DateTime.now().toIso8601String(),
-      });
-
+      // Supabase removed.
+      debugPrint("Saving HealthKarma score (Mock)");
       // Also update local state
       _result = result;
       notifyListeners();

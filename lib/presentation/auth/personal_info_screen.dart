@@ -256,10 +256,10 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
                               width: 20,
                               height: 20,
                               child: CircularProgressIndicator(
-                                  strokeWidth: 2, color: Colors.white))
+                                  strokeWidth: 2, color: AppTheme.primaryGreen))
                           : IconButton(
                               icon: const Icon(Icons.my_location_rounded,
-                                  color: Colors.white),
+                                  color: AppTheme.primaryGreen),
                               onPressed: _getCurrentLocation,
                             ),
                     ),
@@ -355,11 +355,13 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
         _buildLabel(label),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.9), // Increased opacity
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: focusNode.hasFocus ? Colors.white : Colors.white24,
-              width: 1,
+              color: focusNode.hasFocus
+                  ? AppTheme.primaryGreen
+                  : Colors.white.withValues(alpha: 0.3),
+              width: 1.5,
             ),
           ),
           child: TextField(
@@ -370,13 +372,16 @@ class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
             style: GoogleFonts.plusJakartaSans(
               fontSize: 16,
               fontWeight: FontWeight.w500,
-              color: Colors.white,
+              color: Colors.black, // Changed to black
             ),
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
+              hintStyle:
+                  const TextStyle(color: Colors.black54), // Dark hint for contrast
               prefixIcon: Icon(icon,
-                  color: focusNode.hasFocus ? Colors.white : Colors.white54),
+                  color: focusNode.hasFocus
+                      ? AppTheme.primaryGreen
+                      : Colors.black54), // Dark icons
               suffixIcon: suffixIcon,
               border: InputBorder.none,
               contentPadding:

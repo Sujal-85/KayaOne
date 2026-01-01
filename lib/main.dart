@@ -1,6 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:kayaone/data/services/cloudinary_service.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:kayaone/core/localization/app_localizations.dart';
@@ -27,11 +27,8 @@ void main() async {
   await Firebase.initializeApp();
 
   // Initialize Supabase
-  await Supabase.initialize(
-    url: 'https://uxxttraidwajbopdykca.supabase.co',
-    anonKey:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV4eHR0cmFpZHdhamJvcGR5a2NhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMjkyMDMsImV4cCI6MjA4MTkwNTIwM30.JdSPrw6l9keo8xgk5_BWGIZTt-boSknwXq87sVYUFEA',
-  );
+  // Initialize Cloudinary
+  CloudinaryService.init();
 
   runApp(
     MultiProvider(
