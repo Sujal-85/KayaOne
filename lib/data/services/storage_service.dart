@@ -1,75 +1,55 @@
 import 'dart:io';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:path/path.dart' as p;
+import 'package:dio/dio.dart';
+import 'package:kayaone/core/api_config.dart';
 
 class StorageService {
-  final _supabase = Supabase.instance.client;
+  final Dio _dio = Dio(BaseOptions(
+    baseUrl: ApiConfig.baseUrl,
+    connectTimeout: ApiConfig.connectTimeout,
+    receiveTimeout: ApiConfig.receiveTimeout,
+  ));
 
-  Future<void> _ensureBucketExists() async {
+  Future<String?> uploadProfilePic(String phoneNumber, File file) async {
     try {
-      final buckets = await _supabase.storage.listBuckets();
-      final exists = buckets.any((b) => b.id == 'kayaone');
-      if (!exists) {
-        await _supabase.storage
-            .createBucket('kayaone', const BucketOptions(public: true));
+      String fileName = file.path.split('/').last;
+      FormData formData = FormData.fromMap({
+        'phoneNumber': phoneNumber,
+        'avatar': await MultipartFile.fromFile(file.path, filename: fileName),
+      });
+
+      final response = await _dio.post('/auth/update-avatar', data: formData);
+
+      if (response.statusCode == 200) {
+        return response.data['url'];
       }
-    } catch (_) {
-      // Ignore if it fails (e.g. already exists or permissions issue)
-      // If permission is denied, the subsequent upload will fail anyway, which is caught.
-    }
-  }
-
-  Future<String?> uploadProfilePic(String userId, File file) async {
-    try {
-      await _ensureBucketExists();
-      final fileExt = p.extension(file.path);
-      final fileName = 'profile_$userId$fileExt';
-      final filePath = 'avatars/$fileName';
-
-      await _supabase.storage.from('kayaone').upload(
-            filePath,
-            file,
-            fileOptions: const FileOptions(upsert: true),
-          );
-
-      final String publicUrl =
-          _supabase.storage.from('kayaone').getPublicUrl(filePath);
-      return publicUrl;
+      return null;
     } catch (e) {
       print('Error uploading profile pic: $e');
-      if (e is StorageException) {
-        print('Message: ${e.message}');
-        print('Error: ${e.error}');
-        print('StatusCode: ${e.statusCode}');
-      }
       return null;
     }
   }
 
   Future<String?> uploadPrescription(String userId, File file) async {
     try {
-      await _ensureBucketExists();
-      final fileExt = p.extension(file.path);
-      final fileName =
-          'prescription_${userId}_${DateTime.now().millisecondsSinceEpoch}$fileExt';
-      final filePath = 'prescriptions/$fileName';
+      String fileName = file.path.split('/').last;
+      FormData formData = FormData.fromMap({
+        'prescription':
+            await MultipartFile.fromFile(file.path, filename: fileName),
+      });
 
-      await _supabase.storage.from('kayaone').upload(
-            filePath,
-            file,
-            fileOptions: const FileOptions(upsert: true),
-          );
+      final response = await _dio.post(
+        '/booking/upload-prescription',
+        data: formData,
+        options: Options(
+            contentType: 'multipart/form-data'), // Explicitly set content type
+      );
 
-      final String publicUrl =
-          _supabase.storage.from('kayaone').getPublicUrl(filePath);
-      return publicUrl;
+      if (response.statusCode == 200) {
+        return response.data['url'];
+      }
+      return null;
     } catch (e) {
       print('Error uploading prescription: $e');
-      if (e is StorageException) {
-        print('Message: ${e.message}');
-        print('Error: ${e.error}');
-        print('StatusCode: ${e.statusCode}');
-      }
       return null;
     }
   }

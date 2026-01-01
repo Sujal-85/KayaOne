@@ -3,49 +3,40 @@ import 'package:provider/provider.dart';
 import 'package:kayaone/core/localization/app_localizations.dart';
 import 'package:kayaone/core/theme/app_theme.dart';
 import 'package:kayaone/state/language_provider.dart';
-import 'package:kayaone/presentation/auth/login_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:kayaone/presentation/auth/personal_info_screen.dart';
+import 'package:kayaone/presentation/home/home_screen.dart';
 
 class LanguageScreen extends StatelessWidget {
-  const LanguageScreen({super.key});
+  final bool isRegistrationComplete;
+  const LanguageScreen({super.key, this.isRegistrationComplete = false});
 
   @override
   Widget build(BuildContext context) {
     final languageProvider = Provider.of<LanguageProvider>(context);
 
     return Scaffold(
-      backgroundColor: AppTheme.premiumBg,
+      backgroundColor: AppTheme.darkBlue,
+      extendBodyBehindAppBar: true,
       body: Stack(
         children: [
-          // Background Gradient Mesh
-          Positioned(
-            top: -100,
-            right: -100,
-            child: Container(
-              width: 400,
-              height: 400,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    AppTheme.primaryGreen.withValues(alpha: 0.15),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
+          // Background
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/splash_images/image.png',
+              fit: BoxFit.cover,
             ),
           ),
-          Positioned(
-            bottom: -50,
-            left: -100,
+          // Dark Overlay
+          Positioned.fill(
             child: Container(
-              width: 300,
-              height: 300,
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
                   colors: [
-                    AppTheme.darkBlue.withValues(alpha: 0.1),
-                    Colors.transparent,
+                    Colors.black.withValues(alpha: 0.4),
+                    Colors.black.withValues(alpha: 0.8),
                   ],
                 ),
               ),
@@ -55,50 +46,33 @@ class LanguageScreen extends StatelessWidget {
           SafeArea(
             child: Padding(
               padding:
-                  const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24),
+                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 60),
+                  const SizedBox(height: 40),
                   Text(
-                    "Welcome to",
-                    style: TextStyle(
-                        fontSize: MediaQuery.of(context).size.width * 0.045,
-                        color: Colors.grey,
-                        fontWeight: FontWeight.w500),
-                  ),
-                  Text(
-                    "kayaone",
-                    style: TextStyle(
-                      fontSize: MediaQuery.of(context).size.width * 0.1,
+                    "Select Language",
+                    style: GoogleFonts.outfit(
+                      fontSize: 40,
                       fontWeight: FontWeight.bold,
-                      color: AppTheme.darkBlue,
-                      letterSpacing: -1,
+                      color: Colors.white,
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  Container(
-                    width: 60,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryGreen,
-                      borderRadius: BorderRadius.circular(3),
-                    ),
-                  ),
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 8),
                   Text(
                     AppLocalizations.of(context)
                             ?.translate('choose_language') ??
-                        'Select your language to continue',
-                    style: TextStyle(
-                      fontSize: MediaQuery.of(context).size.width * 0.042,
-                      color: const Color(0xFF4A4A4A),
-                      fontWeight: FontWeight.w600,
+                        'Select your preferred language to continue',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 16,
+                      color: Colors.white70,
                     ),
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 48),
                   Expanded(
                     child: ListView(
+                      padding: EdgeInsets.zero,
                       physics: const BouncingScrollPhysics(),
                       children: [
                         _buildPremiumLanguageCard(
@@ -133,40 +107,29 @@ class LanguageScreen extends StatelessWidget {
                   const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {
-                      Navigator.of(context).push(
-                        PageRouteBuilder(
-                          pageBuilder:
-                              (context, animation, secondaryAnimation) =>
-                                  const LoginScreen(),
-                          transitionsBuilder:
-                              (context, animation, secondaryAnimation, child) {
-                            return SlideTransition(
-                              position: Tween<Offset>(
-                                      begin: const Offset(1, 0),
-                                      end: Offset.zero)
-                                  .animate(animation),
-                              child: child,
-                            );
-                          },
-                        ),
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(
+                            builder: (context) => isRegistrationComplete
+                                ? const HomeScreen()
+                                : const PersonalInfoScreen()),
+                        (route) => false,
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.darkBlue,
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.black,
                       minimumSize: const Size(double.infinity, 64),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      elevation: 4,
-                      shadowColor: AppTheme.darkBlue.withValues(alpha: 0.4),
+                      elevation: 0,
                     ),
                     child: Text(
                       AppLocalizations.of(context)?.translate('continue') ??
                           'Continue',
-                      style: const TextStyle(
+                      style: GoogleFonts.outfit(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
                       ),
                     ),
                   ),
@@ -192,77 +155,48 @@ class LanguageScreen extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        FocusScope.of(context).unfocus();
         provider.changeLanguage(locale);
-        Navigator.of(context).push(
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                const LoginScreen(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              return SlideTransition(
-                position:
-                    Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)
-                        .animate(animation),
-                child: child,
-              );
-            },
-          ),
-        );
       },
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeInOut,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        duration: const Duration(milliseconds: 300),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         decoration: BoxDecoration(
-          color: isSelected
-              ? Colors.white
-              : Colors.grey.shade50.withValues(alpha: 0.5),
+          color: isSelected ? Colors.white : Colors.white.withOpacity(0.05),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? AppTheme.primaryGreen : Colors.grey.shade100,
-            width: 1.5,
+            color: isSelected ? Colors.white : Colors.white24,
+            width: 1,
           ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: AppTheme.primaryGreen.withValues(alpha: 0.15),
-                    blurRadius: 15,
-                    offset: const Offset(0, 8),
-                  )
-                ]
-              : [],
         ),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: isSelected
                     ? AppTheme.primaryGreen.withValues(alpha: 0.1)
-                    : Colors.white,
+                    : Colors.white.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Text(flag, style: const TextStyle(fontSize: 24)),
+              child: Text(flag, style: const TextStyle(fontSize: 28)),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 20),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   nativeName,
-                  style: TextStyle(
-                    fontSize: 18,
+                  style: GoogleFonts.outfit(
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color:
-                        isSelected ? AppTheme.darkBlue : Colors.grey.shade800,
+                    color: isSelected ? Colors.black : Colors.white,
                   ),
                 ),
                 Text(
                   name,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade500,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 14,
+                    color: isSelected ? Colors.black54 : Colors.white54,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -273,13 +207,7 @@ class LanguageScreen extends StatelessWidget {
               const Icon(
                 Icons.check_circle_rounded,
                 color: AppTheme.primaryGreen,
-                size: 24,
-              )
-            else
-              Icon(
-                Icons.arrow_forward_ios_rounded,
-                color: Colors.grey.shade300,
-                size: 14,
+                size: 28,
               ),
           ],
         ),

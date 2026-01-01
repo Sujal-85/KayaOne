@@ -40,87 +40,124 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
     }
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            leading: IconButton(
-              icon: CircleAvatar(
-                backgroundColor: Colors.white.withOpacity(0.5),
-                child: const Icon(Icons.arrow_back_ios_new_rounded,
-                    color: Colors.teal),
-              ),
-              onPressed: () async {
-                final didPop = await Navigator.of(context).maybePop();
-                if (!didPop) {
-                  HomeScreenState.of(context)?.setIndex(0);
-                }
-              },
-            ),
-            expandedHeight: 400,
-            pinned: true,
-            backgroundColor: Colors.teal.shade50,
-            elevation: 0,
-            flexibleSpace: FlexibleSpaceBar(
-              background: _buildHeader(result, context),
-            ),
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: CircleAvatar(
+            backgroundColor: Colors.white.withValues(alpha: 0.5),
+            child: const Icon(Icons.arrow_back_ios_new_rounded,
+                color: AppTheme.darkBlue), // Dark Blue for visibility on leaves
           ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    appLocalizations?.translate('probable_risks') ??
-                        "Your Probable Risks",
-                    style: GoogleFonts.outfit(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.teal.shade900,
-                    ),
+          onPressed: () async {
+            final didPop = await Navigator.of(context).maybePop();
+            if (!didPop) {
+              HomeScreenState.of(context)?.setIndex(0);
+            }
+          },
+        ),
+      ),
+      backgroundColor: Colors.transparent,
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/home_bg_leaves.png'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Column(
+          children: [
+            const SizedBox(height: 20),
+            Expanded(
+              child: Container(
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(32),
+                    topRight: Radius.circular(32),
                   ),
-                  const SizedBox(height: 16),
-
-                  // Tabs
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.teal.shade50,
-                      borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 15,
+                      offset: const Offset(0, 5),
                     ),
-                    child: TabBar(
-                      controller: _tabController,
-                      indicator: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
+                  ],
+                ),
+                child: CustomScrollView(
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: Container(
+                        color: Colors.teal.shade50,
+                        padding: const EdgeInsets.only(bottom: 24),
+                        child: _buildHeader(result, context),
                       ),
-                      labelColor: Colors.teal.shade900,
-                      unselectedLabelColor: Colors.teal.shade400,
-                      labelStyle: GoogleFonts.plusJakartaSans(
-                          fontWeight: FontWeight.w800),
-                      tabs: [
-                        Tab(
-                            text: appLocalizations?.translate('high_medium') ??
-                                "High & Medium"),
-                        Tab(
-                            text: appLocalizations?.translate('low_risk') ??
-                                "Low Risk"),
-                      ],
                     ),
-                  ),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              appLocalizations?.translate('probable_risks') ??
+                                  "Your Probable Risks",
+                              style: GoogleFonts.outfit(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.teal.shade900,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
 
-                  const SizedBox(height: 24),
+                            // Tabs
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.teal.shade50,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: TabBar(
+                                controller: _tabController,
+                                indicator: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                labelColor: Colors.teal.shade900,
+                                unselectedLabelColor: Colors.teal.shade400,
+                                labelStyle: GoogleFonts.plusJakartaSans(
+                                    fontWeight: FontWeight.w800),
+                                tabs: [
+                                  Tab(
+                                      text: appLocalizations
+                                              ?.translate('high_medium') ??
+                                          "High & Medium"),
+                                  Tab(
+                                      text: appLocalizations
+                                              ?.translate('low_risk') ??
+                                          "Low Risk"),
+                                ],
+                              ),
+                            ),
 
-                  // Risk Items
-                  _buildRiskList(result),
+                            const SizedBox(height: 24),
 
-                  const SizedBox(height: 100),
-                ],
+                            // Risk Items
+                            _buildRiskList(result),
+
+                            const SizedBox(height: 100),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => provider.resetQuiz(),
@@ -139,380 +176,377 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
     var appLocalizations = AppLocalizations.of(context);
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 20),
-                // Custom Header with Back Button
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "HealthKarma",
-                      style: GoogleFonts.outfit(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w900,
-                        color: const Color(0xFF1A1A1A),
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                          size: 20, color: Color(0xFF1A1A1A)),
-                      onPressed: () {
-                        if (Navigator.canPop(context)) {
-                          Navigator.pop(context);
-                        } else {
-                          HomeScreenState.of(context)?.setIndex(0);
-                        }
-                      },
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: CircleAvatar(
+            backgroundColor: Colors.white.withOpacity(0.5),
+            child: const Icon(Icons.arrow_back_ios_new_rounded,
+                color: AppTheme.darkBlue),
+          ),
+          onPressed: () {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            } else {
+              HomeScreenState.of(context)?.setIndex(0);
+            }
+          },
+        ),
+        title: Text(
+          "HealthKarma",
+          style: GoogleFonts.outfit(
+            fontWeight: FontWeight.w700,
+            color: AppTheme.darkBlue,
+          ),
+        ),
+      ),
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/home_bg_leaves.png'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Column(
+          children: [
+            const SizedBox(height: 100),
+            Expanded(
+              child: Container(
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(32),
+                    topRight: Radius.circular(32),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 15,
+                      offset: const Offset(0, 5),
                     ),
                   ],
                 ),
-
-                const SizedBox(height: 24),
-
-                // 1. Greeting Card
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
-                        blurRadius: 20,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            "Hi, $firstName",
-                            style: GoogleFonts.outfit(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xFF1A1A1A),
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          const Icon(Icons.keyboard_arrow_down, size: 24),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        appLocalizations?.translate('welcome_kayaone') ??
-                            "Welcome to kayaone!", // Using existing welcome message
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 16,
-                          color: Colors.grey.shade600,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.1, end: 0),
-
-                const SizedBox(height: 20),
-
-                // 2. Calculate Card
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
-                        blurRadius: 20,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: LayoutBuilder(builder: (context, constraints) {
-                    final isSmall = constraints.maxWidth < 360;
-                    final iconSize = isSmall ? 60.0 : 80.0;
-                    final fontSizeQuestion = isSmall ? 32.0 : 40.0;
-
-                    return Row(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
+                        const SizedBox(height: 24),
+                        // 1. Greeting Card
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 20,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
+                          ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                appLocalizations
-                                        ?.translate('find_your_healthkarma') ??
-                                    "Find Your HealthKarma",
-                                style: GoogleFonts.outfit(
-                                  fontSize: isSmall ? 18 : 20,
-                                  fontWeight: FontWeight.w800,
-                                  color: const Color(0xFF1A1A1A),
-                                ),
+                              Row(
+                                children: [
+                                  Text(
+                                    "Hi, $firstName",
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      color: const Color(0xFF1A1A1A),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  const Icon(Icons.keyboard_arrow_down,
+                                      size: 24),
+                                ],
                               ),
-                              const SizedBox(height: 12),
+                              const SizedBox(height: 4),
                               Text(
                                 appLocalizations
-                                        ?.translate('healthkarma_desc') ??
-                                    "Your HealthKarma score will help us understand your health status better",
+                                        ?.translate('welcome_kayaone') ??
+                                    "Welcome to kayaone!",
                                 style: GoogleFonts.plusJakartaSans(
-                                  fontSize: isSmall ? 13 : 14,
+                                  fontSize: 16,
                                   color: Colors.grey.shade600,
-                                  height: 1.4,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
-                              const SizedBox(height: 20),
-                              ElevatedButton(
-                                onPressed: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (_) =>
-                                          const QuestionFlowScreen()),
+                            ],
+                          ),
+                        )
+                            .animate()
+                            .fadeIn(duration: 500.ms)
+                            .slideY(begin: 0.1, end: 0),
+
+                        const SizedBox(height: 20),
+
+                        // 2. Calculate Card
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 20,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
+                          ),
+                          child: LayoutBuilder(builder: (context, constraints) {
+                            final isSmall = constraints.maxWidth < 360;
+                            final iconSize = isSmall ? 60.0 : 80.0;
+                            final fontSizeQuestion = isSmall ? 32.0 : 40.0;
+
+                            return Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        appLocalizations?.translate(
+                                                'find_your_healthkarma') ??
+                                            "Find Your HealthKarma",
+                                        style: GoogleFonts.outfit(
+                                          fontSize: isSmall ? 18 : 20,
+                                          fontWeight: FontWeight.w800,
+                                          color: const Color(0xFF1A1A1A),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Text(
+                                        appLocalizations?.translate(
+                                                'healthkarma_desc') ??
+                                            "Your HealthKarma score will help us understand your health status better",
+                                        style: GoogleFonts.plusJakartaSans(
+                                          fontSize: isSmall ? 13 : 14,
+                                          color: Colors.grey.shade600,
+                                          height: 1.4,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 20),
+                                      ElevatedButton(
+                                        onPressed: () => Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (_) =>
+                                                  const QuestionFlowScreen()),
+                                        ),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor:
+                                              const Color(0xFF00897B),
+                                          foregroundColor: Colors.white,
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 16, vertical: 12),
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12)),
+                                          elevation: 0,
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Flexible(
+                                              child: Text(
+                                                appLocalizations?.translate(
+                                                        'calculate_score') ??
+                                                    "Calculate Your Score",
+                                                overflow: TextOverflow.ellipsis,
+                                                style:
+                                                    GoogleFonts.plusJakartaSans(
+                                                  fontWeight: FontWeight.w800,
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 4),
+                                            const Icon(Icons.chevron_right,
+                                                size: 18),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
+                                SizedBox(width: isSmall ? 12 : 16),
+                                // Styled "?" Icon
+                                Container(
+                                  width: iconSize,
+                                  height: iconSize,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF5F5F5),
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.1),
+                                        blurRadius: 10,
+                                        offset: const Offset(4, 4),
+                                      ),
+                                      const BoxShadow(
+                                        color: Colors.white,
+                                        blurRadius: 10,
+                                        offset: Offset(-4, -4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      "?",
+                                      style: TextStyle(
+                                        fontSize: fontSizeQuestion,
+                                        fontWeight: FontWeight.w900,
+                                        color: const Color(0xFF00897B),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          })
+                              .animate()
+                              .fadeIn(delay: 100.ms)
+                              .slideY(begin: 0.1, end: 0),
+                        ),
+                        const SizedBox(height: 40),
+
+                        // Product Cards Grid
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildSupplementCard(
+                                "IMMUNO-PLUS",
+                                "₹1095",
+                                "₹2299",
+                                "assets/images/med_product_1.png",
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: _buildSupplementCard(
+                                "NUTRI-BOOST",
+                                "₹664",
+                                "₹1476",
+                                "assets/images/med_product_2.png",
+                              ),
+                            ),
+                          ],
+                        ).animate().fadeIn(delay: 300.ms),
+
+                        const SizedBox(height: 24),
+
+                        // Action Buttons for HerbVed
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () {},
+                                style: OutlinedButton.styleFrom(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 14),
+                                  side: const BorderSide(
+                                      color: Color(0xFF00897B)),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12)),
+                                ),
+                                child: Text(
+                                  appLocalizations?.translate('track_orders') ??
+                                      "Track Orders",
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontWeight: FontWeight.w800,
+                                    color: const Color(0xFF00897B),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () {},
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF00897B),
                                   foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 12),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 14),
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12)),
                                   elevation: 0,
                                 ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Flexible(
-                                      child: Text(
-                                        appLocalizations?.translate(
-                                                'calculate_score') ??
-                                            "Calculate Your Score",
-                                        overflow: TextOverflow.ellipsis,
-                                        style: GoogleFonts.plusJakartaSans(
-                                          fontWeight: FontWeight.w800,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 4),
-                                    const Icon(Icons.chevron_right, size: 18),
-                                  ],
+                                child: Text(
+                                  appLocalizations?.translate('explore') ??
+                                      "Explore",
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontWeight: FontWeight.w800,
+                                  ),
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(width: isSmall ? 12 : 16),
-                        // Styled "?" Icon
-                        Container(
-                          width: iconSize,
-                          height: iconSize,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF5F5F5),
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 10,
-                                offset: const Offset(4, 4),
-                              ),
-                              const BoxShadow(
-                                color: Colors.white,
-                                blurRadius: 10,
-                                offset: Offset(-4, -4),
-                              ),
-                            ],
-                          ),
-                          child: Center(
-                            child: Text(
-                              "?",
-                              style: TextStyle(
-                                fontSize: fontSizeQuestion,
-                                fontWeight: FontWeight.w900,
-                                color: const Color(0xFF00897B),
-                              ),
                             ),
+                          ],
+                        ).animate().fadeIn(delay: 400.ms),
+
+                        const SizedBox(height: 48),
+
+                        // 4. Service Rows
+                        _buildServiceRow(
+                          appLocalizations?.translate('your_doctor') ??
+                              "Your Doctor",
+                          appLocalizations?.translate('consult_doctor_desc') ??
+                              "Consult specialist doctors from\nthe comforts of your home",
+                          const Color(0xFFFFF3F5), // Light pink
+                          const Color(0xFFFF5277), // Deep pink
+                          Icons.medical_services_outlined,
+                          () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const DoctorListingScreen()),
                           ),
-                        ),
+                        )
+                            .animate()
+                            .fadeIn(delay: 500.ms)
+                            .slideY(begin: 0.1, end: 0),
+
+                        const SizedBox(height: 16),
+
+                        _buildServiceRow(
+                          appLocalizations?.translate('your_dietitian') ??
+                              "Your Dietitian",
+                          appLocalizations?.translate('book_diet_desc') ??
+                              "Book Diet Consultation\n@ Rs.299 only",
+                          const Color(0xFFF1FAF2), // Light green
+                          const Color(0xFF4CAF50), // Deep green
+                          Icons.scale_outlined,
+                          () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const DietRouter()),
+                          ),
+                        )
+                            .animate()
+                            .fadeIn(delay: 600.ms)
+                            .slideY(begin: 0.1, end: 0),
+
+                        const SizedBox(
+                            height: 100), // Bottom padding for navbar
                       ],
-                    );
-                  }).animate().fadeIn(delay: 100.ms).slideY(begin: 0.1, end: 0),
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 40),
-
-                // 3. Health Supplements Section
-                // Row(
-                //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                //   children: [
-                //     Flexible(
-                //       child: Column(
-                //         crossAxisAlignment: CrossAxisAlignment.start,
-                //         children: [
-                //           Text(
-                //             "Health Supplements",
-                //             style: GoogleFonts.outfit(
-                //               fontSize: 18,
-                //               fontWeight: FontWeight.w800,
-                //               color: const Color(0xFF1A1A1A),
-                //             ),
-                //           ),
-                //           Text(
-                //             "Choose from a wide range for healthy living",
-                //             style: GoogleFonts.plusJakartaSans(
-                //               fontSize: 12,
-                //               color: Colors.grey.shade600,
-                //               fontWeight: FontWeight.w500,
-                //             ),
-                //             overflow: TextOverflow.ellipsis,
-                //           ),
-                //         ],
-                //       ),
-                //     ),
-                //     const SizedBox(width: 12),
-                //     // HerbVed Logo
-                //     Column(
-                //       crossAxisAlignment: CrossAxisAlignment.end,
-                //       children: [
-                //         Text(
-                //           "Herbवेद⁺",
-                //           style: GoogleFonts.outfit(
-                //             fontSize: 20,
-                //             fontWeight: FontWeight.w900,
-                //             color: const Color(0xFF00897B),
-                //           ),
-                //         ),
-                //         Text(
-                //           "by Healthians",
-                //           style: GoogleFonts.plusJakartaSans(
-                //             fontSize: 10,
-                //             color: const Color(0xFF00897B),
-                //             fontWeight: FontWeight.w700,
-                //           ),
-                //         ),
-                //       ],
-                //     ),
-                //   ],
-                // ).animate().fadeIn(delay: 200.ms),
-
-                // const SizedBox(height: 20),
-
-                // Product Cards Grid
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildSupplementCard(
-                        "IMMUNO-PLUS",
-                        "₹1095",
-                        "₹2299",
-                        "assets/images/med_product_1.png",
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildSupplementCard(
-                        "NUTRI-BOOST",
-                        "₹664",
-                        "₹1476",
-                        "assets/images/med_product_2.png",
-                      ),
-                    ),
-                  ],
-                ).animate().fadeIn(delay: 300.ms),
-
-                const SizedBox(height: 24),
-
-                // Action Buttons for HerbVed
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () {},
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          side: const BorderSide(color: Color(0xFF00897B)),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                        ),
-                        child: Text(
-                          appLocalizations?.translate('track_orders') ??
-                              "Track Orders",
-                          style: GoogleFonts.plusJakartaSans(
-                            fontWeight: FontWeight.w800,
-                            color: const Color(0xFF00897B),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF00897B),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                          elevation: 0,
-                        ),
-                        child: Text(
-                          appLocalizations?.translate('explore') ?? "Explore",
-                          style: GoogleFonts.plusJakartaSans(
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ).animate().fadeIn(delay: 400.ms),
-
-                const SizedBox(height: 48),
-
-                // 4. Service Rows
-                _buildServiceRow(
-                  appLocalizations?.translate('your_doctor') ?? "Your Doctor",
-                  appLocalizations?.translate('consult_doctor_desc') ??
-                      "Consult specialist doctors from\nthe comforts of your home",
-                  const Color(0xFFFFF3F5), // Light pink
-                  const Color(0xFFFF5277), // Deep pink
-                  Icons.medical_services_outlined,
-                  () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => const DoctorListingScreen()),
-                  ),
-                ).animate().fadeIn(delay: 500.ms).slideY(begin: 0.1, end: 0),
-
-                const SizedBox(height: 16),
-
-                _buildServiceRow(
-                  appLocalizations?.translate('your_dietitian') ??
-                      "Your Dietitian",
-                  appLocalizations?.translate('book_diet_desc') ??
-                      "Book Diet Consultation\n@ Rs.299 only",
-                  const Color(0xFFF1FAF2), // Light green
-                  const Color(0xFF4CAF50), // Deep green
-                  Icons.scale_outlined,
-                  () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const DietRouter()),
-                  ),
-                ).animate().fadeIn(delay: 600.ms).slideY(begin: 0.1, end: 0),
-
-                const SizedBox(height: 100), // Bottom padding for navbar
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -662,7 +696,7 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
 
       return Container(
         decoration: const BoxDecoration(
-          color: AppTheme.backgroundColor,
+          color: Colors.transparent, // Transparent to show background
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

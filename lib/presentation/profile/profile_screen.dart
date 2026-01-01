@@ -61,22 +61,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (image != null) {
       setState(() => _isUploading = true);
+      // Use phoneNumber instead of userId, as required by the backend endpoint
       final url = await _storageService.uploadProfilePic(
-          auth.userId ?? 'guest', File(image.path));
+          auth.phoneNumber!, File(image.path));
 
       if (url != null) {
-        // Update in state first
+        // Update in state locally
         auth.updateProfilePic(url);
 
-        // Update in MongoDB via backend
-        await _authService.updateProfile(
-          phoneNumber: auth.phoneNumber!,
-          name: auth.userName ?? "",
-          dob: auth.dob ?? "",
-          email: auth.email ?? "",
-          city: auth.city ?? "",
-          profilePic: url,
-        );
+        // Backend update is already handled by uploadProfilePic (which calls /update-avatar)
 
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(

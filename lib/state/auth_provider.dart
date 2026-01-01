@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthProvider with ChangeNotifier {
   bool _isLoggedIn = false;
+  bool _isGuest = false;
   bool _isProfileComplete = false;
   bool _isOnboardingComplete = false;
   String? _userId;
@@ -15,6 +16,7 @@ class AuthProvider with ChangeNotifier {
   String? _bloodGroup;
 
   bool get isLoggedIn => _isLoggedIn;
+  bool get isGuest => _isGuest;
   bool get isProfileComplete => _isProfileComplete;
   bool get isOnboardingComplete => _isOnboardingComplete;
   String? get userId => _userId;
@@ -142,11 +144,18 @@ class AuthProvider with ChangeNotifier {
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     _isLoggedIn = false;
+    _isGuest = false;
     _isProfileComplete = false;
     _phoneNumber = null;
     _userName = null;
 
     await prefs.clear();
+    notifyListeners();
+  }
+
+  void loginAsGuest() {
+    _isGuest = true;
+    _isLoggedIn = true;
     notifyListeners();
   }
 }

@@ -1,9 +1,11 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
+import 'package:kayaone/state/auth_provider.dart';
 import 'package:kayaone/core/theme/app_theme.dart';
 import 'package:kayaone/presentation/auth/otp_screen.dart';
-import 'package:lottie/lottie.dart';
+
 import 'package:kayaone/core/localization/app_localizations.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -92,13 +94,15 @@ class _LoginScreenState extends State<LoginScreen> {
         },
         codeAutoRetrievalTimeout: (String verificationId) {},
       );
+    } catch (e) {
       setState(() => _isVerifying = false);
       String errorMsg =
           AppLocalizations.of(context)?.translate('server_error') ?? 'Error: ';
-          
+
       if (e is FirebaseAuthException) {
         if (e.code == 'invalid-app-credential') {
-          errorMsg = "App verification failed. SHA-1/SHA-256 keys missing in Firebase Console.";
+          errorMsg =
+              "App verification failed. SHA-1/SHA-256 keys missing in Firebase Console.";
         } else if (e.code == 'invalid-phone-number') {
           errorMsg = "The provided phone number is not valid.";
         } else if (e.code == 'too-many-requests') {
@@ -111,9 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text(errorMsg),
-            backgroundColor: Colors.redAccent),
+        SnackBar(content: Text(errorMsg), backgroundColor: Colors.redAccent),
       );
     }
   }
@@ -124,227 +126,217 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: AppTheme.milkyWhite,
       body: LayoutBuilder(builder: (context, constraints) {
         final isSmallHeight = constraints.maxHeight < 700;
-        final lottieHeight = isSmallHeight ? 180.0 : 280.0;
-        final cardPadding = isSmallHeight ? 24.0 : 32.0;
-        final titleSize = isSmallHeight ? 24.0 : 28.0;
-        final logoSize = isSmallHeight ? 28.0 : 32.0;
-        final logoTextSize = isSmallHeight ? 20.0 : 24.0;
+        final logoSize = isSmallHeight ? 48.0 : 64.0;
+        final titleSize = isSmallHeight ? 28.0 : 32.0;
 
         return Stack(
           children: [
             // Background
             Positioned.fill(
-              child: Container(color: AppTheme.milkyWhite),
+              child: Image.asset(
+                'assets/images/splash_images/image1.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            // Black Drop Overlay
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.3),
+                      Colors.black.withValues(alpha: 0.6),
+                      Colors.black.withValues(alpha: 0.8),
+                    ],
+                  ),
+                ),
+              ),
             ),
 
             SafeArea(
               bottom: false,
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.only(
-                    left: 24.0, right: 24.0, bottom: 40.0),
-                child: AutofillGroup(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SizedBox(height: isSmallHeight ? 10 : 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.1),
-                                  blurRadius: 10,
-                                  spreadRadius: 1,
-                                ),
-                              ],
-                              border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.5),
-                                  width: 1),
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 24.0, vertical: 40.0),
+                  child: AutofillGroup(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Logo & App Name
+                        Container(
+                          padding: const EdgeInsets.all(
+                              16), // Increased padding for better breathing room
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.3),
+                                width: 1),
+                          ),
+                          child: Image.asset(
+                            'assets/images/logo.png',
+                            height: logoSize,
+                            width: logoSize,
+                            fit: BoxFit.contain, // Ensure logo isn't cropped
+                          ),
+                        ),
+                        const SizedBox(height: 48),
+                        Text(
+                          AppLocalizations.of(context)?.translate('app_name') ??
+                              "KAYAONE",
+                          style: GoogleFonts.outfit(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                            letterSpacing: 2.0,
+                          ),
+                        ),
+
+                        const SizedBox(height: 48),
+
+                        // Welcome Text
+                        Text(
+                          AppLocalizations.of(context)
+                                  ?.translate('welcome_home') ??
+                              "Welcome Back",
+                          style: GoogleFonts.outfit(
+                            fontSize: titleSize,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            height: 1.2,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          AppLocalizations.of(context)
+                                  ?.translate('join_community') ??
+                              "Enter your phone number to continue",
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.plusJakartaSans(
+                            color: Colors.white.withValues(alpha: 0.8),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+
+                        const SizedBox(height: 40),
+
+                        // Input Field (Transparent/White)
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white
+                                .withValues(alpha: 0.9), // Increased opacity
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: _isFocused
+                                  ? AppTheme.primaryGreen
+                                  : Colors.white.withValues(alpha: 0.3),
+                              width: 1.5,
                             ),
-                            child: ClipOval(
-                              child: Image.asset(
-                                'assets/images/logo.png',
-                                height: logoSize,
-                                width: logoSize,
-                                fit: BoxFit.cover,
+                          ),
+                          child: TextField(
+                            controller: _phoneController,
+                            focusNode: _phoneFocusNode,
+                            keyboardType: TextInputType.phone,
+                            autofillHints: const [
+                              AutofillHints.telephoneNumber
+                            ],
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.5,
+                              color: Colors.black, // Changed to black
+                            ),
+                            decoration: InputDecoration(
+                              hintText: AppLocalizations.of(context)
+                                      ?.translate('phone_number_hint') ??
+                                  "Phone Number",
+                              hintStyle: const TextStyle(
+                                letterSpacing: 0,
+                                fontWeight: FontWeight.w400,
+                                color: Colors
+                                    .black54, // Better contrast on nearly white bg
                               ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            AppLocalizations.of(context)
-                                    ?.translate('app_name') ??
-                                "kayaone",
-                            style: TextStyle(
-                              fontSize: logoTextSize,
-                              fontWeight: FontWeight.w900,
-                              color: AppTheme.darkBlue,
-                              letterSpacing: -0.5,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Lottie.asset(
-                        'assets/lottie/team.json',
-                        height: lottieHeight,
-                        fit: BoxFit.contain,
-                      ),
-
-                      // Glassmorphic Card
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(32),
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-                          child: Container(
-                            padding: EdgeInsets.all(cardPadding),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.8),
-                              borderRadius: BorderRadius.circular(32),
-                              border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.5)),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.05),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 10),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  AppLocalizations.of(context)
-                                          ?.translate('welcome_home') ??
-                                      "Welcome Home",
+                              prefixIcon: const Padding(
+                                padding: EdgeInsets.only(left: 20, right: 12),
+                                child: Text(
+                                  "🇮🇳 +91",
                                   style: TextStyle(
-                                    fontSize: titleSize,
-                                    fontWeight: FontWeight.w800,
-                                    color: AppTheme.darkBlue,
-                                    height: 1.2,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black, // Changed to black
                                   ),
                                 ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  AppLocalizations.of(context)
-                                          ?.translate('join_community') ??
-                                      "Join our community of care. Enter your number to proceed.",
-                                  style: TextStyle(
-                                    color: AppTheme.darkBlue
-                                        .withValues(alpha: 0.6),
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                SizedBox(height: isSmallHeight ? 24 : 32),
-
-                                // Input Field
-                                AnimatedContainer(
-                                  duration: const Duration(milliseconds: 300),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                      color: _isFocused
-                                          ? AppTheme.primaryGreen
-                                          : Colors.grey.shade200,
-                                      width: 2,
-                                    ),
-                                  ),
-                                  child: TextField(
-                                    controller: _phoneController,
-                                    focusNode: _phoneFocusNode,
-                                    keyboardType: TextInputType.phone,
-                                    autofillHints: const [
-                                      AutofillHints.telephoneNumber
-                                    ],
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 1.5,
-                                      color: AppTheme.darkBlue,
-                                    ),
-                                    decoration: InputDecoration(
-                                      hintText: AppLocalizations.of(context)
-                                              ?.translate(
-                                                  'phone_number_hint') ??
-                                          "Phone Number",
-                                      hintStyle: TextStyle(
-                                        letterSpacing: 0,
-                                        fontWeight: FontWeight.w400,
-                                        color: Colors.grey.shade400,
-                                      ),
-                                      prefixIcon: const Padding(
-                                        padding: EdgeInsets.only(
-                                            left: 16, right: 12),
-                                        child: Text(
-                                          "🇮🇳 +91",
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: AppTheme.darkBlue,
-                                          ),
-                                        ),
-                                      ),
-                                      prefixIconConstraints:
-                                          const BoxConstraints(
-                                              minWidth: 0, minHeight: 0),
-                                      border: InputBorder.none,
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                              vertical: 20),
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(height: isSmallHeight ? 20 : 24),
-
-                                if (_isVerifying)
-                                  const Center(
-                                      child: CircularProgressIndicator(
-                                          color: AppTheme.primaryGreen))
-                                else
-                                  ElevatedButton(
-                                    onPressed: _handlePhoneVerification,
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppTheme.darkBlue,
-                                      minimumSize:
-                                          const Size(double.infinity, 64),
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(20)),
-                                      elevation: 0,
-                                    ),
-                                    child: Text(
-                                      AppLocalizations.of(context)
-                                              ?.translate('continue') ??
-                                          "Continue",
-                                      style: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                              ],
+                              ),
+                              prefixIconConstraints: const BoxConstraints(
+                                  minWidth: 0, minHeight: 0),
+                              border: InputBorder.none,
+                              contentPadding:
+                                  const EdgeInsets.symmetric(vertical: 22),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 32),
-                      Text(
-                        AppLocalizations.of(context)
-                                ?.translate('privacy_note') ??
-                            "Your privacy is our priority. We'll send a secure OTP.",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: AppTheme.darkBlue.withValues(alpha: 0.4),
-                            fontSize: 13),
-                      ),
-                    ],
+
+                        const SizedBox(height: 24),
+
+                        if (_isVerifying)
+                          const Center(
+                              child: CircularProgressIndicator(
+                                  color: Colors.white))
+                        else
+                          ElevatedButton(
+                            onPressed: _handlePhoneVerification,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor:
+                                  Colors.black, // Dark text on white button
+                              minimumSize: const Size(double.infinity, 64),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20)),
+                              elevation: 0,
+                            ),
+                            child: Text(
+                              AppLocalizations.of(context)
+                                      ?.translate('continue') ??
+                                  "Continue",
+                              style: const TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+
+                        const SizedBox(height: 24),
+
+                        TextButton(
+                          onPressed: () {
+                            Provider.of<AuthProvider>(context, listen: false)
+                                .loginAsGuest();
+                          },
+                          child: Text(
+                            "Continue as Guest",
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white.withValues(alpha: 0.9),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 32),
+                        Text(
+                          AppLocalizations.of(context)
+                                  ?.translate('privacy_note') ??
+                              "Your privacy is our priority. We'll send a secure OTP.",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.5),
+                              fontSize: 13),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

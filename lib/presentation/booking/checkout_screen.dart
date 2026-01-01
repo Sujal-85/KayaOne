@@ -62,181 +62,249 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text("Review & Pay",
-            style: GoogleFonts.outfit(fontWeight: FontWeight.w700)),
+            style: GoogleFonts.outfit(
+                fontWeight: FontWeight.w700, color: Colors.white)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: CircleAvatar(
+            backgroundColor: Colors.white.withOpacity(0.2),
+            child: const Icon(Icons.arrow_back_ios_new_rounded,
+                color: Colors.white, size: 18),
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/home_bg_leaves.png'),
+            fit: BoxFit.cover,
+          ),
+        ),
         child: Column(
           children: [
-            const BookingStepIndicator(currentStep: 3),
+            const SizedBox(height: 20),
             Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Patient & Collection Info
-                    _buildSectionHeader("Service Details"),
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                              color: Colors.black.withOpacity(0.02),
-                              blurRadius: 10)
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          _buildDetailRow(Icons.person_rounded, "Patient",
-                              bookingProvider.patientName ?? "User"),
-                          const Divider(height: 32),
-                          _buildDetailRow(Icons.location_on_rounded, "Address",
-                              bookingProvider.selectedAddress ?? "Not set"),
-                          const Divider(height: 32),
-                          _buildDetailRow(
-                              Icons.calendar_month_rounded,
-                              "Schedule",
-                              "${bookingProvider.selectedDate}, ${bookingProvider.selectedSlot}"),
-                        ],
-                      ),
+              child: Container(
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(32),
+                    topRight: Radius.circular(32),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 15,
+                      offset: const Offset(0, 5),
                     ),
-
-                    const SizedBox(height: 32),
-                    _buildSectionHeader("Selected Tests"),
-                    const SizedBox(height: 12),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                              color: Colors.black.withOpacity(0.02),
-                              blurRadius: 10)
-                        ],
-                      ),
-                      child: bookingProvider.selectedTests.isEmpty
-                          ? ListTile(
-                              leading: Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.primaryGreen.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: const Icon(Icons.description_rounded,
-                                    color: AppTheme.primaryGreen),
-                              ),
-                              title: Text("Prescription-Based Service",
-                                  style: GoogleFonts.plusJakartaSans(
-                                      fontWeight: FontWeight.w700,
-                                      color: AppTheme.darkBlue)),
-                              subtitle: Text(
-                                  "Diagnostics will be confirmed after review",
-                                  style: GoogleFonts.plusJakartaSans(
-                                      fontSize: 12, color: Colors.grey)),
-                              trailing: Text("₹0",
-                                  style: GoogleFonts.outfit(
-                                      fontWeight: FontWeight.w800,
-                                      color: AppTheme.primaryGreen,
-                                      fontSize: 16)),
-                            )
-                          : Column(
-                              children:
-                                  bookingProvider.selectedTests.map((test) {
-                              return ListTile(
-                                contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 20, vertical: 8),
-                                title: Text(test['name']!,
-                                    style: GoogleFonts.plusJakartaSans(
-                                        fontWeight: FontWeight.w700,
-                                        color: AppTheme.darkBlue)),
-                                subtitle: Text(test['category'] ?? "General",
-                                    style: GoogleFonts.plusJakartaSans(
-                                        fontSize: 12, color: Colors.grey)),
-                                trailing: Text("₹${test['price']}",
-                                    style: GoogleFonts.outfit(
-                                        fontWeight: FontWeight.w800,
-                                        color: AppTheme.primaryGreen,
-                                        fontSize: 16)),
-                              );
-                            }).toList()),
-                    ),
-
-                    const SizedBox(height: 32),
-                    _buildSectionHeader("Payment Summary"),
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: AppTheme.darkBlue,
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                              color: AppTheme.darkBlue.withOpacity(0.2),
-                              blurRadius: 20,
-                              offset: const Offset(0, 10))
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          _priceRow("Subtotal", "₹$total", Colors.white70),
-                          _priceRow("Collection Fee", "₹99", Colors.white70),
-                          _priceRow("Platform Discount", "-₹50",
-                              AppTheme.primaryGreen,
-                              isDiscount: true),
-                          const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 16),
-                            child: Divider(color: Colors.white12),
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Column(
+                    children: [
+                      const BookingStepIndicator(currentStep: 3),
+                      Expanded(
+                        child: SingleChildScrollView(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("Total Amount",
-                                  style: GoogleFonts.outfit(
-                                      color: Colors.white,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600)),
-                              Text("₹${total + 99 - 50}",
-                                  style: GoogleFonts.outfit(
-                                      color: Colors.white,
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.w900)),
+                              // Patient & Collection Info
+                              _buildSectionHeader("Service Details"),
+                              const SizedBox(height: 12),
+                              Container(
+                                padding: const EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(24),
+                                  boxShadow: [
+                                    BoxShadow(
+                                        color: Colors.black.withOpacity(0.02),
+                                        blurRadius: 10)
+                                  ],
+                                ),
+                                child: Column(
+                                  children: [
+                                    _buildDetailRow(
+                                        Icons.person_rounded,
+                                        "Patient",
+                                        bookingProvider.patientName ?? "User"),
+                                    const Divider(height: 32),
+                                    _buildDetailRow(
+                                        Icons.location_on_rounded,
+                                        "Address",
+                                        bookingProvider.selectedAddress ??
+                                            "Not set"),
+                                    const Divider(height: 32),
+                                    _buildDetailRow(
+                                        Icons.calendar_month_rounded,
+                                        "Schedule",
+                                        "${bookingProvider.selectedDate}, ${bookingProvider.selectedSlot}"),
+                                  ],
+                                ),
+                              ),
+
+                              const SizedBox(height: 32),
+                              _buildSectionHeader("Selected Tests"),
+                              const SizedBox(height: 12),
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(24),
+                                  boxShadow: [
+                                    BoxShadow(
+                                        color: Colors.black.withOpacity(0.02),
+                                        blurRadius: 10)
+                                  ],
+                                ),
+                                child: bookingProvider.selectedTests.isEmpty
+                                    ? ListTile(
+                                        leading: Container(
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color: AppTheme.primaryGreen
+                                                .withOpacity(0.1),
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                          ),
+                                          child: const Icon(
+                                              Icons.description_rounded,
+                                              color: AppTheme.primaryGreen),
+                                        ),
+                                        title: Text(
+                                            "Prescription-Based Service",
+                                            style: GoogleFonts.plusJakartaSans(
+                                                fontWeight: FontWeight.w700,
+                                                color: AppTheme.darkBlue)),
+                                        subtitle: Text(
+                                            "Diagnostics will be confirmed after review",
+                                            style: GoogleFonts.plusJakartaSans(
+                                                fontSize: 12,
+                                                color: Colors.grey)),
+                                        trailing: Text("₹0",
+                                            style: GoogleFonts.outfit(
+                                                fontWeight: FontWeight.w800,
+                                                color: AppTheme.primaryGreen,
+                                                fontSize: 16)),
+                                      )
+                                    : Column(
+                                        children: bookingProvider.selectedTests
+                                            .map((test) {
+                                        return ListTile(
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                  horizontal: 20, vertical: 8),
+                                          title: Text(test['name']!,
+                                              style:
+                                                  GoogleFonts.plusJakartaSans(
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                      color:
+                                                          AppTheme.darkBlue)),
+                                          subtitle: Text(
+                                              test['category'] ?? "General",
+                                              style:
+                                                  GoogleFonts.plusJakartaSans(
+                                                      fontSize: 12,
+                                                      color: Colors.grey)),
+                                          trailing: Text("₹${test['price']}",
+                                              style: GoogleFonts.outfit(
+                                                  fontWeight: FontWeight.w800,
+                                                  color: AppTheme.primaryGreen,
+                                                  fontSize: 16)),
+                                        );
+                                      }).toList()),
+                              ),
+
+                              const SizedBox(height: 32),
+                              _buildSectionHeader("Payment Summary"),
+                              const SizedBox(height: 12),
+                              Container(
+                                padding: const EdgeInsets.all(24),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.darkBlue,
+                                  borderRadius: BorderRadius.circular(24),
+                                  boxShadow: [
+                                    BoxShadow(
+                                        color:
+                                            AppTheme.darkBlue.withOpacity(0.2),
+                                        blurRadius: 20,
+                                        offset: const Offset(0, 10))
+                                  ],
+                                ),
+                                child: Column(
+                                  children: [
+                                    _priceRow(
+                                        "Subtotal", "₹$total", Colors.white70),
+                                    _priceRow("Collection Fee", "₹99",
+                                        Colors.white70),
+                                    _priceRow("Platform Discount", "-₹50",
+                                        AppTheme.primaryGreen,
+                                        isDiscount: true),
+                                    const Padding(
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: 16),
+                                      child: Divider(color: Colors.white12),
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text("Total Amount",
+                                            style: GoogleFonts.outfit(
+                                                color: Colors.white,
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w600)),
+                                        Text("₹${total + 99 - 50}",
+                                            style: GoogleFonts.outfit(
+                                                color: Colors.white,
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.w900)),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              const SizedBox(height: 40),
+                              ElevatedButton(
+                                onPressed: _isBooking
+                                    ? null
+                                    : () => _handleBooking(
+                                        context, authProvider, bookingProvider),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppTheme.primaryGreen,
+                                  foregroundColor: Colors.white,
+                                  minimumSize: const Size(double.infinity, 64),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20)),
+                                  elevation: 0,
+                                ),
+                                child: _isBooking
+                                    ? const SizedBox(
+                                        height: 24,
+                                        width: 24,
+                                        child: CircularProgressIndicator(
+                                            color: Colors.white,
+                                            strokeWidth: 2))
+                                    : Text("Confirm & Book Now",
+                                        style: GoogleFonts.outfit(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w800)),
+                              ),
+                              const SizedBox(height: 100),
                             ],
                           ),
-                        ],
+                        ),
                       ),
-                    ),
-
-                    const SizedBox(height: 40),
-                    ElevatedButton(
-                      onPressed: _isBooking
-                          ? null
-                          : () => _handleBooking(
-                              context, authProvider, bookingProvider),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryGreen,
-                        foregroundColor: Colors.white,
-                        minimumSize: const Size(double.infinity, 64),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20)),
-                        elevation: 0,
-                      ),
-                      child: _isBooking
-                          ? const SizedBox(
-                              height: 24,
-                              width: 24,
-                              child: CircularProgressIndicator(
-                                  color: Colors.white, strokeWidth: 2))
-                          : Text("Confirm & Book Now",
-                              style: GoogleFonts.outfit(
-                                  fontSize: 18, fontWeight: FontWeight.w800)),
-                    ),
-                    const SizedBox(height: 100),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

@@ -11,6 +11,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   intl: any
+  http: ^1.2.0
   provider: ^6.1.2
   lottie: ^3.1.2
   shared_preferences: ^2.2.3
@@ -28,7 +29,8 @@ dependencies:
   video_player: ^2.8.1
   file_picker: ^10.3.8
   image_picker: ^1.2.1
-  supabase_flutter: ^2.12.0
+  cloudinary_flutter: ^1.2.0
+  cloudinary_url_gen: ^1.1.0
   image_cropper: ^11.0.0
   flutter_animate: ^4.5.2
   url_launcher: ^6.3.2
@@ -51,6 +53,8 @@ flutter:
   assets:
     - assets/lottie/
     - assets/images/
+    - assets/images/products/coming_soon/
+    - assets/images/services/
     - assets/images/splash_images/
     - assets/lottie/loading_animation.json
     - assets/images/products/
