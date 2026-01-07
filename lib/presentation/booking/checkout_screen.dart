@@ -87,7 +87,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         ),
         child: Column(
           children: [
-            const SizedBox(height: 20),
+            const SizedBox(height: 100),
             Expanded(
               child: Container(
                 clipBehavior: Clip.antiAlias,

@@ -52,6 +52,9 @@ flutter:
 
   assets:
     - assets/lottie/
+    - assets/kayark/
+    - assets/kayark/banners-hori/
+    - assets/kayark/banners-vertical/
     - assets/images/
     - assets/images/products/coming_soon/
     - assets/images/services/

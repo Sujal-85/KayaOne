@@ -39,7 +39,7 @@ class SplashScreen extends StatelessWidget {
               children: [
                 // Logo / App Name
                 Text(
-                  "KayOne",
+                  "KayaOne",
                   style: GoogleFonts.outfit(
                     fontSize: 48,
                     fontWeight: FontWeight.w900,

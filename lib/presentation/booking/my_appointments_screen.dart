@@ -412,7 +412,7 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded,
-              color: AppTheme.darkBlue),
+              color: Color.fromARGB(255, 255, 255, 255)),
           onPressed: () async {
             final didPop = await Navigator.maybePop(context);
             if (!didPop) HomeScreenState.of(context)?.setIndex(0);
@@ -561,17 +561,17 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
           children: [
             Lottie.asset('assets/lottie/No Data Animation.json',
                 width: 250, height: 250, fit: BoxFit.contain),
-            const SizedBox(height: 60),
+            const SizedBox(height: 4),
             Text(title,
                 style: GoogleFonts.outfit(
                     fontSize: 24,
                     fontWeight: FontWeight.w800,
                     color: Colors.white)), // White title
-            const SizedBox(height: 16),
+            const SizedBox(height: 4),
             Text(subtitle,
                 style: GoogleFonts.plusJakartaSans(
                     color: Colors.white70)), // White subtitle
-            const SizedBox(height: 50),
+            const SizedBox(height: 12),
             if (widget.filterType == AppointmentType.doctor ||
                 widget.filterType == null) ...[
               Center(
@@ -588,7 +588,7 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
             ],
             if (widget.filterType == AppointmentType.lab ||
                 widget.filterType == null) ...[

@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:kayaone/core/theme/app_theme.dart';
 import 'package:kayaone/core/localization/app_localizations.dart';
 import 'package:kayaone/presentation/booking/my_appointments_screen.dart';
+import 'package:kayaone/core/utils/whatsapp_helper.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class DoctorBookingDetailScreen extends StatelessWidget {
   final AppointmentItem appointment;
@@ -220,6 +222,25 @@ class DoctorBookingDetailScreen extends StatelessWidget {
                               ],
                             ),
                           ],
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Chat for Updates Button
+                      Center(
+                        child: TextButton.icon(
+                          onPressed: () => WhatsAppHelper.launchWhatsApp(
+                              message:
+                                  "Hi, I want to update slot for Doctor Appointment #${appointment.id}"),
+                          icon: const FaIcon(FontAwesomeIcons.whatsapp,
+                              color: Color(0xFF25D366)),
+                          label: Text(
+                            "Chat for Slot Updates",
+                            style: GoogleFonts.plusJakartaSans(
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF25D366),
+                            ),
+                          ),
                         ),
                       ),
                     ],

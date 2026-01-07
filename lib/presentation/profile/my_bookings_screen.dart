@@ -5,6 +5,7 @@ import 'package:kayaone/core/theme/app_theme.dart';
 import 'package:kayaone/state/auth_provider.dart';
 import 'package:kayaone/data/services/booking_service.dart';
 import 'package:kayaone/core/localization/app_localizations.dart';
+import 'package:kayaone/presentation/tracking/tracking_screen.dart';
 
 class MyBookingsScreen extends StatefulWidget {
   const MyBookingsScreen({super.key});
@@ -43,147 +44,402 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
   Widget build(BuildContext context) {
     var appLocalizations = AppLocalizations.of(context);
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: const Color(0xFFF7F9FC),
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text(appLocalizations?.translate('my_bookings') ?? "My Bookings",
-            style: GoogleFonts.outfit(fontWeight: FontWeight.w700)),
+        centerTitle: true,
+        title: Text(
+          appLocalizations?.translate('my_bookings') ?? "My Bookings",
+          style: GoogleFonts.outfit(
+            fontWeight: FontWeight.w700,
+            color: AppTheme.darkBlue,
+            fontSize: 20,
+          ),
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
-      ),
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppTheme.primaryGreen))
-          : _bookings.isEmpty
-              ? _buildEmptyState()
-              : ListView.builder(
-                  padding: const EdgeInsets.all(24),
-                  itemCount: _bookings.length,
-                  itemBuilder: (context, index) {
-                    final booking = _bookings[index];
-                    return _buildBookingCard(booking);
-                  },
+        leading: IconButton(
+          icon: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withAlpha(20),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
                 ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    var appLocalizations = AppLocalizations.of(context);
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+              ],
+            ),
+            child: const Icon(Icons.arrow_back_ios_new_rounded,
+                color: AppTheme.darkBlue, size: 18),
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: Stack(
         children: [
-          Icon(Icons.inventory_2_outlined,
-              size: 80, color: Colors.grey.shade300),
-          const SizedBox(height: 24),
-          Text(
-              appLocalizations?.translate('no_bookings_yet') ??
-                  "No Bookings Yet",
-              style: GoogleFonts.outfit(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                  color: AppTheme.darkBlue)),
-          const SizedBox(height: 8),
-          Text(
-              appLocalizations?.translate('medical_history_placeholder') ??
-                  "Your medical test history will appear here",
-              style: GoogleFonts.plusJakartaSans(color: Colors.grey)),
+          // Background Elements
+          Positioned(
+            top: -100,
+            right: -100,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primaryGreen.withAlpha(20),
+                    blurRadius: 50,
+                    spreadRadius: 10,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          SafeArea(
+            child: _isLoading
+                ? const Center(
+                    child:
+                        CircularProgressIndicator(color: AppTheme.primaryGreen))
+                : _bookings.isEmpty
+                    ? _buildEmptyState()
+                    : ListView.separated(
+                        padding: const EdgeInsets.all(24),
+                        itemCount: _bookings.length,
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(height: 20),
+                        itemBuilder: (context, index) {
+                          return _buildPremiumBookingCard(_bookings[index]);
+                        },
+                      ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildBookingCard(dynamic booking) {
-    var appLocalizations = AppLocalizations.of(context);
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(30),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withAlpha(10),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Icon(Icons.calendar_today_rounded,
+                size: 60, color: AppTheme.primaryGreen.withAlpha(150)),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            "No Bookings Yet",
+            style: GoogleFonts.outfit(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.darkBlue),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "Your scheduled appointments will appear here.",
+            style: GoogleFonts.plusJakartaSans(
+              color: Colors.grey[600],
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPremiumBookingCard(dynamic booking) {
     final String status = booking['status'] ?? "Confirmed";
-    final bool isCompleted = status == "Completed";
+    final bool isCompleted = status.toLowerCase() == "completed";
+    final bool isCancelled = status.toLowerCase() == "cancelled";
+
+    Color statusColor = isCompleted
+        ? const Color(0xFF00C853) // Green
+        : isCancelled
+            ? const Color(0xFFFF5252) // Red
+            : const Color(0xFF2962FF); // Blue
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.02),
-              blurRadius: 10,
-              offset: const Offset(0, 4)),
+            color: Colors.black.withAlpha(15),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: (isCompleted ? Colors.green : Colors.blue)
-                      .withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  status.toUpperCase(),
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
-                    color: isCompleted ? Colors.green : Colors.blue,
+          // 1. Header Section (Status & Date)
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: statusColor.withAlpha(15),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: statusColor,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    status.toUpperCase(),
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                      letterSpacing: 1,
+                    ),
                   ),
                 ),
-              ),
-              Text(
-                booking['date'] ?? "",
-                style: GoogleFonts.plusJakartaSans(
-                    color: Colors.grey,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            appLocalizations?.translate('blood_collection_labs') ??
-                "Blood Collection & Labs",
-            style: GoogleFonts.outfit(
-                fontWeight: FontWeight.w800,
-                fontSize: 18,
-                color: AppTheme.darkBlue),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            "${booking['tests']?.length ?? 0} ${appLocalizations?.translate('tests_selected') ?? 'Tests Selected'}",
-            style:
-                GoogleFonts.plusJakartaSans(color: Colors.grey, fontSize: 13),
-          ),
-          const Divider(height: 32),
-          Row(
-            children: [
-              Icon(Icons.location_on_rounded,
-                  size: 16, color: Colors.grey.shade400),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  booking['address'] ??
-                      (appLocalizations?.translate('collection_address') ??
-                          "Collection Address"),
-                  style: GoogleFonts.plusJakartaSans(
-                      fontSize: 13, color: AppTheme.darkBlue.withOpacity(0.7)),
-                  overflow: TextOverflow.ellipsis,
+                Row(
+                  children: [
+                    Icon(Icons.calendar_month_outlined,
+                        size: 16, color: statusColor),
+                    const SizedBox(width: 6),
+                    Text(
+                      booking['date'] ?? "Unknown Date",
+                      style: GoogleFonts.plusJakartaSans(
+                        color: statusColor,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              Text(
-                "₹${booking['totalAmount']}",
-                style: GoogleFonts.outfit(
-                    fontWeight: FontWeight.w900,
-                    fontSize: 18,
-                    color: AppTheme.primaryGreen),
-              ),
-            ],
+              ],
+            ),
+          ),
+
+          // 2. Content Section
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF0F4FF),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Icon(Icons.science_outlined,
+                          color: Color(0xFF2962FF), size: 28),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Lab Test Booking",
+                            style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 18,
+                              color: AppTheme.darkBlue,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            "${booking['tests']?.length ?? 0} Tests Included",
+                            style: GoogleFonts.plusJakartaSans(
+                              color: Colors.grey[600],
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20),
+                  child: DottedLineSeparator(),
+                ),
+
+                // Details Grid
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildDetailItem(
+                        Icons.location_on_outlined,
+                        "Location",
+                        booking['address'] ?? "Home Collection",
+                      ),
+                    ),
+                    Container(width: 1, height: 40, color: Colors.grey[200]),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 16),
+                        child: _buildDetailItem(
+                          Icons.payments_outlined,
+                          "Total Amount",
+                          "₹${booking['totalAmount']}",
+                          isPrice: true,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // 3. Action Footer
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            child: Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 48,
+                    child: OutlinedButton(
+                      onPressed: () {
+                        // TODO: Navigate to details
+                      },
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: Colors.grey.shade300),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                        backgroundColor: Colors.transparent,
+                      ),
+                      child: Text(
+                        "Receipt",
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.darkBlue,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: SizedBox(
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const TrackingScreen()),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primaryGreen,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        "Track Status",
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildDetailItem(IconData icon, String label, String value,
+      {bool isPrice = false}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 14, color: Colors.grey[400]),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 12,
+                color: Colors.grey[500],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Text(
+          value,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            color: isPrice ? AppTheme.primaryGreen : AppTheme.darkBlue,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class DottedLineSeparator extends StatelessWidget {
+  const DottedLineSeparator({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final boxWidth = constraints.constrainWidth();
+        const dashWidth = 6.0;
+        final dashCount = (boxWidth / (2 * dashWidth)).floor();
+        return Flex(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          direction: Axis.horizontal,
+          children: List.generate(dashCount, (_) {
+            return SizedBox(
+              width: dashWidth,
+              height: 1,
+              child: DecoratedBox(
+                decoration: BoxDecoration(color: Colors.grey[300]),
+              ),
+            );
+          }),
+        );
+      },
     );
   }
 }

@@ -1,5 +1,5 @@
 {
-    "app_name": "kayaone",
+    "app_name": "KayaOne",
     "tagline": "Healthcare at your doorstep",
     "choose_language": "Choose your preferred language",
     "get_started": "Get Started",
@@ -21,7 +21,7 @@
     "smart_recommendations": "Smart Test Recommendations",
     "active_orders": "Active Orders",
     "welcome_home": "Welcome Home",
-    "join_community": "Join our community of care. Enter your number to proceed.",
+    "join_community": "Join our community of care.\n Enter your number to proceed.",
     "phone_number_hint": "Phone Number",
     "continue": "Continue",
     "privacy_note": "Your privacy is our priority. We'll send a secure OTP.",

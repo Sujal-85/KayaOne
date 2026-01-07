@@ -3,6 +3,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:kayaone/core/theme/app_theme.dart';
 import 'package:kayaone/core/localization/app_localizations.dart';
 import 'package:kayaone/presentation/booking/my_appointments_screen.dart';
+import 'package:kayaone/core/utils/whatsapp_helper.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:kayaone/presentation/booking/widgets/booking_status_tracker.dart';
+import 'package:kayaone/core/utils/booking_status_helper.dart';
+import 'dart:math';
 
 class LabBookingDetailScreen extends StatelessWidget {
   final AppointmentItem appointment;
@@ -29,7 +34,7 @@ class LabBookingDetailScreen extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          loc?.translate('booking_details') ?? "Booking Details",
+          loc?.translate('Booking Details') ?? "Booking Details",
           style: GoogleFonts.outfit(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -46,7 +51,7 @@ class LabBookingDetailScreen extends StatelessWidget {
         ),
         child: Column(
           children: [
-            const SizedBox(height: 20),
+            const SizedBox(height: 100),
             Expanded(
               child: Container(
                 clipBehavior: Clip.antiAlias,
@@ -126,7 +131,7 @@ class LabBookingDetailScreen extends StatelessWidget {
                         style: GoogleFonts.outfit(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: AppTheme.darkBlue,
+                          color: const Color.fromARGB(255, 255, 255, 255),
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -301,6 +306,25 @@ class LabBookingDetailScreen extends StatelessWidget {
                               ),
                             ),
                           ],
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Chat for Updates Button
+                      Center(
+                        child: TextButton.icon(
+                          onPressed: () => WhatsAppHelper.launchWhatsApp(
+                              message:
+                                  "Hi, I want to update slot for Lab Booking #${appointment.id}"),
+                          icon: const FaIcon(FontAwesomeIcons.whatsapp,
+                              color: Color(0xFF25D366)),
+                          label: Text(
+                            "Chat for Slot Updates",
+                            style: GoogleFonts.plusJakartaSans(
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF25D366),
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 40),

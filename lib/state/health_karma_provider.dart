@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kayaone/data/models/health_karma.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -21,9 +23,15 @@ class HealthKarmaProvider with ChangeNotifier {
 
   Future<void> _fetchScore() async {
     try {
-      // Supabase removed. Implement local storage or Cloudinary DB later.
-      // For now, no-op or mocked.
-      debugPrint("Fetching HealthKarma score (Mock)");
+      final prefs = await SharedPreferences.getInstance();
+      final String? resultString = prefs.getString('health_karma_result');
+
+      if (resultString != null && resultString.isNotEmpty) {
+        final Map<String, dynamic> jsonMap = jsonDecode(resultString);
+        _result = HealthKarmaResult.fromJson(jsonMap);
+        notifyListeners();
+        debugPrint("Health Karma loaded from local storage.");
+      }
     } catch (e) {
       debugPrint("Error fetching HealthKarma score: $e");
     }
@@ -31,11 +39,15 @@ class HealthKarmaProvider with ChangeNotifier {
 
   Future<void> saveScore(HealthKarmaResult result) async {
     try {
-      // Supabase removed.
-      debugPrint("Saving HealthKarma score (Mock)");
-      // Also update local state
+      final prefs = await SharedPreferences.getInstance();
+      final String jsonString = jsonEncode(result.toJson());
+
+      await prefs.setString('health_karma_result', jsonString);
+
+      // Update local state
       _result = result;
       notifyListeners();
+      debugPrint("Health Karma saved to local storage.");
     } catch (e) {
       debugPrint("Error saving HealthKarma score: $e");
     }
@@ -182,6 +194,7 @@ class HealthKarmaProvider with ChangeNotifier {
 
   void setResults(HealthKarmaResult result) {
     _result = result;
+    saveScore(result);
     _isLoading = false;
     notifyListeners();
   }

@@ -237,12 +237,12 @@ class _DoctorListingScreenState extends State<DoctorListingScreen> {
                                 return Center(
                                   child: Column(
                                     children: [
-                                      const SizedBox(height: 40),
+                                      const SizedBox(height: 12),
                                       Lottie.asset(
                                           'assets/lottie/No Data Animation.json',
                                           width: 250,
                                           height: 250),
-                                      const SizedBox(height: 40),
+                                      const SizedBox(height: 4),
                                       Text(
                                         "No doctors found",
                                         style: GoogleFonts.outfit(

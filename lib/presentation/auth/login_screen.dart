@@ -126,7 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: AppTheme.milkyWhite,
       body: LayoutBuilder(builder: (context, constraints) {
         final isSmallHeight = constraints.maxHeight < 700;
-        final logoSize = isSmallHeight ? 48.0 : 64.0;
+        final logoSize = isSmallHeight ? 64.0 : 80.0; // Increased size
         final titleSize = isSmallHeight ? 28.0 : 32.0;
 
         return Stack(
@@ -160,7 +160,7 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Center(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 24.0, vertical: 40.0),
+                      horizontal: .0, vertical: 20.0),
                   child: AutofillGroup(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -168,10 +168,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         // Logo & App Name
                         Container(
-                          padding: const EdgeInsets.all(
-                              16), // Increased padding for better breathing room
+                          padding: const EdgeInsets.all(8), // Reduced padding
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.1),
+                            color: Colors.white.withValues(
+                                alpha: 0.15), // Slightly more visible bg
                             shape: BoxShape.circle,
                             border: Border.all(
                                 color: Colors.white.withValues(alpha: 0.3),
@@ -184,15 +184,15 @@ class _LoginScreenState extends State<LoginScreen> {
                             fit: BoxFit.contain, // Ensure logo isn't cropped
                           ),
                         ),
-                        const SizedBox(height: 48),
+                        const SizedBox(height: 24),
                         Text(
                           AppLocalizations.of(context)?.translate('app_name') ??
                               "KAYAONE",
                           style: GoogleFonts.outfit(
                             fontSize: 32,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700, // Standard Bold
                             color: Colors.white,
-                            letterSpacing: 2.0,
+                            letterSpacing: 0, // Standard spacing
                           ),
                         ),
 
@@ -226,57 +226,60 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(height: 40),
 
                         // Input Field (Transparent/White)
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white
-                                .withValues(alpha: 0.9), // Increased opacity
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: _isFocused
-                                  ? AppTheme.primaryGreen
-                                  : Colors.white.withValues(alpha: 0.3),
-                              width: 1.5,
-                            ),
-                          ),
-                          child: TextField(
-                            controller: _phoneController,
-                            focusNode: _phoneFocusNode,
-                            keyboardType: TextInputType.phone,
-                            autofillHints: const [
-                              AutofillHints.telephoneNumber
-                            ],
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.5,
-                              color: Colors.black, // Changed to black
-                            ),
-                            decoration: InputDecoration(
-                              hintText: AppLocalizations.of(context)
-                                      ?.translate('phone_number_hint') ??
-                                  "Phone Number",
-                              hintStyle: const TextStyle(
-                                letterSpacing: 0,
-                                fontWeight: FontWeight.w400,
-                                color: Colors
-                                    .black54, // Better contrast on nearly white bg
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white
+                                  .withValues(alpha: 0.9), // Increased opacity
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: _isFocused
+                                    ? AppTheme.primaryGreen
+                                    : Colors.white.withValues(alpha: 0.3),
+                                width: 1.5,
                               ),
-                              prefixIcon: const Padding(
-                                padding: EdgeInsets.only(left: 20, right: 12),
-                                child: Text(
-                                  "🇮🇳 +91",
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black, // Changed to black
+                            ),
+                            child: TextField(
+                              controller: _phoneController,
+                              focusNode: _phoneFocusNode,
+                              keyboardType: TextInputType.phone,
+                              autofillHints: const [
+                                AutofillHints.telephoneNumber
+                              ],
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.5,
+                                color: Colors.black, // Changed to black
+                              ),
+                              decoration: InputDecoration(
+                                hintText: AppLocalizations.of(context)
+                                        ?.translate('phone_number_hint') ??
+                                    "Phone Number",
+                                hintStyle: const TextStyle(
+                                  letterSpacing: 0,
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors
+                                      .black54, // Better contrast on nearly white bg
+                                ),
+                                prefixIcon: const Padding(
+                                  padding: EdgeInsets.only(left: 20, right: 12),
+                                  child: Text(
+                                    "🇮🇳 +91",
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black, // Changed to black
+                                    ),
                                   ),
                                 ),
+                                prefixIconConstraints: const BoxConstraints(
+                                    minWidth: 0, minHeight: 0),
+                                border: InputBorder.none,
+                                contentPadding:
+                                    const EdgeInsets.symmetric(vertical: 22),
                               ),
-                              prefixIconConstraints: const BoxConstraints(
-                                  minWidth: 0, minHeight: 0),
-                              border: InputBorder.none,
-                              contentPadding:
-                                  const EdgeInsets.symmetric(vertical: 22),
                             ),
                           ),
                         ),
@@ -288,23 +291,27 @@ class _LoginScreenState extends State<LoginScreen> {
                               child: CircularProgressIndicator(
                                   color: Colors.white))
                         else
-                          ElevatedButton(
-                            onPressed: _handlePhoneVerification,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              foregroundColor:
-                                  Colors.black, // Dark text on white button
-                              minimumSize: const Size(double.infinity, 64),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20)),
-                              elevation: 0,
-                            ),
-                            child: Text(
-                              AppLocalizations.of(context)
-                                      ?.translate('continue') ??
-                                  "Continue",
-                              style: const TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold),
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 24.0),
+                            child: ElevatedButton(
+                              onPressed: _handlePhoneVerification,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                foregroundColor:
+                                    Colors.black, // Dark text on white button
+                                minimumSize: const Size(double.infinity, 64),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20)),
+                                elevation: 0,
+                              ),
+                              child: Text(
+                                AppLocalizations.of(context)
+                                        ?.translate('continue') ??
+                                    "Continue",
+                                style: const TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.bold),
+                              ),
                             ),
                           ),
 

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class BookingProvider with ChangeNotifier {
   final List<Map<String, dynamic>> _selectedTests = [];
@@ -11,7 +13,11 @@ class BookingProvider with ChangeNotifier {
   String? _patientName;
   String? _patientPhone;
 
-  final List<Map<String, String>> _savedAddresses = [];
+  List<Map<String, String>> _savedAddresses = [];
+
+  BookingProvider() {
+    _loadSavedAddresses();
+  }
 
   List<Map<String, dynamic>> get selectedTests => _selectedTests;
   String? get prescriptionPath => _prescriptionPath;
@@ -22,13 +28,32 @@ class BookingProvider with ChangeNotifier {
   String? get patientPhone => _patientPhone;
   List<Map<String, String>> get savedAddresses => _savedAddresses;
 
+  Future<void> _loadSavedAddresses() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? storedAddresses = prefs.getString('saved_addresses');
+    if (storedAddresses != null) {
+      final List<dynamic> decoded = jsonDecode(storedAddresses);
+      _savedAddresses =
+          decoded.map((e) => Map<String, String>.from(e)).toList();
+      notifyListeners();
+    }
+  }
+
+  Future<void> _saveAddresses() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String encoded = jsonEncode(_savedAddresses);
+    await prefs.setString('saved_addresses', encoded);
+  }
+
   void addSavedAddress(Map<String, String> address) {
     _savedAddresses.add(address);
+    _saveAddresses();
     notifyListeners();
   }
 
   void removeSavedAddress(int index) {
     _savedAddresses.removeAt(index);
+    _saveAddresses();
     notifyListeners();
   }
 

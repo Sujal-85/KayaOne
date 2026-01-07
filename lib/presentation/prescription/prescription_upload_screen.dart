@@ -113,19 +113,21 @@ class _PrescriptionUploadScreenState extends State<PrescriptionUploadScreen> {
           auth.userId ?? 'guest',
           File(result.files.single.path!),
         );
+        // publicUrl will not be null if no exception is thrown
         if (publicUrl != null) {
           provider.setPrescription(publicUrl);
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Upload failed. Please check Storage policies."),
-              backgroundColor: Colors.red,
-            ),
-          );
         }
       }
     } catch (e) {
-      debugPrint("Error picking file: $e");
+      debugPrint("Error uploading file: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } finally {
       setState(() => _isPicking = false);
     }
@@ -137,7 +139,8 @@ class _PrescriptionUploadScreenState extends State<PrescriptionUploadScreen> {
     var appLocalizations = AppLocalizations.of(context);
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: Colors.transparent,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text(
           _currentStep == 0
@@ -145,40 +148,83 @@ class _PrescriptionUploadScreenState extends State<PrescriptionUploadScreen> {
                   "Patient Details")
               : (appLocalizations?.translate('upload_prescription_title') ??
                   "Upload Prescription"),
-          style: GoogleFonts.outfit(fontWeight: FontWeight.w700),
+          style: GoogleFonts.outfit(
+              fontWeight: FontWeight.w700,
+              color: const Color.fromARGB(255, 255, 255, 255)),
         ),
         elevation: 0,
         backgroundColor: Colors.transparent,
-        leading: (_currentStep == 0 && !Navigator.of(context).canPop())
-            ? null
-            : IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                    color: AppTheme.darkBlue),
-                onPressed: () {
-                  if (_currentStep == 1) {
-                    setState(() => _currentStep = 0);
-                  } else {
-                    if (Navigator.of(context).canPop()) {
-                      Navigator.of(context).pop();
-                    }
-                  }
-                },
-              ),
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              BookingStepIndicator(currentStep: _currentStep),
-              const SizedBox(height: 24),
-              if (_currentStep == 0)
-                _buildUserInfoStep(appLocalizations)
-              else
-                _buildUploadStep(bookingProvider, appLocalizations),
-            ],
+        leading: IconButton(
+          icon: CircleAvatar(
+            backgroundColor: Colors.white.withOpacity(0.2),
+            child: const Icon(Icons.arrow_back_ios_new_rounded,
+                color: Colors.white, size: 18),
           ),
+          onPressed: () {
+            if (_currentStep == 1) {
+              setState(() => _currentStep = 0);
+            } else {
+              if (Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
+              }
+            }
+          },
+        ),
+      ),
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/home_bg_leaves.png'),
+            fit: BoxFit.cover,
+            alignment: Alignment.topCenter,
+          ),
+        ),
+        child: Column(
+          children: [
+            const SizedBox(height: 100),
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(32),
+                    topRight: Radius.circular(32),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 15,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 32),
+                    BookingStepIndicator(currentStep: _currentStep),
+                    const SizedBox(height: 24),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (_currentStep == 0)
+                              _buildUserInfoStep(appLocalizations)
+                            else
+                              _buildUploadStep(
+                                  bookingProvider, appLocalizations),
+                            const SizedBox(height: 40),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
