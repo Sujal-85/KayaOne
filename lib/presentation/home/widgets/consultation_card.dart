@@ -79,18 +79,18 @@ class ConsultationCard extends StatelessWidget {
                     alignment: Alignment.bottomCenter,
                     children: [
                       // Using LayoutBuilder to handle the image sizing gracefully
-                      LayoutBuilder(builder: (context, constraints) {
-                        return Positioned(
-                          bottom: 0,
-                          right: -10,
-                          child: Image.asset(
-                            'assets/images/gaurav.png',
-                            height: 320, // Increased size further
-                            fit: BoxFit.contain,
-                          ).animate().fadeIn(duration: 800.ms).slideX(
-                              begin: 0.2, end: 0, curve: Curves.easeOut),
-                        );
-                      }),
+                      Positioned(
+                        bottom: 0,
+                        right: -10,
+                        child: Image.asset(
+                          'assets/images/gaurav.png',
+                          height: 200, // Increased size further
+                          fit: BoxFit.contain,
+                        )
+                            .animate()
+                            .fadeIn(duration: 800.ms)
+                            .slideX(begin: 0.2, end: 0, curve: Curves.easeOut),
+                      ),
                     ],
                   ),
                 ),

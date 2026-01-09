@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:kayaone/data/services/cloudinary_service.dart';
+import 'package:kayaone/data/services/notification_service.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:kayaone/core/localization/app_localizations.dart';
@@ -29,6 +30,9 @@ void main() async {
   // Initialize Supabase
   // Initialize Cloudinary
   CloudinaryService.init();
+
+  // Initialize Notification Service
+  await NotificationService().initialize();
 
   runApp(
     MultiProvider(

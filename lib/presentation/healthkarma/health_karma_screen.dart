@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:kayaone/core/theme/app_theme.dart';
-import 'package:kayaone/presentation/home/home_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';

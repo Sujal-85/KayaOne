@@ -5,9 +5,6 @@ import 'package:kayaone/core/localization/app_localizations.dart';
 import 'package:kayaone/presentation/booking/my_appointments_screen.dart';
 import 'package:kayaone/core/utils/whatsapp_helper.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:kayaone/presentation/booking/widgets/booking_status_tracker.dart';
-import 'package:kayaone/core/utils/booking_status_helper.dart';
-import 'dart:math';
 
 class LabBookingDetailScreen extends StatelessWidget {
   final AppointmentItem appointment;

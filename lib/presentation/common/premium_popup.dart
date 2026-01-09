@@ -165,7 +165,7 @@ class PremiumPopup extends StatelessWidget {
                         shadowColor: (accentColor ?? AppTheme.primaryGreen)
                             .withOpacity(0.4),
                       ).copyWith(
-                        elevation: MaterialStateProperty.all(8),
+                        elevation: WidgetStateProperty.all(8),
                       ),
                       child: Text(
                         btnText,

@@ -11,7 +11,7 @@ class BookingStatusTracker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final stages = BookingStage.values;
+    const stages = BookingStage.values;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),

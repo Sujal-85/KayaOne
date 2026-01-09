@@ -400,7 +400,9 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "Select Delivery Location",
+                    AppLocalizations.of(context)
+                            ?.translate('select_delivery_location') ??
+                        "Select Delivery Location",
                     style: GoogleFonts.outfit(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
@@ -423,7 +425,9 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                 ),
                 child: TextField(
                   decoration: InputDecoration(
-                    hintText: "Enter pin code",
+                    hintText: AppLocalizations.of(context)
+                            ?.translate('enter_pincode') ??
+                        "Enter pin code",
                     hintStyle: GoogleFonts.plusJakartaSans(
                       color: Colors.grey[400],
                       fontSize: 14,
@@ -437,7 +441,8 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                         Navigator.pop(context);
                       },
                       child: Text(
-                        "Apply",
+                        AppLocalizations.of(context)?.translate('apply') ??
+                            "Apply",
                         style: GoogleFonts.plusJakartaSans(
                           color: Colors.grey[600],
                           fontWeight: FontWeight.w600,
@@ -454,7 +459,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
-                      "Or",
+                      AppLocalizations.of(context)?.translate('or') ?? "Or",
                       style: GoogleFonts.plusJakartaSans(
                         color: Colors.grey[400],
                         fontSize: 14,
@@ -488,7 +493,9 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                     elevation: 0,
                   ),
                   child: Text(
-                    "Add New Address",
+                    AppLocalizations.of(context)
+                            ?.translate('add_new_address') ??
+                        "Add New Address",
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
@@ -713,7 +720,9 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Text(
-                                    "Search healthcare products",
+                                    appLocalizations?.translate(
+                                            'search_healthcare_prod') ??
+                                        "Search healthcare products",
                                     style: GoogleFonts.plusJakartaSans(
                                       color: Colors.grey.shade500,
                                       fontSize: 14,
@@ -785,7 +794,8 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
 
                         // Featured Highlights (Now Exclusive Offers)
                         _buildSectionHeader(
-                          "Exclusive Offers",
+                          appLocalizations?.translate('exclusive_offers') ??
+                              "Exclusive Offers",
                         ),
                         // _buildFeaturedBannerSlider(),
                         const AdvertisementCarousel(), // New Widget
@@ -2211,10 +2221,10 @@ class _QuickActionBentoCard extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.icon,
-    this.image,
     required this.gradient,
     required this.height,
     required this.onTap,
+    this.image,
     this.isHorizontal = false,
   });
 

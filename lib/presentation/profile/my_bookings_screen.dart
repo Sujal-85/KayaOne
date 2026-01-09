@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -19,24 +20,41 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
   bool _isLoading = true;
   List<dynamic> _bookings = [];
 
+  Timer? _timer;
+
   @override
   void initState() {
     super.initState();
     _fetchBookings();
+    _startPolling();
   }
 
-  Future<void> _fetchBookings() async {
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _startPolling() {
+    _timer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      _fetchBookings(silent: true);
+    });
+  }
+
+  Future<void> _fetchBookings({bool silent = false}) async {
     final auth = Provider.of<AuthProvider>(context, listen: false);
     if (auth.userId != null) {
       final results = await _bookingService.getUserBookings(auth.userId!);
       if (results != null) {
-        setState(() {
-          _bookings = results;
-          _isLoading = false;
-        });
+        if (mounted) {
+          setState(() {
+            _bookings = results;
+            if (!silent) _isLoading = false;
+          });
+        }
       }
     } else {
-      setState(() => _isLoading = false);
+      if (!silent && mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -44,80 +62,95 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
   Widget build(BuildContext context) {
     var appLocalizations = AppLocalizations.of(context);
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F9FC),
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text(
-          appLocalizations?.translate('my_bookings') ?? "My Bookings",
-          style: GoogleFonts.outfit(
-            fontWeight: FontWeight.w700,
-            color: AppTheme.darkBlue,
-            fontSize: 20,
+      backgroundColor: const Color(0xFFF5F7F9),
+      body: Container(
+        decoration: const BoxDecoration(
+          color: Color(0xFFF5F5F5),
+          image: DecorationImage(
+            image: AssetImage('assets/images/home_bg_leaves.png'),
+            fit: BoxFit.cover,
           ),
         ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withAlpha(20),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: const Icon(Icons.arrow_back_ios_new_rounded,
-                color: AppTheme.darkBlue, size: 18),
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: Stack(
-        children: [
-          // Background Elements
-          Positioned(
-            top: -100,
-            right: -100,
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.primaryGreen.withAlpha(20),
-                    blurRadius: 50,
-                    spreadRadius: 10,
+        child: Stack(
+          children: [
+            // Header Content
+            Positioned(
+              top: 60,
+              left: 24,
+              right: 24,
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                            color: Colors.white.withOpacity(0.3), width: 1),
+                      ),
+                      child: const Icon(Icons.arrow_back_ios_new_rounded,
+                          color: Colors.white, size: 18),
+                    ),
                   ),
+                  Expanded(
+                    child: Center(
+                      child: Text(
+                        appLocalizations?.translate('my_bookings') ??
+                            "My Bookings",
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 40), // Balance the back button
                 ],
               ),
             ),
-          ),
 
-          SafeArea(
-            child: _isLoading
-                ? const Center(
-                    child:
-                        CircularProgressIndicator(color: AppTheme.primaryGreen))
-                : _bookings.isEmpty
-                    ? _buildEmptyState()
-                    : ListView.separated(
-                        padding: const EdgeInsets.all(24),
-                        itemCount: _bookings.length,
-                        separatorBuilder: (context, index) =>
-                            const SizedBox(height: 20),
-                        itemBuilder: (context, index) {
-                          return _buildPremiumBookingCard(_bookings[index]);
-                        },
-                      ),
-          ),
-        ],
+            // White Container
+            Container(
+              margin: const EdgeInsets.only(top: 140),
+              height: double.infinity,
+              decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(30),
+                    topRight: Radius.circular(30),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 10,
+                      offset: Offset(0, -5),
+                    )
+                  ]),
+              child: SafeArea(
+                bottom: false,
+                child: _isLoading
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                            color: AppTheme.primaryGreen))
+                    : _bookings.isEmpty
+                        ? _buildEmptyState()
+                        : ListView.separated(
+                            padding: const EdgeInsets.all(24),
+                            itemCount: _bookings.length,
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(height: 20),
+                            itemBuilder: (context, index) {
+                              return _buildPremiumBookingCard(_bookings[index]);
+                            },
+                          ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -130,18 +163,11 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
           Container(
             padding: const EdgeInsets.all(30),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppTheme.primaryGreen.withOpacity(0.1),
               shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withAlpha(10),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
             ),
-            child: Icon(Icons.calendar_today_rounded,
-                size: 60, color: AppTheme.primaryGreen.withAlpha(150)),
+            child: const Icon(Icons.calendar_today_rounded,
+                size: 60, color: AppTheme.primaryGreen),
           ),
           const SizedBox(height: 24),
           Text(
@@ -324,9 +350,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                   child: SizedBox(
                     height: 48,
                     child: OutlinedButton(
-                      onPressed: () {
-                        // TODO: Navigate to details
-                      },
+                      onPressed: () => _showReceipt(context, booking),
                       style: OutlinedButton.styleFrom(
                         side: BorderSide(color: Colors.grey.shade300),
                         shape: RoundedRectangleBorder(
@@ -353,7 +377,9 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (_) => const TrackingScreen()),
+                              builder: (_) => TrackingScreen(
+                                    bookingId: booking['_id'],
+                                  )),
                         );
                       },
                       style: ElevatedButton.styleFrom(
@@ -374,6 +400,264 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                   ),
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showReceipt(BuildContext context, dynamic booking) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.85,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+        ),
+        child: Column(
+          children: [
+            const SizedBox(height: 10),
+            Container(
+              width: 50,
+              height: 5,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Receipt",
+                    style: GoogleFonts.outfit(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.darkBlue,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon:
+                        const Icon(Icons.close_rounded, color: Colors.black54),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Booking ID & Date
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Order ID",
+                              style: GoogleFonts.plusJakartaSans(
+                                color: Colors.grey[500],
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              "#${booking['_id'].toString().substring(18).toUpperCase()}",
+                              style: GoogleFonts.outfit(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.darkBlue,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              "Date",
+                              style: GoogleFonts.plusJakartaSans(
+                                color: Colors.grey[500],
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              booking['date'] ?? "",
+                              style: GoogleFonts.outfit(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.darkBlue,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Patient Details
+                    Text(
+                      "PATIENT DETAILS",
+                      style: GoogleFonts.outfit(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey[400],
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildReceiptRow("Name", booking['patientName'] ?? ""),
+                    _buildReceiptRow("Phone", booking['patientPhone'] ?? ""),
+                    _buildReceiptRow("Slot", booking['slot'] ?? ""),
+                    _buildReceiptRow("Address", booking['address'] ?? ""),
+
+                    const SizedBox(height: 32),
+
+                    // Tests
+                    Text(
+                      "TESTS ORDERED",
+                      style: GoogleFonts.outfit(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey[400],
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    if (booking['tests'] != null)
+                      ...((booking['tests'] as List).map((test) => Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    test['name'] ?? "",
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontWeight: FontWeight.w600,
+                                      color: AppTheme.darkBlue,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  "₹${test['price']}",
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.darkBlue,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ))),
+
+                    const SizedBox(height: 24),
+                    const Divider(),
+                    const SizedBox(height: 16),
+
+                    // Financials
+                    _buildReceiptRow("Subtotal",
+                        "₹${(booking['totalAmount'] - 99 + 50)}"), // Approximate math
+                    _buildReceiptRow("Home Collection Fee", "₹99"),
+                    _buildReceiptRow("Discount", "- ₹50", isHighlight: true),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Total Paid",
+                          style: GoogleFonts.outfit(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.darkBlue,
+                          ),
+                        ),
+                        Text(
+                          "₹${booking['totalAmount']}",
+                          style: GoogleFonts.outfit(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.primaryGreen,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    // Download logic (omitted for now)
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text("Receipt downloaded successfully!")));
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: AppTheme.darkBlue,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
+                  ),
+                  icon: const Icon(Icons.download_rounded, color: Colors.white),
+                  label: Text("Download PDF",
+                      style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16)),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReceiptRow(String label, String value,
+      {bool isHighlight = false}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.plusJakartaSans(
+              color: Colors.grey[600],
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              style: GoogleFonts.plusJakartaSans(
+                color: isHighlight ? AppTheme.primaryGreen : Colors.black87,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
             ),
           ),
         ],

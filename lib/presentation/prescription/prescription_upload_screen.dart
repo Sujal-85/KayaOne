@@ -413,10 +413,37 @@ class _PrescriptionUploadScreenState extends State<PrescriptionUploadScreen> {
         const SizedBox(height: 8),
         Text(
           loc?.translate('upload_prescription_desc') ??
-              "Uploading a doctor's prescription ensures accurate verification of your tests.",
+              "Do you have a prescription from your doctor? Please upload it here so we can help you better.",
           style: GoogleFonts.plusJakartaSans(
             color: Colors.grey.shade600,
             fontWeight: FontWeight.w500,
+            fontSize: 16,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.blue.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.blue.withOpacity(0.1)),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.info_outline_rounded,
+                  color: Colors.blue, size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  "Don't worry! This helps us verify your tests correctly.",
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 13,
+                    color: Colors.blue.shade700,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 32),

@@ -21,7 +21,7 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
       'name': 'Complete Blood Count (CBC)',
       'key_name': 'test_cbc',
       'key_desc': 'test_cbc_desc',
-      'price': 399,
+      'price': 0, // FREE
       'desc': 'Includes 24 parameters',
       'category': 'General'
     },
@@ -30,7 +30,7 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
       'name': 'Thyroid Profile (T3, T4, TSH)',
       'key_name': 'test_thyroid',
       'key_desc': 'test_thyroid_desc',
-      'price': 599,
+      'price': 0, // FREE
       'desc': 'Check your thyroid function',
       'category': 'Hormonal'
     },
@@ -39,7 +39,7 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
       'name': 'Diabetes Screening (HbA1c)',
       'key_name': 'test_diabetes',
       'key_desc': 'test_diabetes_desc',
-      'price': 449,
+      'price': 0, // FREE
       'desc': 'Average blood sugar levels',
       'category': 'General'
     },
@@ -48,7 +48,7 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
       'name': 'Lipid Profile',
       'key_name': 'test_lipid',
       'key_desc': 'test_lipid_desc',
-      'price': 799,
+      'price': 0, // FREE
       'desc': 'Cholesterol and triglycerides',
       'category': 'Hormonal'
     },
@@ -57,7 +57,7 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
       'name': 'Vitamin B12',
       'key_name': 'test_vitamin',
       'key_desc': 'test_vitamin_desc',
-      'price': 899,
+      'price': 0, // FREE
       'desc': 'Check for B12 deficiency',
       'category': 'Vitamins'
     },
@@ -66,7 +66,7 @@ class _TestSelectionScreenState extends State<TestSelectionScreen> {
       'name': 'Full Body Checkup',
       'key_name': 'test_fullbody',
       'key_desc': 'test_fullbody_desc',
-      'price': 1999,
+      'price': 0, // FREE
       'desc': '60+ comprehensive tests',
       'category': 'Packages'
     },

@@ -7,12 +7,12 @@ import 'package:kayaone/core/theme/app_theme.dart';
 import 'package:kayaone/state/auth_provider.dart';
 import 'package:kayaone/data/services/doctor_service.dart';
 import 'package:kayaone/data/services/booking_service.dart';
-import 'package:kayaone/presentation/doctors/doctor_listing_screen.dart';
-import 'package:kayaone/presentation/prescription/prescription_upload_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:kayaone/presentation/booking/lab_booking_detail_screen.dart';
 import 'package:kayaone/presentation/booking/doctor_booking_detail_screen.dart';
+import 'package:kayaone/presentation/booking/ai_booking_screen.dart';
+import 'package:kayaone/presentation/booking/booking_guide_screen.dart';
 import 'package:kayaone/core/localization/app_localizations.dart';
 
 enum AppointmentType { doctor, lab }
@@ -360,7 +360,8 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (_) => const PrescriptionUploadScreen()));
+                          builder: (_) => const BookingGuideScreen(
+                              isDoctorBooking: false)));
                 }),
               if (widget.filterType == AppointmentType.doctor)
                 _buildNewBookingButton(loc?.translate('find_doctor') ?? "Find",
@@ -368,7 +369,8 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (_) => const DoctorListingScreen()));
+                          builder: (_) =>
+                              const BookingGuideScreen(isDoctorBooking: true)));
                 }),
             ],
           ),
@@ -420,7 +422,7 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
         ),
         title: Text(_title,
             style: GoogleFonts.outfit(
-                fontWeight: FontWeight.w700, color: AppTheme.darkBlue)),
+                fontWeight: FontWeight.w700, color: Colors.white)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
@@ -432,7 +434,8 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
               onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (_) => const PrescriptionUploadScreen())),
+                      builder: (_) =>
+                          const BookingGuideScreen(isDoctorBooking: false))),
             ),
           if (widget.filterType == AppointmentType.doctor)
             IconButton(
@@ -441,7 +444,8 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
               onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (_) => const DoctorListingScreen())),
+                      builder: (_) =>
+                          const BookingGuideScreen(isDoctorBooking: true))),
             ),
           const SizedBox(width: 8),
         ],
@@ -584,7 +588,8 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
                     () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (_) => const DoctorListingScreen())),
+                            builder: (_) => const BookingGuideScreen(
+                                isDoctorBooking: true))),
                   ),
                 ),
               ),
@@ -602,11 +607,15 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
                     () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (_) => const PrescriptionUploadScreen())),
+                            builder: (_) => const BookingGuideScreen(
+                                isDoctorBooking: false))),
                   ),
                 ),
               ),
             ],
+            const SizedBox(height: 16),
+            const SizedBox(height: 16),
+            // Removed AI Assistant card from here
           ],
         ),
       ),

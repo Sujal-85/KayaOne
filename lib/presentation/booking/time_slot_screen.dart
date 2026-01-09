@@ -182,7 +182,7 @@ class _TimeSlotScreenState extends State<TimeSlotScreen> {
                                 color: AppTheme.darkBlue,
                               ),
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 8),
                             GridView.builder(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),

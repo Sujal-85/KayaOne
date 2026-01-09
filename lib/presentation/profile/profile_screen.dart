@@ -11,6 +11,7 @@ import 'package:kayaone/presentation/profile/my_bookings_screen.dart';
 import 'package:kayaone/core/localization/app_localizations.dart'; // Added import
 import 'package:kayaone/presentation/auth/login_screen.dart'; // Added import
 import 'package:kayaone/presentation/profile/my_orders_screen.dart';
+import 'package:kayaone/state/language_provider.dart'; // Added import
 import 'package:kayaone/presentation/profile/help_support_screen.dart';
 import 'package:kayaone/presentation/profile/rate_app_screen.dart';
 import 'package:kayaone/presentation/profile/offers_screen.dart';
@@ -125,6 +126,64 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  // Method to show language selector
+  void _showLanguageSelector(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        final languageProvider =
+            Provider.of<LanguageProvider>(context, listen: false);
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                AppLocalizations.of(context)?.translate('select_language') ??
+                    "Select Language",
+                style: GoogleFonts.outfit(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.darkBlue,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Text("🇺🇸", style: TextStyle(fontSize: 24)),
+                title: Text("English", style: GoogleFonts.outfit(fontSize: 16)),
+                onTap: () {
+                  languageProvider.changeLanguage(const Locale('en'));
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Text("🇮🇳", style: TextStyle(fontSize: 24)),
+                title: Text("हिंदी (Hindi)",
+                    style: GoogleFonts.outfit(fontSize: 16)),
+                onTap: () {
+                  languageProvider.changeLanguage(const Locale('hi'));
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Text("🇮🇳", style: TextStyle(fontSize: 24)),
+                title: Text("मराठी (Marathi)",
+                    style: GoogleFonts.outfit(fontSize: 16)),
+                onTap: () {
+                  languageProvider.changeLanguage(const Locale('mr'));
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
@@ -211,7 +270,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        "My Orders",
+                                        appLocalizations
+                                                ?.translate('my_orders') ??
+                                            "My Orders",
                                         style: GoogleFonts.outfit(
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold,
@@ -219,7 +280,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         ),
                                       ),
                                       Text(
-                                        "Track & Manage orders",
+                                        appLocalizations
+                                                ?.translate('track_manage') ??
+                                            "Track & Manage orders",
                                         style: GoogleFonts.plusJakartaSans(
                                           fontSize: 13,
                                           color: Colors.grey[600],
@@ -244,7 +307,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                           // --- Your Information ---
                           Text(
-                            "YOUR INFORMATION",
+                            appLocalizations?.translate('your_information') ??
+                                "YOUR INFORMATION",
                             style: GoogleFonts.outfit(
                               fontSize: 13,
                               fontWeight: FontWeight.bold,
@@ -256,7 +320,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                           _buildProfileItem(
                             icon: Icons.calendar_month_outlined,
-                            title: "My Bookings",
+                            title: appLocalizations?.translate('my_bookings') ??
+                                "My Bookings",
                             onTap: () {
                               Navigator.push(
                                   context,
@@ -265,31 +330,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           const MyBookingsScreen()));
                             },
                           ),
-                          _buildProfileItem(
-                            icon: Icons.track_changes_outlined, // Suitable icon
-                            title: "Track Your Booking",
-                            onTap: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (_) => const TrackingScreen()));
-                            },
-                          ),
+
                           _buildProfileItem(
                             icon: Icons.medical_services_outlined,
-                            title: "Your Consultations",
+                            title: appLocalizations
+                                    ?.translate('your_consultations') ??
+                                "Your Consultations",
                             onTap: () {
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (_) => MyAppointmentsScreen(
+                                      builder: (_) =>
+                                          const MyAppointmentsScreen(
                                             filterType: AppointmentType.doctor,
                                           )));
                             },
                           ),
                           _buildProfileItem(
                             icon: Icons.local_offer_outlined,
-                            title: "Offers & Discounts",
+                            title: appLocalizations
+                                    ?.translate('offers_discounts') ??
+                                "Offers & Discounts",
                             onTap: () {
                               Navigator.push(
                                   context,
@@ -303,7 +364,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                           // --- Other Information ---
                           Text(
-                            "OTHER INFORMATION",
+                            appLocalizations?.translate('other_information') ??
+                                "OTHER INFORMATION",
                             style: GoogleFonts.outfit(
                               fontSize: 13,
                               fontWeight: FontWeight.bold,
@@ -313,8 +375,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                           const SizedBox(height: 16),
                           _buildProfileItem(
+                            icon: Icons.language,
+                            title: appLocalizations?.translate('language') ??
+                                "Language",
+                            onTap: () => _showLanguageSelector(context),
+                          ),
+                          _buildProfileItem(
                             icon: Icons.headset_mic_outlined,
-                            title: "Help & Support",
+                            title:
+                                appLocalizations?.translate('help_support') ??
+                                    "Help & Support",
                             onTap: () {
                               Navigator.push(
                                   context,
@@ -325,7 +395,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                           _buildProfileItem(
                             icon: Icons.star_outline_rounded,
-                            title: "Rate Us",
+                            title: appLocalizations?.translate('rate_us') ??
+                                "Rate Us",
                             onTap: () {
                               Navigator.push(
                                   context,
@@ -335,7 +406,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                           _buildProfileItem(
                             icon: Icons.logout_rounded,
-                            title: "Log Out",
+                            title: appLocalizations?.translate('logout') ??
+                                "Log Out",
                             onTap: () => _logout(context),
                             isDestructive: true,
                           ),
@@ -349,33 +421,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
 
-            // Back Button (Aligned better)
-            Positioned(
-              top: 40, // Closer to safe area
-              left: 16,
-              child: SafeArea(
-                child: InkWell(
-                  onTap: () {
-                    // Logic to switch tab or go back.
-                    if (Navigator.canPop(context)) {
-                      Navigator.pop(context);
-                    } else {
-                      // Maybe switch to home tab?
-                      // HomeScreenState.of(context)?.setIndex(0);
-                    }
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.arrow_back,
-                        color: Colors.white, size: 20),
-                  ),
-                ),
-              ),
-            ),
+            // Back Button removed (handled in header)
           ],
         ),
       ),
@@ -384,7 +430,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildLeafyHeader(
       AuthProvider auth, AppLocalizations? appLocalizations) {
-    return Container(
+    return SizedBox(
       height: 220, // Reduced height
       width: double.infinity,
       // Removed decoration: Handled by parent container
@@ -438,7 +484,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  auth.userName ?? "Guest User",
+                  auth.userName ??
+                      (appLocalizations?.translate('guest_user') ??
+                          "Guest User"),
                   style: GoogleFonts.outfit(
                     fontSize: 22,
                     fontWeight: FontWeight.w600,
@@ -452,7 +500,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const Icon(Icons.edit, color: Colors.white70, size: 14),
                       const SizedBox(width: 4),
                       Text(
-                        "Edit Profile",
+                        appLocalizations?.translate('edit_profile') ??
+                            "Edit Profile",
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 14,
                           color: Colors.white70,
