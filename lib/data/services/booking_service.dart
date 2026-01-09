@@ -46,4 +46,17 @@ class BookingService {
       return null;
     }
   }
+
+  Future<Map<String, dynamic>?> getBookingById(String id) async {
+    try {
+      final response = await _dio.get('/$id');
+      if (response.data['success']) {
+        return response.data['booking'];
+      }
+      return null;
+    } catch (e) {
+      print('Error fetching booking details: $e');
+      return null;
+    }
+  }
 }

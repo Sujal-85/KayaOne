@@ -40,8 +40,19 @@ const bookingSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['Pending', 'Confirmed', 'Completed', 'Cancelled'],
+        enum: ['Pending', 'Confirmed', 'Phlebotomist Assigned', 'Out for Collection', 'Sample Collected', 'Lab Processing', 'Report Generated', 'Completed', 'Cancelled'],
         default: 'Pending'
+    },
+    trackingHistory: [{
+        status: String,
+        timestamp: { type: Date, default: Date.now },
+        message: String
+    }],
+    phlebotomist: {
+        name: String,
+        phone: String,
+        rating: Number,
+        photoUrl: String
     },
     createdAt: {
         type: Date,

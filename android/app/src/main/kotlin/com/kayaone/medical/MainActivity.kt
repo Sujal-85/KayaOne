@@ -1,4 +1,4 @@
-package com.example.kayaone
+package com.kayaone.medical
 
 import io.flutter.embedding.android.FlutterActivity
 

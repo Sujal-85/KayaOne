@@ -22,10 +22,15 @@ class StorageService {
       if (response.statusCode == 200) {
         return response.data['url'];
       }
-      return null;
+      throw Exception('Server error: ${response.statusMessage}');
+    } on DioException catch (e) {
+      print('Error uploading profile pic: ${e.message}');
+      final data = e.response?.data;
+      final msg = data is Map ? data['message'] : data;
+      throw Exception('Upload failed: ${msg ?? e.message}');
     } catch (e) {
       print('Error uploading profile pic: $e');
-      return null;
+      throw Exception('Upload failed: $e');
     }
   }
 
@@ -47,10 +52,15 @@ class StorageService {
       if (response.statusCode == 200) {
         return response.data['url'];
       }
-      return null;
+      throw Exception('Server error: ${response.statusMessage}');
+    } on DioException catch (e) {
+      print('Error uploading prescription: ${e.message}');
+      final data = e.response?.data;
+      final msg = data is Map ? data['message'] : data;
+      throw Exception('Upload failed: ${msg ?? e.message}');
     } catch (e) {
       print('Error uploading prescription: $e');
-      return null;
+      throw Exception('Upload failed: $e');
     }
   }
 }

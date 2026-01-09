@@ -7,12 +7,17 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:310652879120:android:1473a700a752d01be72595",
+        "mobilesdk_app_id": "1:310652879120:android:b765d5b7dc774e05e72595",
         "android_client_info": {
-          "package_name": "com.example.kayaone"
+          "package_name": "com.kayaone.medical"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "310652879120-58u9mdfva1jueau1p6jhjeoktb3e5f52.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCrNqPKzftPicgZ-loS05qtk2uomK0FpQQ"
@@ -20,26 +25,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:310652879120:android:a1062bb846377d8fe72595",
-        "android_client_info": {
-          "package_name": "com.example.medinest"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyCrNqPKzftPicgZ-loS05qtk2uomK0FpQQ"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "310652879120-58u9mdfva1jueau1p6jhjeoktb3e5f52.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

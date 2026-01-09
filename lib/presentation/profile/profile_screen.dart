@@ -5,14 +5,18 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:kayaone/core/theme/app_theme.dart';
 import 'package:kayaone/state/auth_provider.dart';
-import 'package:kayaone/state/language_provider.dart';
 import 'package:kayaone/data/services/storage_service.dart';
 import 'package:kayaone/data/services/auth_service.dart';
-import 'package:kayaone/presentation/profile/account_info_screen.dart';
 import 'package:kayaone/presentation/profile/my_bookings_screen.dart';
-import 'package:kayaone/presentation/profile/profile_language_screen.dart';
 import 'package:kayaone/core/localization/app_localizations.dart'; // Added import
 import 'package:kayaone/presentation/auth/login_screen.dart'; // Added import
+import 'package:kayaone/presentation/profile/my_orders_screen.dart';
+import 'package:kayaone/state/language_provider.dart'; // Added import
+import 'package:kayaone/presentation/profile/help_support_screen.dart';
+import 'package:kayaone/presentation/profile/rate_app_screen.dart';
+import 'package:kayaone/presentation/profile/offers_screen.dart';
+import 'package:kayaone/presentation/booking/my_appointments_screen.dart';
+import 'package:kayaone/presentation/tracking/tracking_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -60,39 +64,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
     if (image != null) {
-      setState(() => _isUploading = true);
-      // Use phoneNumber instead of userId, as required by the backend endpoint
-      final url = await _storageService.uploadProfilePic(
-          auth.phoneNumber!, File(image.path));
+      try {
+        setState(() => _isUploading = true);
+        // Use phoneNumber instead of userId, as required by the backend endpoint
+        final url = await _storageService.uploadProfilePic(
+            auth.phoneNumber!, File(image.path));
 
-      if (url != null) {
         // Update in state locally
-        auth.updateProfilePic(url);
-
-        // Backend update is already handled by uploadProfilePic (which calls /update-avatar)
+        auth.updateProfilePic(url!); // url is not null if no exception
 
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            // Changed to use localization
             content: Text(appLocalizations?.translate('profile_pic_updated') ??
                 "Profile picture updated!"),
             backgroundColor: AppTheme.primaryGreen,
           ),
         );
-      } else {
+      } catch (e) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            // Changed to use localization
-            content: Text(
-                appLocalizations?.translate('upload_failed_connection') ??
-                    "Upload failed. Please check your connection."),
+            content: Text(e.toString().replaceAll('Exception: ', '')),
             backgroundColor: Colors.redAccent,
           ),
         );
+      } finally {
+        if (mounted) setState(() => _isUploading = false);
       }
-      setState(() => _isUploading = false);
     }
   }
 
@@ -127,283 +126,498 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final auth = Provider.of<AuthProvider>(context);
-    var appLocalizations =
-        AppLocalizations.of(context); // Added for localization
-
-    return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
-      body: LayoutBuilder(builder: (context, constraints) {
-        final isSmall =
-            constraints.maxWidth < 400 || constraints.maxHeight < 700;
-
-        return Column(
-          children: [
-            // Fixed Premium Rounded Header
-            _buildAttractiveHeader(auth, isSmall),
-            // Scrollable Options
-            Expanded(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
-                child: Column(
-                  children: [
-                    _buildProfileCard([
-                      _profileItem(
-                          Icons.person_outline_rounded,
-                          appLocalizations?.translate('account_info') ??
-                              "Account Information", // Localized
-                          appLocalizations?.translate('manage_details') ??
-                              "Manage your details", // Localized
-                          () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const AccountInfoScreen()));
-                      }),
-                      _profileItem(
-                          Icons.history_rounded,
-                          appLocalizations?.translate('booking_history') ??
-                              "Booking History", // Localized
-                          appLocalizations?.translate('blood_tests_checkups') ??
-                              "Blood tests & Checkups", // Localized
-                          () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const MyBookingsScreen()));
-                      }),
-                      _profileItem(
-                          Icons.language_rounded,
-                          appLocalizations?.translate('language_settings') ??
-                              "Language Settings", // Localized
-                          Provider.of<LanguageProvider>(context)
-                              .appLocale
-                              .languageCode
-                              .toUpperCase(), () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => const ProfileLanguageScreen()));
-                      }),
-                    ]),
-                    const SizedBox(height: 24),
-                    _buildProfileCard([
-                      _profileItem(
-                          Icons.help_outline_rounded,
-                          appLocalizations?.translate('help_support') ??
-                              "Help & Support", // Localized
-                          appLocalizations?.translate('get_assistance') ??
-                              "Get assistance", // Localized
-                          () {}),
-                      _profileItem(
-                          Icons.privacy_tip_outlined,
-                          appLocalizations?.translate('privacy_policy') ??
-                              "Privacy Policy", // Localized
-                          appLocalizations?.translate('data_security') ??
-                              "Data security", // Localized
-                          () {}),
-                      _profileItem(
-                          Icons.logout_rounded,
-                          appLocalizations?.translate('logout') ??
-                              "Logout", // Localized
-                          appLocalizations?.translate('exit_app') ??
-                              "Exit app", // Localized
-                          () => _logout(context), // Changed to _logout
-                          isDestructive: true),
-                    ]),
-                    const SizedBox(height: 40),
-                    Text("Version 1.0.2",
-                        style: GoogleFonts.plusJakartaSans(
-                            color: Colors.grey, fontSize: 12)),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        );
-      }),
-    );
-  }
-
-  Widget _buildAttractiveHeader(AuthProvider auth, bool isSmall) {
-    var appLocalizations =
-        AppLocalizations.of(context); // Added for localization
-
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.only(
-          top: isSmall ? 40 : 60,
-          bottom: isSmall ? 24 : 40,
-          left: 24,
-          right: 24),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppTheme.darkBlue, Color(0xFF1E293B)],
-        ),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(50),
-          bottomRight: Radius.circular(50),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 30,
-            offset: Offset(0, 15),
-          ),
-        ],
+  // Method to show language selector
+  void _showLanguageSelector(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      child: Column(
-        children: [
-          Stack(
+      builder: (context) {
+        final languageProvider =
+            Provider.of<LanguageProvider>(context, listen: false);
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                      color: AppTheme.primaryGreen.withOpacity(0.5), width: 2),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.primaryGreen.withOpacity(0.2),
-                      blurRadius: 20,
-                      spreadRadius: 5,
-                    ),
-                  ],
-                ),
-                child: CircleAvatar(
-                  radius: isSmall ? 40 : 55,
-                  backgroundColor: Colors.white10,
-                  backgroundImage: (auth.profilePic != null &&
-                          auth.profilePic!.isNotEmpty &&
-                          auth.profilePic!.startsWith('http'))
-                      ? NetworkImage(auth.profilePic!)
-                      : null,
-                  child: (auth.profilePic == null ||
-                          auth.profilePic!.isEmpty ||
-                          !auth.profilePic!.startsWith('http'))
-                      ? Icon(Icons.person_rounded,
-                          size: isSmall ? 40 : 55, color: Colors.white24)
-                      : null,
+              Text(
+                AppLocalizations.of(context)?.translate('select_language') ??
+                    "Select Language",
+                style: GoogleFonts.outfit(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.darkBlue,
                 ),
               ),
-              Positioned(
-                bottom: 4,
-                right: 4,
-                child: GestureDetector(
-                  onTap: _isUploading ? null : _pickAndUploadImage,
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryGreen,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppTheme.darkBlue, width: 3),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.3),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: _isUploading
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white))
-                        : const Icon(Icons.edit_rounded,
-                            color: Colors.white, size: 16),
-                  ),
-                ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Text("🇺🇸", style: TextStyle(fontSize: 24)),
+                title: Text("English", style: GoogleFonts.outfit(fontSize: 16)),
+                onTap: () {
+                  languageProvider.changeLanguage(const Locale('en'));
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Text("🇮🇳", style: TextStyle(fontSize: 24)),
+                title: Text("हिंदी (Hindi)",
+                    style: GoogleFonts.outfit(fontSize: 16)),
+                onTap: () {
+                  languageProvider.changeLanguage(const Locale('hi'));
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Text("🇮🇳", style: TextStyle(fontSize: 24)),
+                title: Text("मराठी (Marathi)",
+                    style: GoogleFonts.outfit(fontSize: 16)),
+                onTap: () {
+                  languageProvider.changeLanguage(const Locale('mr'));
+                  Navigator.pop(context);
+                },
               ),
             ],
           ),
-          SizedBox(height: isSmall ? 12 : 20),
-          Text(
-            auth.userName ??
-                (appLocalizations?.translate('guest_user') ??
-                    "Guest User"), // Localized
-            style: GoogleFonts.outfit(
-              fontSize: isSmall ? 20 : 26,
-              fontWeight: FontWeight.w800,
-              color: Colors.white,
-              letterSpacing: -0.5,
-            ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final auth = Provider.of<AuthProvider>(context);
+    var appLocalizations = AppLocalizations.of(context);
+
+    // Using Stack to have the body overlap the header
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F7F9), // Light grey background
+      body: Container(
+        decoration: const BoxDecoration(
+          color: Color(0xFFF5F5F5),
+          image: DecorationImage(
+            image: AssetImage('assets/images/home_bg_leaves.png'),
+            fit: BoxFit.cover,
           ),
-          const SizedBox(height: 4),
-          Text(
-            auth.email ??
-                (appLocalizations?.translate('set_up_profile') ??
-                    "Set up your profile"), // Localized
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: isSmall ? 12 : 14,
-              color: Colors.white.withOpacity(0.6),
-              fontWeight: FontWeight.w500,
+        ),
+        child: Stack(
+          children: [
+            // Scrollable Content
+            SingleChildScrollView(
+              child: Stack(
+                children: [
+                  // 1. Leafy Header (Transparent now, just for spacing/content)
+                  _buildLeafyHeader(auth, appLocalizations),
+
+                  // 2. Body Content (Overlapping)
+                  Container(
+                    margin: const EdgeInsets.only(top: 140),
+                    decoration: const BoxDecoration(
+                        color: Colors
+                            .white, // Solid white background for clean look
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(30),
+                          topRight: Radius.circular(30),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 10,
+                            offset: Offset(0, -5),
+                          )
+                        ]),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 32),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // --- Orders (Prominent but integrated) ---
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const MyOrdersScreen(),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: const Color(
+                                    0xFFF1F8E9), // Light Olive/Green tint
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                    color: const Color(0xFF4B6309)
+                                        .withOpacity(0.1)),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                        Icons.inventory_2_outlined,
+                                        color: Color(0xFF4B6309)),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        appLocalizations
+                                                ?.translate('my_orders') ??
+                                            "My Orders",
+                                        style: GoogleFonts.outfit(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppTheme.darkBlue,
+                                        ),
+                                      ),
+                                      Text(
+                                        appLocalizations
+                                                ?.translate('track_manage') ??
+                                            "Track & Manage orders",
+                                        style: GoogleFonts.plusJakartaSans(
+                                          fontSize: 13,
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const Spacer(),
+                                  const Icon(Icons.arrow_forward_ios_rounded,
+                                      size: 18, color: Colors.grey),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 32),
+                          const Divider(
+                              height: 1,
+                              thickness: 1,
+                              color: Color(0xFFEEEEEE)),
+                          const SizedBox(height: 32),
+
+                          // --- Your Information ---
+                          Text(
+                            appLocalizations?.translate('your_information') ??
+                                "YOUR INFORMATION",
+                            style: GoogleFonts.outfit(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey[500],
+                              letterSpacing: 1.5,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          _buildProfileItem(
+                            icon: Icons.calendar_month_outlined,
+                            title: appLocalizations?.translate('my_bookings') ??
+                                "My Bookings",
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) =>
+                                          const MyBookingsScreen()));
+                            },
+                          ),
+
+                          _buildProfileItem(
+                            icon: Icons.medical_services_outlined,
+                            title: appLocalizations
+                                    ?.translate('your_consultations') ??
+                                "Your Consultations",
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) =>
+                                          const MyAppointmentsScreen(
+                                            filterType: AppointmentType.doctor,
+                                          )));
+                            },
+                          ),
+                          _buildProfileItem(
+                            icon: Icons.local_offer_outlined,
+                            title: appLocalizations
+                                    ?.translate('offers_discounts') ??
+                                "Offers & Discounts",
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) => const OffersScreen()));
+                            },
+                            isHighlight: true, // Optional: highlight offers
+                          ),
+
+                          const SizedBox(height: 32),
+
+                          // --- Other Information ---
+                          Text(
+                            appLocalizations?.translate('other_information') ??
+                                "OTHER INFORMATION",
+                            style: GoogleFonts.outfit(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey[500],
+                              letterSpacing: 1.5,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          _buildProfileItem(
+                            icon: Icons.language,
+                            title: appLocalizations?.translate('language') ??
+                                "Language",
+                            onTap: () => _showLanguageSelector(context),
+                          ),
+                          _buildProfileItem(
+                            icon: Icons.headset_mic_outlined,
+                            title:
+                                appLocalizations?.translate('help_support') ??
+                                    "Help & Support",
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) =>
+                                          const HelpSupportScreen()));
+                            },
+                          ),
+                          _buildProfileItem(
+                            icon: Icons.star_outline_rounded,
+                            title: appLocalizations?.translate('rate_us') ??
+                                "Rate Us",
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) => const RateAppScreen()));
+                            },
+                          ),
+                          _buildProfileItem(
+                            icon: Icons.logout_rounded,
+                            title: appLocalizations?.translate('logout') ??
+                                "Log Out",
+                            onTap: () => _logout(context),
+                            isDestructive: true,
+                          ),
+
+                          const SizedBox(height: 48), // Bottom Padding
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+
+            // Back Button removed (handled in header)
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildProfileCard(List<Widget> children) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withOpacity(0.02),
-              blurRadius: 20,
-              offset: const Offset(0, 10)),
-        ],
+  Widget _buildLeafyHeader(
+      AuthProvider auth, AppLocalizations? appLocalizations) {
+    return SizedBox(
+      height: 220, // Reduced height
+      width: double.infinity,
+      // Removed decoration: Handled by parent container
+      child: Padding(
+        padding: const EdgeInsets.only(
+            left: 24, right: 24, top: 60), // Reduced top padding
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.3), width: 1),
+                ),
+                child: const Icon(Icons.arrow_back_ios_new_rounded,
+                    color: Colors.white, size: 18),
+              ),
+            ),
+            const SizedBox(width: 16), // Spacing between back button and avatar
+            // Profile Pic
+            Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+              ),
+              child: CircleAvatar(
+                radius: 30,
+                backgroundColor: Colors.white24,
+                backgroundImage: (auth.profilePic != null &&
+                        auth.profilePic!.isNotEmpty &&
+                        auth.profilePic!.startsWith('http'))
+                    ? NetworkImage(auth.profilePic!)
+                    : null,
+                child: (auth.profilePic == null ||
+                        auth.profilePic!.isEmpty ||
+                        !auth.profilePic!.startsWith('http'))
+                    ? const Icon(Icons.person, size: 30, color: Colors.white)
+                    : null,
+              ),
+            ),
+            const SizedBox(width: 16),
+            // Name & Edit
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  auth.userName ??
+                      (appLocalizations?.translate('guest_user') ??
+                          "Guest User"),
+                  style: GoogleFonts.outfit(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: _isUploading ? null : _pickAndUploadImage,
+                  child: Row(
+                    children: [
+                      const Icon(Icons.edit, color: Colors.white70, size: 14),
+                      const SizedBox(width: 4),
+                      Text(
+                        appLocalizations?.translate('edit_profile') ??
+                            "Edit Profile",
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 14,
+                          color: Colors.white70,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
-      child: Column(children: children),
     );
   }
 
-  Widget _profileItem(
-      IconData icon, String title, String subtitle, VoidCallback onTap,
-      {bool isDestructive = false, bool isSmall = false}) {
-    // Added isSmall default
-    return ListTile(
+  Widget _buildQuickActionCard({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
       onTap: onTap,
-      contentPadding: EdgeInsets.symmetric(
-          horizontal: isSmall ? 16 : 20, vertical: isSmall ? 4 : 8),
-      leading: Container(
-        padding: const EdgeInsets.all(10),
+      child: Container(
+        height: 80,
+        width: double.infinity, // Ensure it fills width
         decoration: BoxDecoration(
-          color: isDestructive
-              ? Colors.red.withOpacity(0.1)
-              : AppTheme.primaryGreen.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(14),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+              color:
+                  Colors.grey.withOpacity(0.1)), // Added border for visibility
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08), // Increased opacity
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        child: Icon(icon,
-            color: isDestructive ? Colors.red : AppTheme.primaryGreen,
-            size: isSmall ? 18 : 22),
-      ),
-      title: Text(
-        title,
-        style: GoogleFonts.outfit(
-          fontWeight: FontWeight.w700,
-          fontSize: isSmall ? 14 : 16,
-          color: isDestructive ? Colors.red : AppTheme.darkBlue,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: Colors.black87, size: 28), // Darker icon
+            const SizedBox(width: 12),
+            Text(
+              label,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 16,
+                fontWeight: FontWeight.w700, // Bolder text
+                color: const Color(0xFF0F3460), // Explicit Dark Blue
+              ),
+            ),
+          ],
         ),
       ),
-      subtitle: Text(
-        subtitle,
-        style: GoogleFonts.plusJakartaSans(
-          fontSize: isSmall ? 11 : 12,
-          color: Colors.grey,
+    );
+  }
+
+  Widget _buildProfileItem({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    bool isDestructive = false,
+    bool isHighlight = false,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: isDestructive ? const Color(0xFFFFEBEE) : Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: isDestructive
+                      ? Colors.white
+                      : (isHighlight
+                          ? const Color(0xFFE0F2F1)
+                          : const Color(0xFFF7F9FB)),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon,
+                    size: 20,
+                    color: isDestructive
+                        ? Colors.red
+                        : (isHighlight
+                            ? AppTheme.primaryGreen
+                            : Colors.grey[700])),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  title,
+                  style: GoogleFonts.outfit(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: isDestructive ? Colors.red : AppTheme.darkBlue,
+                  ),
+                ),
+              ),
+              if (!isDestructive)
+                const Icon(Icons.arrow_forward_ios_rounded,
+                    size: 16, color: Colors.grey),
+            ],
+          ),
         ),
       ),
-      trailing: Icon(Icons.chevron_right_rounded,
-          color: Colors.grey, size: isSmall ? 20 : 24),
     );
   }
 }

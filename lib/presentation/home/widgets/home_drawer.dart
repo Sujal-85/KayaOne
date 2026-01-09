@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kayaone/core/theme/app_theme.dart';
 import 'package:kayaone/presentation/auth/login_screen.dart';
+import 'package:kayaone/presentation/home/home_screen.dart';
+import 'package:kayaone/presentation/marketplace/product_listing_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:kayaone/state/auth_provider.dart';
+
+import 'package:kayaone/state/health_karma_provider.dart';
 
 class HomeDrawer extends StatelessWidget {
   const HomeDrawer({super.key});
@@ -14,7 +18,7 @@ class HomeDrawer extends StatelessWidget {
       backgroundColor: Colors.white,
       surfaceTintColor: Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.horizontal(right: Radius.circular(0)),
+        borderRadius: BorderRadius.horizontal(right: Radius.circular(32)),
       ),
       child: Column(
         children: [
@@ -26,43 +30,100 @@ class HomeDrawer extends StatelessWidget {
                 _buildDrawerItem(
                   icon: Icons.grid_view_rounded,
                   title: "Categories",
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const ProductListingScreen()),
+                    );
+                  },
                 ),
+// ... (rest of the list items are unchanged, but included for context if needed, wait, I should target specific lines to avoid replacing everything)
+// Actually, I can just replace the build method and _buildDrawerHeader.
+
+// Let's refine the replacement to target the class start and _buildDrawerHeader.
+
                 _buildDrawerItem(
                   icon: Icons.article_outlined,
                   title: "Blog",
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Blog Coming Soon!")),
+                    );
+                  },
                 ),
                 _buildDrawerItem(
                   icon: Icons.local_shipping_outlined,
                   title: "Track Order",
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text("Order Tracking Coming Soon!")),
+                    );
+                  },
                 ),
                 _buildDrawerItem(
                   icon: Icons.image_outlined,
                   title: "Media",
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text("Media Section Coming Soon!")),
+                    );
+                  },
                 ),
                 _buildDrawerItem(
                   icon: Icons.medical_services_outlined,
                   title: "Consult a Doctor",
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.pop(context);
+                    // Navigate to Doctor Tab (Index 2)
+                    HomeScreenState.of(context)?.setIndex(2);
+                  },
                 ),
                 const Divider(height: 32, thickness: 0.5),
                 _buildDrawerItem(
                   icon: Icons.star_border_rounded,
                   title: "Rate Us",
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.pop(context);
+                    showDialog(
+                      context: context,
+                      builder: (_) => const AlertDialog(
+                        title: Text("Rate Us"),
+                        content: Text("Thank you for using KayaOne!"),
+                      ),
+                    );
+                  },
                 ),
                 _buildDrawerItem(
                   icon: Icons.info_outline_rounded,
                   title: "About Us",
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.pop(context);
+                    showAboutDialog(
+                      context: context,
+                      applicationName: "KayaOne",
+                      applicationVersion: "1.0.0",
+                      applicationLegalese: "© 2024 KayaOne Health",
+                    );
+                  },
                 ),
                 _buildDrawerItem(
                   icon: Icons.phone_outlined,
                   title: "Contact Us",
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content:
+                              Text("Contact Support: support@kayaone.com")),
+                    );
+                  },
                 ),
                 Consumer<AuthProvider>(
                   builder: (context, auth, _) {
@@ -93,7 +154,9 @@ class HomeDrawer extends StatelessWidget {
 
   Widget _buildDrawerHeader(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
+    final healthKarmaProvider = Provider.of<HealthKarmaProvider>(context);
     final userName = authProvider.userName ?? "Guest !";
+    final score = healthKarmaProvider.result?.score;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 60, 24, 24),
@@ -124,15 +187,16 @@ class HomeDrawer extends StatelessWidget {
           Row(
             children: [
               Text(
-                "HealthKarma Coins",
+                "HealthKarma Score",
                 style: GoogleFonts.plusJakartaSans(
                     fontSize: 14, fontWeight: FontWeight.w600),
               ),
               const SizedBox(width: 8),
-              const Icon(Icons.monetization_on, color: Colors.amber, size: 20),
+              const Icon(Icons.favorite_rounded,
+                  color: Colors.redAccent, size: 20),
               const SizedBox(width: 4),
               Text(
-                "0", // Verify if we have coin field in provider
+                score != null ? "$score" : "--",
                 style: GoogleFonts.outfit(
                     fontSize: 16, fontWeight: FontWeight.w700),
               ),

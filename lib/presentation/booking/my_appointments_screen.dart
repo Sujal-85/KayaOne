@@ -7,12 +7,12 @@ import 'package:kayaone/core/theme/app_theme.dart';
 import 'package:kayaone/state/auth_provider.dart';
 import 'package:kayaone/data/services/doctor_service.dart';
 import 'package:kayaone/data/services/booking_service.dart';
-import 'package:kayaone/presentation/doctors/doctor_listing_screen.dart';
-import 'package:kayaone/presentation/prescription/prescription_upload_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:kayaone/presentation/booking/lab_booking_detail_screen.dart';
 import 'package:kayaone/presentation/booking/doctor_booking_detail_screen.dart';
+import 'package:kayaone/presentation/booking/ai_booking_screen.dart';
+import 'package:kayaone/presentation/booking/booking_guide_screen.dart';
 import 'package:kayaone/core/localization/app_localizations.dart';
 
 enum AppointmentType { doctor, lab }
@@ -360,7 +360,8 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (_) => const PrescriptionUploadScreen()));
+                          builder: (_) => const BookingGuideScreen(
+                              isDoctorBooking: false)));
                 }),
               if (widget.filterType == AppointmentType.doctor)
                 _buildNewBookingButton(loc?.translate('find_doctor') ?? "Find",
@@ -368,7 +369,8 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (_) => const DoctorListingScreen()));
+                          builder: (_) =>
+                              const BookingGuideScreen(isDoctorBooking: true)));
                 }),
             ],
           ),
@@ -412,7 +414,7 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded,
-              color: AppTheme.darkBlue),
+              color: Color.fromARGB(255, 255, 255, 255)),
           onPressed: () async {
             final didPop = await Navigator.maybePop(context);
             if (!didPop) HomeScreenState.of(context)?.setIndex(0);
@@ -420,7 +422,7 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
         ),
         title: Text(_title,
             style: GoogleFonts.outfit(
-                fontWeight: FontWeight.w700, color: AppTheme.darkBlue)),
+                fontWeight: FontWeight.w700, color: Colors.white)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
@@ -432,7 +434,8 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
               onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (_) => const PrescriptionUploadScreen())),
+                      builder: (_) =>
+                          const BookingGuideScreen(isDoctorBooking: false))),
             ),
           if (widget.filterType == AppointmentType.doctor)
             IconButton(
@@ -441,7 +444,8 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
               onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (_) => const DoctorListingScreen())),
+                      builder: (_) =>
+                          const BookingGuideScreen(isDoctorBooking: true))),
             ),
           const SizedBox(width: 8),
         ],
@@ -561,17 +565,17 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
           children: [
             Lottie.asset('assets/lottie/No Data Animation.json',
                 width: 250, height: 250, fit: BoxFit.contain),
-            const SizedBox(height: 60),
+            const SizedBox(height: 4),
             Text(title,
                 style: GoogleFonts.outfit(
                     fontSize: 24,
                     fontWeight: FontWeight.w800,
                     color: Colors.white)), // White title
-            const SizedBox(height: 16),
+            const SizedBox(height: 4),
             Text(subtitle,
                 style: GoogleFonts.plusJakartaSans(
                     color: Colors.white70)), // White subtitle
-            const SizedBox(height: 50),
+            const SizedBox(height: 12),
             if (widget.filterType == AppointmentType.doctor ||
                 widget.filterType == null) ...[
               Center(
@@ -584,11 +588,12 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
                     () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (_) => const DoctorListingScreen())),
+                            builder: (_) => const BookingGuideScreen(
+                                isDoctorBooking: true))),
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
             ],
             if (widget.filterType == AppointmentType.lab ||
                 widget.filterType == null) ...[
@@ -602,11 +607,15 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
                     () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (_) => const PrescriptionUploadScreen())),
+                            builder: (_) => const BookingGuideScreen(
+                                isDoctorBooking: false))),
                   ),
                 ),
               ),
             ],
+            const SizedBox(height: 16),
+            const SizedBox(height: 16),
+            // Removed AI Assistant card from here
           ],
         ),
       ),

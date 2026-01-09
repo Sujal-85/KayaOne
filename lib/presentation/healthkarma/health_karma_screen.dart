@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:kayaone/core/theme/app_theme.dart';
-import 'package:kayaone/presentation/home/home_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
@@ -40,27 +39,10 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
     }
 
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: CircleAvatar(
-            backgroundColor: Colors.white.withValues(alpha: 0.5),
-            child: const Icon(Icons.arrow_back_ios_new_rounded,
-                color: AppTheme.darkBlue), // Dark Blue for visibility on leaves
-          ),
-          onPressed: () async {
-            final didPop = await Navigator.of(context).maybePop();
-            if (!didPop) {
-              HomeScreenState.of(context)?.setIndex(0);
-            }
-          },
-        ),
-      ),
-      backgroundColor: Colors.transparent,
+      backgroundColor: const Color(0xFFF5F7F9),
       body: Container(
         decoration: const BoxDecoration(
+          color: Color(0xFFF5F5F5),
           image: DecorationImage(
             image: AssetImage('assets/images/home_bg_leaves.png'),
             fit: BoxFit.cover,
@@ -68,7 +50,43 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
         ),
         child: Column(
           children: [
-            const SizedBox(height: 20),
+            // Custom Header area
+            SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 30),
+                child: Row(
+                  children: [
+                    Text(
+                      appLocalizations?.translate('health_karma_status') ??
+                          "Health Status",
+                      style: GoogleFonts.outfit(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        color: const Color.fromARGB(255, 250, 250, 250),
+                      ),
+                    ),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                          ),
+                        ],
+                      ),
+                      child: const Icon(Icons.auto_awesome,
+                          color: AppTheme.primaryGreen),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
             Expanded(
               child: Container(
                 clipBehavior: Clip.antiAlias,
@@ -80,91 +98,103 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
-                      blurRadius: 15,
-                      offset: const Offset(0, 5),
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 20,
+                      offset: const Offset(0, -5),
                     ),
                   ],
                 ),
-                child: CustomScrollView(
-                  slivers: [
-                    SliverToBoxAdapter(
-                      child: Container(
-                        color: Colors.teal.shade50,
-                        padding: const EdgeInsets.only(bottom: 24),
-                        child: _buildHeader(result, context),
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(24, 32, 24, 100),
+                  child: Column(
+                    children: [
+                      // Score Header
+                      _buildHeader(result, context),
+
+                      const SizedBox(height: 32),
+
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          appLocalizations?.translate('probable_risks') ??
+                              "Your Probable Risks",
+                          style: GoogleFonts.outfit(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.darkBlue,
+                          ),
+                        ),
                       ),
-                    ),
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              appLocalizations?.translate('probable_risks') ??
-                                  "Your Probable Risks",
-                              style: GoogleFonts.outfit(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.teal.shade900,
+                      const SizedBox(height: 16),
+
+                      // Tabs
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF5F7F9),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.grey.shade200),
+                        ),
+                        child: TabBar(
+                          controller: _tabController,
+                          indicator: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
                               ),
-                            ),
-                            const SizedBox(height: 16),
-
-                            // Tabs
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Colors.teal.shade50,
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: TabBar(
-                                controller: _tabController,
-                                indicator: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                labelColor: Colors.teal.shade900,
-                                unselectedLabelColor: Colors.teal.shade400,
-                                labelStyle: GoogleFonts.plusJakartaSans(
-                                    fontWeight: FontWeight.w800),
-                                tabs: [
-                                  Tab(
-                                      text: appLocalizations
-                                              ?.translate('high_medium') ??
-                                          "High & Medium"),
-                                  Tab(
-                                      text: appLocalizations
-                                              ?.translate('low_risk') ??
-                                          "Low Risk"),
-                                ],
-                              ),
-                            ),
-
-                            const SizedBox(height: 24),
-
-                            // Risk Items
-                            _buildRiskList(result),
-
-                            const SizedBox(height: 100),
+                            ],
+                          ),
+                          labelColor: AppTheme.primaryGreen,
+                          unselectedLabelColor: Colors.grey.shade600,
+                          labelStyle: GoogleFonts.plusJakartaSans(
+                              fontWeight: FontWeight.w700, fontSize: 13),
+                          unselectedLabelStyle: GoogleFonts.plusJakartaSans(
+                              fontWeight: FontWeight.w600, fontSize: 13),
+                          dividerColor: Colors.transparent,
+                          indicatorSize: TabBarIndicatorSize.tab,
+                          tabs: [
+                            Tab(
+                                text: appLocalizations
+                                        ?.translate('high_medium') ??
+                                    "High & Medium"),
+                            Tab(
+                                text: appLocalizations?.translate('low_risk') ??
+                                    "Low Risk"),
                           ],
                         ),
                       ),
-                    ),
-                  ],
+
+                      const SizedBox(height: 24),
+
+                      // Risk Items
+                      _buildRiskList(result),
+                    ],
+                  ),
                 ),
               ),
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => provider.resetQuiz(),
-        backgroundColor: Colors.teal.shade400,
-        label: Text(appLocalizations?.translate('retake_analysis') ??
-            "Retake Analysis"),
-        icon: const Icon(Icons.refresh),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 20),
+        child: FloatingActionButton.extended(
+          onPressed: () => provider.resetQuiz(),
+          backgroundColor: AppTheme.primaryGreen,
+          elevation: 4,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          label: Text(
+            appLocalizations?.translate('retake_analysis') ?? "Retake Analysis",
+            style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700),
+          ),
+          icon: const Icon(Icons.refresh_rounded),
+        ),
       ),
     );
   }
@@ -180,25 +210,12 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: CircleAvatar(
-            backgroundColor: Colors.white.withOpacity(0.5),
-            child: const Icon(Icons.arrow_back_ios_new_rounded,
-                color: AppTheme.darkBlue),
-          ),
-          onPressed: () {
-            if (Navigator.canPop(context)) {
-              Navigator.pop(context);
-            } else {
-              HomeScreenState.of(context)?.setIndex(0);
-            }
-          },
-        ),
+        automaticallyImplyLeading: false,
         title: Text(
           "HealthKarma",
           style: GoogleFonts.outfit(
             fontWeight: FontWeight.w700,
-            color: AppTheme.darkBlue,
+            color: const Color.fromARGB(255, 255, 255, 255),
           ),
         ),
       ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kayaone/core/theme/app_theme.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:kayaone/core/utils/whatsapp_helper.dart';
 
 class ReportsScreen extends StatelessWidget {
   const ReportsScreen({super.key});
@@ -45,6 +47,12 @@ class ReportsScreen extends StatelessWidget {
             ),
           );
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => WhatsAppHelper.launchWhatsApp(
+            message: "Hi, I need help with my medical reports."),
+        backgroundColor: const Color(0xFF25D366),
+        child: const FaIcon(FontAwesomeIcons.whatsapp, color: Colors.white),
       ),
     );
   }

@@ -63,6 +63,66 @@ router.get('/user/:userId', async (req, res) => {
     }
 });
 
+// Get single booking by ID
+router.get('/:id', async (req, res) => {
+    try {
+        const booking = await Booking.findById(req.params.id);
+        if (!booking) {
+            return res.status(404).json({ success: false, message: 'Booking not found' });
+        }
+        res.status(200).json({
+            success: true,
+            booking
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch booking details',
+            error: error.message
+        });
+    }
+});
+
+// Update booking status
+router.put('/update-status/:id', async (req, res) => {
+    try {
+        const { status, message, phlebotomist } = req.body;
+        const booking = await Booking.findById(req.params.id);
+
+        if (!booking) {
+            return res.status(404).json({ success: false, message: 'Booking not found' });
+        }
+
+        booking.status = status;
+        booking.trackingHistory.push({
+            status,
+            message: message || `Status updated to ${status}`,
+            timestamp: new Date()
+        });
+
+        if (phlebotomist) {
+            booking.phlebotomist = phlebotomist;
+        }
+
+        await booking.save();
+
+        // TODO: Send email notification here
+
+        res.status(200).json({
+            success: true,
+            message: 'Booking status updated successfully',
+            booking
+        });
+    } catch (error) {
+        console.error('Error updating status:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to update status',
+            error: error.message
+        });
+    }
+});
+
 // Upload Prescription
 router.post('/upload-prescription', upload.single('prescription'), uploadToCloudinary, async (req, res) => {
     try {
