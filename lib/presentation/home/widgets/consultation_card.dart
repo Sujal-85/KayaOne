@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:kayaone/core/theme/app_theme.dart';
+import 'package:kayaone/core/localization/app_localizations.dart';
+import 'package:kayaone/presentation/home/home_screen.dart';
 
 class ConsultationCard extends StatelessWidget {
   final VoidCallback? onTap;
@@ -9,92 +12,121 @@ class ConsultationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 1),
-      height: 220, // Increased height to prevent overflow
-      width: double.infinity,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: Stack(
+    var appLocalizations = AppLocalizations.of(context);
+    return GestureDetector(
+      onTap: () => onTap,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 15,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Row(
           children: [
-            Row(
-              children: [
-                // Text & Button Section (Left)
-                Expanded(
-                  flex: 3,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 20, 0, 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Book Your\nConsultation Now",
-                          style: GoogleFonts.outfit(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            height: 1.2,
-                          ),
-                        ).animate().fadeIn(duration: 600.ms).slideX(),
-                        const SizedBox(height: 8),
-                        Text(
-                          "We're here to help with doctors, slots, or concerns.",
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 15,
-                            color: Colors.white.withValues(alpha: 0.9),
-                            height: 1.3,
-                          ),
-                        ).animate().fadeIn(delay: 200.ms),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: onTap,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: const Color(0xFF0D2818),
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: Text(
-                            "Consult Now",
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ).animate().scale(delay: 400.ms),
-                      ],
+            // LEFT SIDE: Text and Button
+            Expanded(
+              flex: 5,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    appLocalizations?.translate('your_health_priority') ??
+                        "Book Your,\nConsultation Now",
+                    style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 18,
+                      color: AppTheme.darkBlue,
+                      height: 1.2,
                     ),
-                  ),
-                ),
-
-                // Image Section (Right)
-                Expanded(
-                  flex: 2,
-                  child: Stack(
-                    alignment: Alignment.bottomCenter,
-                    children: [
-                      // Using LayoutBuilder to handle the image sizing gracefully
-                      Positioned(
-                        bottom: 0,
-                        right: -10,
-                        child: Image.asset(
-                          'assets/images/gaurav.png',
-                          height: 200, // Increased size further
-                          fit: BoxFit.contain,
-                        )
-                            .animate()
-                            .fadeIn(duration: 800.ms)
-                            .slideX(begin: 0.2, end: 0, curve: Curves.easeOut),
+                  )
+                      .animate()
+                      .fadeIn(duration: 600.ms)
+                      .slideX(begin: -0.2, end: 0),
+                  const SizedBox(height: 8),
+                  Text(
+                    appLocalizations?.translate('expert_care_desc') ??
+                        "Expert care and guidance for a healthier you.",
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 10,
+                      color: Colors.grey.shade600,
+                      fontWeight: FontWeight.w500,
+                      height: 1.4,
+                    ),
+                  )
+                      .animate()
+                      .fadeIn(delay: 200.ms, duration: 600.ms)
+                      .slideX(begin: -0.2, end: 0),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    height: 40,
+                    child: ElevatedButton(
+                      onPressed: () => HomeScreenState.of(context)?.setIndex(2),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF556B2F), // Olive Green
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        elevation: 0,
                       ),
-                    ],
-                  ),
+                      child: Text(
+                        appLocalizations?.translate('get_started') ??
+                            "Get Started",
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ).animate().fadeIn(delay: 400.ms, duration: 600.ms).scale(),
+                ],
+              ),
+            ),
+
+            // RIGHT SIDE: Image with Circle
+            Expanded(
+              flex: 3,
+              child: SizedBox(
+                height: 140,
+                child: Stack(
+                  alignment: Alignment.centerRight,
+                  children: [
+                    // Green Circle Ring
+                    Positioned(
+                      right: 0,
+                      child: Container(
+                        height: 110,
+                        width: 110,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: const Color(0xFF9E9D24).withOpacity(0.5),
+                            width: 6,
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Image
+                    Positioned(
+                      bottom: 0,
+                      right: 4,
+                      child: Image.asset(
+                        'assets/images/priyanka.png',
+                        fit: BoxFit.contain,
+                        height: 150,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ],
         ),

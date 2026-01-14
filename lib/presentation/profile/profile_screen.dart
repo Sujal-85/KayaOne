@@ -16,10 +16,11 @@ import 'package:kayaone/presentation/profile/help_support_screen.dart';
 import 'package:kayaone/presentation/profile/rate_app_screen.dart';
 import 'package:kayaone/presentation/profile/offers_screen.dart';
 import 'package:kayaone/presentation/booking/my_appointments_screen.dart';
-import 'package:kayaone/presentation/tracking/tracking_screen.dart';
+import 'package:kayaone/presentation/home/home_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+  final bool isMainTab;
+  const ProfileScreen({super.key, this.isMainTab = false});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -184,6 +185,51 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Future<void> _handleGuestRestriction(VoidCallback action) async {
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    var appLocalizations = AppLocalizations.of(context);
+    if (auth.isGuest) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(
+            appLocalizations?.translate('login_required') ?? "Login Required",
+            style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+          ),
+          content: Text(
+            appLocalizations?.translate('login_access_feature') ??
+                "Please login to access this feature.",
+            style: GoogleFonts.plusJakartaSans(),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context); // Close dialog
+                auth.logout(); // Reset guest state
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  (route) => false,
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryGreen,
+                foregroundColor: AppTheme.darkBlue,
+              ),
+              child: const Text("Login"),
+            ),
+          ],
+        ),
+      );
+    } else {
+      action();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context);
@@ -235,12 +281,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           // --- Orders (Prominent but integrated) ---
                           GestureDetector(
                             onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const MyOrdersScreen(),
-                                ),
-                              );
+                              _handleGuestRestriction(() {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const MyOrdersScreen(),
+                                  ),
+                                );
+                              });
                             },
                             child: Container(
                               padding: const EdgeInsets.all(16),
@@ -323,11 +371,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             title: appLocalizations?.translate('my_bookings') ??
                                 "My Bookings",
                             onTap: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (_) =>
-                                          const MyBookingsScreen()));
+                              _handleGuestRestriction(() {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) =>
+                                            const MyBookingsScreen()));
+                              });
                             },
                           ),
 
@@ -337,13 +387,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ?.translate('your_consultations') ??
                                 "Your Consultations",
                             onTap: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (_) =>
-                                          const MyAppointmentsScreen(
-                                            filterType: AppointmentType.doctor,
-                                          )));
+                              _handleGuestRestriction(() {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) =>
+                                            const MyAppointmentsScreen(
+                                              filterType:
+                                                  AppointmentType.doctor,
+                                            )));
+                              });
                             },
                           ),
                           _buildProfileItem(
@@ -441,7 +494,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             GestureDetector(
-              onTap: () => Navigator.pop(context),
+              onTap: () {
+                if (widget.isMainTab) {
+                  HomeScreenState.of(context)?.setIndex(0);
+                } else {
+                  Navigator.pop(context);
+                }
+              },
               child: Container(
                 width: 40,
                 height: 40,
@@ -494,7 +553,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
                 GestureDetector(
-                  onTap: _isUploading ? null : _pickAndUploadImage,
+                  onTap: _isUploading
+                      ? null
+                      : () => _handleGuestRestriction(_pickAndUploadImage),
                   child: Row(
                     children: [
                       const Icon(Icons.edit, color: Colors.white70, size: 14),

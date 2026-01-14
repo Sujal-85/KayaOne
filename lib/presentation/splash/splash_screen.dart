@@ -98,42 +98,6 @@ class _SplashScreenState extends State<SplashScreen>
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Debug layer - if this shows, image isn't covering it
-          Container(color: Colors.purple),
-
-          /*
-          // Background Image
-          Image.asset(
-            // FORCING SMALL IMAGE FOR DEBUGGING
-            'assets/images/splash_images/image.png',
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
-               // ... error builder content
-               return Container(); // Simplified for comment
-            },
-          ),
-          
-          // Dark Overlay
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.black.withOpacity(0.3),
-                  Colors.black.withOpacity(0.7),
-                ],
-              ),
-            ),
-          ),
-          */
-          const Center(
-              child: Text("DEBUG MODE\nSHOULD BE PURPLE",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold))),
           // Content
           Center(
             child: FadeTransition(
@@ -179,7 +143,7 @@ class _SplashScreenState extends State<SplashScreen>
                     const SizedBox(height: 48),
                     Text(
                       loc?.translate('app_name') ?? 'KayaOne',
-                      style: TextStyle(
+                        style: TextStyle(
                         fontSize: MediaQuery.of(context).size.width * 0.1,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,

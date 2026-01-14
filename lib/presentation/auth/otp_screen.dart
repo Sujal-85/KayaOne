@@ -30,10 +30,37 @@ class _OTPScreenState extends State<OTPScreen> {
   bool _isLoading = false;
   StreamSubscription<User?>? _authStateSubscription;
 
+  // Timer related
+  Timer? _timer;
+  int _start = 30;
+  bool _isResendEnabled = false;
+  String _currentVerificationId = "";
+
   @override
   void initState() {
     super.initState();
+    _currentVerificationId = widget.verificationId;
+    _startTimer();
     _listenForAutoVerification();
+  }
+
+  void _startTimer() {
+    setState(() {
+      _isResendEnabled = false;
+      _start = 30;
+    });
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_start == 0) {
+        setState(() {
+          _isResendEnabled = true;
+        });
+        timer.cancel();
+      } else {
+        setState(() {
+          _start--;
+        });
+      }
+    });
   }
 
   void _listenForAutoVerification() {
@@ -69,7 +96,7 @@ class _OTPScreenState extends State<OTPScreen> {
         }
       }
     } catch (_) {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -78,6 +105,7 @@ class _OTPScreenState extends State<OTPScreen> {
     _otpController.dispose();
     _focusNode.dispose();
     _authStateSubscription?.cancel();
+    _timer?.cancel();
     super.dispose();
   }
 
@@ -88,7 +116,7 @@ class _OTPScreenState extends State<OTPScreen> {
 
     try {
       PhoneAuthCredential credential = PhoneAuthProvider.credential(
-        verificationId: widget.verificationId,
+        verificationId: _currentVerificationId,
         smsCode: otp,
       );
 
@@ -126,6 +154,55 @@ class _OTPScreenState extends State<OTPScreen> {
               content: Text(AppLocalizations.of(context)
                       ?.translate('invalid_otp_error') ??
                   "Invalid OTP or Server Error. Please try again."),
+              backgroundColor: Colors.redAccent),
+        );
+      }
+    }
+  }
+
+  Future<void> _resendOTP() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await FirebaseAuth.instance.verifyPhoneNumber(
+        phoneNumber: widget.phoneNumber,
+        verificationCompleted: (PhoneAuthCredential credential) async {
+          // Auto-resolution handling if needed, though usually handled by stream
+        },
+        verificationFailed: (FirebaseAuthException e) {
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text(e.message ?? "Verification Failed"),
+                backgroundColor: Colors.redAccent),
+          );
+        },
+        codeSent: (String verificationId, int? resendToken) {
+          if (mounted) {
+            setState(() {
+              _isLoading = false;
+              _currentVerificationId = verificationId;
+            });
+            _startTimer();
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                  content: Text("OTP Resent Successfully"),
+                  backgroundColor: Colors.green),
+            );
+          }
+        },
+        codeAutoRetrievalTimeout: (String verificationId) {
+          _currentVerificationId = verificationId;
+        },
+      );
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text("Error resending OTP: $e"),
               backgroundColor: Colors.redAccent),
         );
       }
@@ -340,16 +417,21 @@ class _OTPScreenState extends State<OTPScreen> {
                           ),
                         ),
                         TextButton(
-                          onPressed: () {
-                            // Resend logic
-                          },
+                          onPressed: _isResendEnabled ? _resendOTP : null,
                           child: Text(
-                            appLocalizations?.translate('resend') ?? "Resend",
-                            style: const TextStyle(
-                              color: Colors.white,
+                            _isResendEnabled
+                                ? (appLocalizations?.translate('resend') ??
+                                    "Resend")
+                                : "${appLocalizations?.translate('resend') ?? "Resend"} in ${_start}s",
+                            style: TextStyle(
+                              color: _isResendEnabled
+                                  ? Colors.white
+                                  : Colors.white.withValues(alpha: 0.5),
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
-                              decoration: TextDecoration.underline,
+                              decoration: _isResendEnabled
+                                  ? TextDecoration.underline
+                                  : TextDecoration.none,
                               decorationColor: Colors.white,
                             ),
                           ),

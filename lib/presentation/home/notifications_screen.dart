@@ -69,7 +69,7 @@ class NotificationsScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    "We'll notify you when something important happens.",
+                    "We'll notify you for new message.",
                     textAlign: TextAlign.center,
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 14,

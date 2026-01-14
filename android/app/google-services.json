@@ -14,6 +14,22 @@
       },
       "oauth_client": [
         {
+          "client_id": "310652879120-2mrtrmt06kem01gkl808emhpmfdap41g.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.kayaone.medical",
+            "certificate_hash": "05d2fd022241116c1a9e4056f4e72876955a17a9"
+          }
+        },
+        {
+          "client_id": "310652879120-vv1a0ntt5hlpr05a8foqmuir8ugiukff.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.kayaone.medical",
+            "certificate_hash": "5611397349f30eba09783eed3b3572956ace680e"
+          }
+        },
+        {
           "client_id": "310652879120-58u9mdfva1jueau1p6jhjeoktb3e5f52.apps.googleusercontent.com",
           "client_type": 3
         }

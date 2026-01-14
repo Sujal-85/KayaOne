@@ -6,10 +6,12 @@ import 'package:kayaone/core/theme/app_theme.dart';
 import 'package:kayaone/state/doctor_provider.dart';
 import 'package:kayaone/presentation/doctors/doctor_profile_screen.dart';
 import 'package:kayaone/core/localization/app_localizations.dart';
+import 'package:kayaone/presentation/home/home_screen.dart';
 import 'package:shimmer/shimmer.dart';
 
 class DoctorListingScreen extends StatefulWidget {
-  const DoctorListingScreen({super.key});
+  final bool isMainTab;
+  const DoctorListingScreen({super.key, this.isMainTab = false});
 
   @override
   State<DoctorListingScreen> createState() => _DoctorListingScreenState();
@@ -115,6 +117,17 @@ class _DoctorListingScreenState extends State<DoctorListingScreen> {
                         pinned: true,
                         backgroundColor: Colors.transparent,
                         elevation: 0,
+                        leading: IconButton(
+                          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                              color: AppTheme.darkBlue),
+                          onPressed: () {
+                            if (widget.isMainTab) {
+                              HomeScreenState.of(context)?.setIndex(0);
+                            } else {
+                              Navigator.pop(context);
+                            }
+                          },
+                        ),
                         flexibleSpace: FlexibleSpaceBar(
                           title: Text(
                             appLocalizations?.translate('find_specialist') ??
@@ -244,7 +257,9 @@ class _DoctorListingScreenState extends State<DoctorListingScreen> {
                                           height: 250),
                                       const SizedBox(height: 4),
                                       Text(
-                                        "No doctors found",
+                                        appLocalizations?.translate(
+                                                'no_doctors_found') ??
+                                            "No doctors found",
                                         style: GoogleFonts.outfit(
                                             fontSize: 20,
                                             fontWeight: FontWeight.bold,

@@ -11,9 +11,10 @@ import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:kayaone/presentation/booking/lab_booking_detail_screen.dart';
 import 'package:kayaone/presentation/booking/doctor_booking_detail_screen.dart';
-import 'package:kayaone/presentation/booking/ai_booking_screen.dart';
 import 'package:kayaone/presentation/booking/booking_guide_screen.dart';
+import 'package:kayaone/presentation/doctors/doctor_listing_screen.dart';
 import 'package:kayaone/core/localization/app_localizations.dart';
+import 'package:kayaone/presentation/booking/ai_booking_screen.dart'; // Add this import
 
 enum AppointmentType { doctor, lab }
 
@@ -369,8 +370,7 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (_) =>
-                              const BookingGuideScreen(isDoctorBooking: true)));
+                          builder: (_) => const DoctorListingScreen()));
                 }),
             ],
           ),
@@ -444,8 +444,7 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
               onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (_) =>
-                          const BookingGuideScreen(isDoctorBooking: true))),
+                      builder: (_) => const DoctorListingScreen())),
             ),
           const SizedBox(width: 8),
         ],
@@ -484,6 +483,35 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
               ),
             ),
           ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          if (widget.filterType == AppointmentType.doctor) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const DoctorListingScreen(),
+              ),
+            );
+          } else {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) =>
+                    const BookingGuideScreen(isDoctorBooking: false),
+              ),
+            );
+          }
+        },
+        backgroundColor: AppTheme.primaryGreen,
+        icon: const Icon(Icons.add, color: Colors.white),
+        label: Text(
+          "Book New",
+          style: GoogleFonts.plusJakartaSans(
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
         ),
       ),
     );
@@ -588,8 +616,7 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
                     () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (_) => const BookingGuideScreen(
-                                isDoctorBooking: true))),
+                            builder: (_) => const DoctorListingScreen())),
                   ),
                 ),
               ),

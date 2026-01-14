@@ -365,7 +365,7 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
                                         ),
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor:
-                                              const Color(0xFF00897B),
+                                              const Color.fromARGB(255, 75, 169, 12),
                                           foregroundColor: Colors.white,
                                           padding: const EdgeInsets.symmetric(
                                               horizontal: 16, vertical: 12),
@@ -475,7 +475,7 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
                                   padding:
                                       const EdgeInsets.symmetric(vertical: 14),
                                   side: const BorderSide(
-                                      color: Color(0xFF00897B)),
+                                      color: Color.fromARGB(255, 75, 169, 12)),
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12)),
                                 ),
@@ -494,7 +494,7 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
                               child: ElevatedButton(
                                 onPressed: () {},
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF00897B),
+                                  backgroundColor: const Color.fromARGB(255, 68, 61, 132),
                                   foregroundColor: Colors.white,
                                   padding:
                                       const EdgeInsets.symmetric(vertical: 14),

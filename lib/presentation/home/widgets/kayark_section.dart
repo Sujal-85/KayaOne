@@ -143,49 +143,49 @@ class _KayarkSectionState extends State<KayarkSection> {
             const SizedBox(height: 24),
 
             // 3. Vertical Banner Grid
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Curated Collections",
-                    style: GoogleFonts.outfit(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color:
-                          const Color(0xFF4B6309), // Darker Green for white bg
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "Handpicked for your natural glow",
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 13,
-                      color: const Color(0xFF4B6309).withValues(alpha: 0.7),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: 4, // Show 4 items
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 0.75, // Taller for vertical look
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                    ),
-                    itemBuilder: (context, index) {
-                      return _buildVerticalBanner(
-                          _verticalBanners[index], index);
-                    },
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24), // Bottom padding
+            // Padding(
+            //   padding: const EdgeInsets.symmetric(horizontal: 20),
+            //   child: Column(
+            //     crossAxisAlignment: CrossAxisAlignment.start,
+            //     children: [
+            //       Text(
+            //         "Curated Collections",
+            //         style: GoogleFonts.outfit(
+            //           fontSize: 18,
+            //           fontWeight: FontWeight.bold,
+            //           color:
+            //               const Color(0xFF4B6309), // Darker Green for white bg
+            //         ),
+            //       ),
+            //       const SizedBox(height: 4),
+            //       Text(
+            //         "Handpicked for your natural glow",
+            //         style: GoogleFonts.plusJakartaSans(
+            //           fontSize: 13,
+            //           color: const Color(0xFF4B6309).withValues(alpha: 0.7),
+            //         ),
+            //       ),
+            //       const SizedBox(height: 16),
+            //       GridView.builder(
+            //         shrinkWrap: true,
+            //         physics: const NeverScrollableScrollPhysics(),
+            //         itemCount: 4, // Show 4 items
+            //         gridDelegate:
+            //             const SliverGridDelegateWithFixedCrossAxisCount(
+            //           crossAxisCount: 2,
+            //           childAspectRatio: 0.75, // Taller for vertical look
+            //           crossAxisSpacing: 16,
+            //           mainAxisSpacing: 16,
+            //         ),
+            //         itemBuilder: (context, index) {
+            //           return _buildVerticalBanner(
+            //               _verticalBanners[index], index);
+            //         },
+            //       ),
+            //     ],
+            //   ),
+            // ),
+            // const SizedBox(height: 24), // Bottom padding
           ],
         ),
       ),
@@ -283,31 +283,31 @@ class _KayarkSectionState extends State<KayarkSection> {
               ),
             ),
             // CTA
-            Positioned(
-              bottom: 20,
-              left: 20,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF4B6309),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      "Shop Now",
-                      style: GoogleFonts.plusJakartaSans(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ).animate().scale(delay: 200.ms),
-                ],
-              ),
-            ),
+            // Positioned(
+            //   bottom: 20,
+            //   left: 20,
+            //   child: Column(
+            //     crossAxisAlignment: CrossAxisAlignment.start,
+            //     children: [
+            //       Container(
+            //         padding:
+            //             const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            //         decoration: BoxDecoration(
+            //           color: const Color(0xFF4B6309),
+            //           borderRadius: BorderRadius.circular(20),
+            //         ),
+            //         child: Text(
+            //           "Shop Now",
+            //           style: GoogleFonts.plusJakartaSans(
+            //             color: Colors.white,
+            //             fontWeight: FontWeight.bold,
+            //             fontSize: 12,
+            //           ),
+            //         ),
+            //       ).animate().scale(delay: 200.ms),
+            //     ],
+            //   ),
+            // ),
             // Tag
             Positioned(
               top: 16,

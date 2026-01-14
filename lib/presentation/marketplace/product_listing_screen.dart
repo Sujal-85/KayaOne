@@ -6,10 +6,17 @@ import 'package:kayaone/state/product_provider.dart';
 import 'package:kayaone/state/cart_provider.dart';
 import 'package:kayaone/presentation/marketplace/cart_screen.dart';
 import 'package:kayaone/presentation/marketplace/product_detail_screen.dart';
+import 'package:kayaone/presentation/home/home_screen.dart';
 
 class ProductListingScreen extends StatefulWidget {
   final String? initialSearchQuery;
-  const ProductListingScreen({super.key, this.initialSearchQuery});
+  final bool isMainTab;
+
+  const ProductListingScreen({
+    super.key,
+    this.initialSearchQuery,
+    this.isMainTab = false,
+  });
 
   @override
   State<ProductListingScreen> createState() => _ProductListingScreenState();
@@ -95,7 +102,13 @@ class _ProductListingScreenState extends State<ProductListingScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             GestureDetector(
-                              onTap: () => Navigator.pop(context),
+                              onTap: () {
+                                if (widget.isMainTab) {
+                                  HomeScreenState.of(context)?.setIndex(0);
+                                } else {
+                                  Navigator.pop(context);
+                                }
+                              },
                               child: Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
@@ -112,7 +125,8 @@ class _ProductListingScreenState extends State<ProductListingScreen> {
                                 style: GoogleFonts.outfit(
                                     fontSize: 20,
                                     fontWeight: FontWeight.w700,
-                                    color: const Color.fromARGB(255, 255, 255, 255))),
+                                    color: const Color.fromARGB(
+                                        255, 255, 255, 255))),
                             // Cart Icon
                             Stack(
                               children: [

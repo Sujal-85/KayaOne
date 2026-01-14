@@ -8,12 +8,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:kayaone/core/theme/app_theme.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:kayaone/core/api_config.dart';
-import 'package:provider/provider.dart';
-import 'package:kayaone/state/booking_provider.dart';
-import 'package:kayaone/state/auth_provider.dart';
-import 'package:kayaone/data/services/booking_service.dart';
 import 'package:kayaone/presentation/booking/booking_success_screen.dart';
-import 'package:lottie/lottie.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
 class AiBookingScreen extends StatefulWidget {
@@ -66,16 +61,16 @@ class _AiBookingScreenState extends State<AiBookingScreen> {
       generationConfig: GenerationConfig(temperature: 0.3),
       systemInstruction: Content.text(
           "You are KayaOne AI, the FASTEST medical booking assistant. "
-          "GOAL: Book a Doctor or Lab Test in < 3 interactions. "
-          "DATA NEEDED: 1. Service Type (Doctor/Lab) 2. Specification (Cardio/Blood Test) 3. Time (Morning/Evening). "
+          "GOAL: Book a Doctor or a Blood Collection Slot in < 3 interactions. "
+          "DATA NEEDED: 1. Service Type (Doctor/Blood Collection) 2. Specification (Cardio/Full Body Checkup) 3. Time (Morning/Evening). "
           "RULES: "
-          "- Use **BOLD** for key details (e.g. **Doctor**, **Tomorrow**, **Blood Test**). "
+          "- Use **BOLD** for key details (e.g. **Doctor**, **Tomorrow**, **Blood Slot**). "
           "- Keep questions extremely short. "
           "- Assume 'Today' or 'Tomorrow' if not specified, just ask to confirm. "
           "- If details are sufficient, IMMEDIATELY generate specific JSON. order: details -> JSON. "
           "- JSON FORMAT: |||json { \"type\": \"confirm_card\", \"booking_type\": \"doctor\", \"title\": \"Dr. Anjali Desai\", \"subtitle\": \"Senior Cardiologist\", \"time\": \"Tomorrow, 10:00 AM\", \"fee\": \"₹800\" } ||| "
-          "- For Lab (ALWAYS FREE): |||json { \"type\": \"confirm_card\", \"booking_type\": \"lab\", \"title\": \"Blood Test\", \"subtitle\": \"Home Collection\", \"time\": \"Tomorrow, 07:00 AM\", \"fee\": \"₹0\" } ||| "
-          "- To suggest quick replies (e.g. Doctor, Lab, Morning, Evening), append: |||replies [\"Option1\", \"Option2\"]||| "
+          "- For Blood Slot (ALWAYS FREE): |||json { \"type\": \"confirm_card\", \"booking_type\": \"lab\", \"title\": \"Blood Collection Slot\", \"subtitle\": \"Home Collection\", \"time\": \"Tomorrow, 07:00 AM\", \"fee\": \"₹0\" } ||| "
+          "- To suggest quick replies (e.g. Doctor, Blood Slot, Morning, Evening), append: |||replies [\"Option1\", \"Option2\"]||| "
           "- Reply in user's language."),
     );
 
@@ -98,20 +93,28 @@ class _AiBookingScreenState extends State<AiBookingScreen> {
       _flutterTts.setLanguage('en-US');
     }
 
-    String greeting = "Hello! I'm KayaOne AI. Need a Doctor or a Lab Test?";
-    if (langCode == 'hi-IN')
+    String greeting =
+        "Hello! I'm KayaOne AI. Need a Doctor or a Blood Collection Slot?";
+    if (langCode == 'hi-IN') {
       greeting =
-          "नमस्ते! मैं कायावन एआई हूँ। क्या आपको डॉक्टर या लैब टेस्ट की आवश्यकता है?";
-    if (langCode == 'mr-IN')
+          "नमस्ते! मैं कायावन एआई हूँ। क्या आपको डॉक्टर या ब्लड कलेक्शन स्लॉट की आवश्यकता है?";
+    }
+    if (langCode == 'mr-IN') {
       greeting =
-          "नमस्कार! मी कायावन एआई आहे. तुम्हाला डॉक्टर किंवा लॅब टेस्टची गरज आहे का?";
+          "नमस्कार! मी कायावन एआई आहे. तुम्हाला डॉक्टर किंवा ब्लड कलेक्शन स्लॉटची गरज आहे का?";
+    }
 
     _addMessage(
         ChatMessage(text: greeting, isUser: false, type: ChatMessageType.text));
     _speak(greeting);
 
     setState(() {
-      _quickReplies = ["Doctor", "Lab Test"];
+      _quickReplies = [
+        "Doctor",
+        "Blood Slot",
+        "Health Karma AI",
+        "Health Assistant AI"
+      ];
     });
   }
 
@@ -438,8 +441,6 @@ class _AiBookingScreenState extends State<AiBookingScreen> {
     );
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -562,6 +563,24 @@ class _AiBookingScreenState extends State<AiBookingScreen> {
                   return ActionChip(
                     label: Text(_quickReplies[index]),
                     onPressed: () {
+                      if (_quickReplies[index].contains("Health")) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              "${_quickReplies[index]} Coming Soon!",
+                              style: GoogleFonts.plusJakartaSans(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            backgroundColor: AppTheme.darkBlue,
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        );
+                        return;
+                      }
                       _textController.text = _quickReplies[index];
                       _sendMessage();
                     },
@@ -597,7 +616,7 @@ class _AiBookingScreenState extends State<AiBookingScreen> {
                           decoration: InputDecoration(
                             hintText: "Type or speak...",
                             hintStyle: GoogleFonts.plusJakartaSans(
-                                color: Colors.grey.shade400),
+                                color: const Color.fromARGB(255, 63, 37, 37)),
                             border: InputBorder.none,
                             focusedBorder: InputBorder.none,
                             enabledBorder: InputBorder.none,
@@ -646,8 +665,8 @@ class _AiBookingScreenState extends State<AiBookingScreen> {
                     color: AppTheme.primaryGreen,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.send_rounded,
-                      color: Colors.white, size: 22),
+                  child: Icon(Icons.send_rounded,
+                      color: AppTheme.primaryGreen.withOpacity(0.1), size: 22),
                 ),
               ),
             ],

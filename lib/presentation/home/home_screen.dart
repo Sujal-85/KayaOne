@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:kayaone/data/services/notification_service.dart';
 import 'package:kayaone/core/localization/app_localizations.dart';
@@ -17,8 +16,8 @@ import 'dart:ui';
 import 'package:kayaone/presentation/prescription/prescription_upload_screen.dart';
 import 'package:kayaone/presentation/booking/my_appointments_screen.dart';
 import 'package:kayaone/presentation/healthkarma/health_karma_screen.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:kayaone/presentation/marketplace/product_listing_screen.dart';
+import 'package:kayaone/presentation/doctors/doctor_listing_screen.dart';
 import 'package:kayaone/presentation/auth/login_screen.dart';
 import 'package:kayaone/state/auth_provider.dart';
 import 'package:kayaone/state/health_karma_provider.dart';
@@ -35,7 +34,6 @@ import 'package:kayaone/presentation/home/widgets/advertisement_carousel.dart';
 import 'package:kayaone/presentation/home/widgets/consultation_card.dart';
 import 'package:kayaone/presentation/home/widgets/kayark_section.dart';
 import 'package:kayaone/core/utils/whatsapp_helper.dart';
-import 'package:kayaone/presentation/common/premium_popup.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -50,29 +48,71 @@ class HomeScreenState extends State<HomeScreen> {
 
   int _currentIndex = 0;
 
-  void setIndex(int index) {
-    setState(() => _currentIndex = index);
-  }
-
-  // Pages are recreated on switch, ensuring data refresh
   final List<Widget> _pages = [
     const HomeView(),
-    const MyAppointmentsScreen(
-      key: ValueKey('care_tab'),
-      filterType: AppointmentType.lab,
-      isEmbedded: true,
-    ), // "Care" Tab = Lab
-    const MyAppointmentsScreen(
-      key: ValueKey('doctor_tab'),
-      filterType: AppointmentType.doctor,
-      isEmbedded: true,
-    ), // "Doctor" Tab = Doctor
+    const MyAppointmentsScreen(), // Care -> Bookings
+    const DoctorListingScreen(isMainTab: true), // Doctor -> Doctor Page
     const HealthKarmaScreen(),
-    const ProfileScreen(),
+    const ProfileScreen(isMainTab: true),
   ];
 
+  void setIndex(int index) {
+    if ([1, 2, 3].contains(index)) {
+      handleGuestRestriction(() {
+        setState(() => _currentIndex = index);
+      });
+    } else {
+      setState(() => _currentIndex = index);
+    }
+  }
+
   void _onTap(int index) {
-    setState(() => _currentIndex = index);
+    setIndex(index);
+  }
+
+  Future<void> handleGuestRestriction(VoidCallback action) async {
+    var appLocalizations = AppLocalizations.of(context);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    if (authProvider.isGuest) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(
+            appLocalizations?.translate('login_required') ?? "Login Required",
+            style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+          ),
+          content: Text(
+            appLocalizations?.translate('login_access_feature') ??
+                "Please login to access this feature.",
+            style: GoogleFonts.plusJakartaSans(),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context); // Close dialog
+                authProvider.logout(); // Reset guest state
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  (route) => false,
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryGreen,
+                foregroundColor: AppTheme.darkBlue,
+              ),
+              child: const Text("Login"),
+            ),
+          ],
+        ),
+      );
+    } else {
+      action();
+    }
   }
 
   Widget _buildActiveIcon(IconData icon) {
@@ -336,10 +376,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(24),
-                    child: Image.asset(
-                      bannerImage,
-                      fit: BoxFit.contain,
-                    ),
+                    child: Image.asset(bannerImage, fit: BoxFit.contain),
                   ),
                 ),
                 // Close Button
@@ -361,8 +398,11 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                           ),
                         ],
                       ),
-                      child: const Icon(Icons.close,
-                          size: 20, color: Colors.black),
+                      child: const Icon(
+                        Icons.close,
+                        size: 20,
+                        color: Colors.black,
+                      ),
                     ),
                   ),
                 ),
@@ -400,8 +440,9 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    AppLocalizations.of(context)
-                            ?.translate('select_delivery_location') ??
+                    AppLocalizations.of(
+                          context,
+                        )?.translate('select_delivery_location') ??
                         "Select Delivery Location",
                     style: GoogleFonts.outfit(
                       fontSize: 18,
@@ -425,8 +466,9 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                 ),
                 child: TextField(
                   decoration: InputDecoration(
-                    hintText: AppLocalizations.of(context)
-                            ?.translate('enter_pincode') ??
+                    hintText: AppLocalizations.of(
+                          context,
+                        )?.translate('enter_pincode') ??
                         "Enter pin code",
                     hintStyle: GoogleFonts.plusJakartaSans(
                       color: Colors.grey[400],
@@ -434,7 +476,9 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                     ),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 14),
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
                     suffixIcon: TextButton(
                       onPressed: () {
                         // TODO: Implement Pin Code Logic
@@ -484,8 +528,9 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        const Color(0xFF4B6309), // Olive Green from Image
+                    backgroundColor: const Color(
+                      0xFF4B6309,
+                    ), // Olive Green from Image
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -493,8 +538,9 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                     elevation: 0,
                   ),
                   child: Text(
-                    AppLocalizations.of(context)
-                            ?.translate('add_new_address') ??
+                    AppLocalizations.of(
+                          context,
+                        )?.translate('add_new_address') ??
                         "Add New Address",
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 15,
@@ -627,8 +673,9 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                                 child: Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    color:
-                                        AppTheme.primaryGreen.withOpacity(0.1),
+                                    color: AppTheme.primaryGreen.withOpacity(
+                                      0.1,
+                                    ),
                                     shape: BoxShape.circle,
                                   ),
                                   child: const Icon(
@@ -679,8 +726,9 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   shape: BoxShape.circle,
-                                  border:
-                                      Border.all(color: Colors.grey.shade200),
+                                  border: Border.all(
+                                    color: Colors.grey.shade200,
+                                  ),
                                 ),
                                 child: const Icon(
                                   Icons.notifications_outlined,
@@ -721,7 +769,8 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                                 Expanded(
                                   child: Text(
                                     appLocalizations?.translate(
-                                            'search_healthcare_prod') ??
+                                          'search_healthcare_prod',
+                                        ) ??
                                         "Search healthcare products",
                                     style: GoogleFonts.plusJakartaSans(
                                       color: Colors.grey.shade500,
@@ -875,7 +924,6 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                       //       "AI Health Assistant",
                       // ),
                       // _buildAIAssistantPromo(),
-
                       const SizedBox(height: 32),
 
                       // Articles
@@ -906,48 +954,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
     );
   }
 
-  Future<void> _handleGuestRestriction(VoidCallback action) async {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    if (authProvider.isGuest) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text(
-            "Login Required",
-            style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
-          ),
-          content: Text(
-            "Please login to access this feature.",
-            style: GoogleFonts.plusJakartaSans(),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context); // Close dialog
-                authProvider.logout(); // Reset guest state
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                  (route) => false,
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryGreen,
-                foregroundColor: AppTheme.darkBlue,
-              ),
-              child: const Text("Login"),
-            ),
-          ],
-        ),
-      );
-    } else {
-      action();
-    }
-  }
+  // Guest restriction logic moved to HomeScreenState
 
   // ==================== 1.5️⃣ MY BOOKINGS ====================
   // ==================== 1.5️⃣ MY BOOKINGS / PERSONALISED CARE ====================
@@ -955,15 +962,12 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
     // Replaced "Last Visit" dynamic section with static "Personalised Care" card
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
-      child: Column(
-        children: [
-          _buildSingleBookingCard(null),
-        ],
-      ),
+      child: Column(children: [_buildSingleBookingCard(null)]),
     );
   }
 
   Widget _buildSingleBookingCard(dynamic booking) {
+    var appLocalizations = AppLocalizations.of(context);
     return GestureDetector(
       onTap: () => HomeScreenState.of(context)?.setIndex(2),
       child: Container(
@@ -988,7 +992,8 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Your Health,\nOur Priority",
+                    appLocalizations?.translate('your_health_priority') ??
+                        "Your Health,\nOur Priority",
                     style: GoogleFonts.outfit(
                       fontWeight: FontWeight.w700,
                       fontSize: 18,
@@ -1001,7 +1006,8 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                       .slideX(begin: -0.2, end: 0),
                   const SizedBox(height: 8),
                   Text(
-                    "Expert care and guidance for a healthier you.",
+                    appLocalizations?.translate('expert_care_desc') ??
+                        "Expert care and guidance for a healthier you.",
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 10,
                       color: Colors.grey.shade600,
@@ -1027,7 +1033,8 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                         elevation: 0,
                       ),
                       child: Text(
-                        "Get Started",
+                        appLocalizations?.translate('get_started') ??
+                            "Get Started",
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -1084,33 +1091,39 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
 
   // ==================== 2️⃣ PRIMARY SERVICES ====================
   Widget _buildPrimaryServicesSection() {
+    var appLocalizations = AppLocalizations.of(context);
     final services = [
       _ServiceCardData(
-        title: "Blood Collection\nat Doorstep",
+        title: appLocalizations?.translate('service_blood_collection') ??
+            "Blood Collection\nat Doorstep",
         lottie: "assets/lottie/gps_navigation.json",
         image: "assets/images/services/blood collection.png",
         gradient: [const Color(0xFF1A237E), const Color(0xFF3949AB)],
         onTap: () {
-          _handleGuestRestriction(() async {
+          HomeScreenState.of(context)?.handleGuestRestriction(() async {
             await Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (_) => const PrescriptionUploadScreen()),
+                builder: (_) => const PrescriptionUploadScreen(),
+              ),
             );
             _fetchRecentBookings();
           });
         },
       ),
       _ServiceCardData(
-        title: "Doctor\nConsultancy",
+        title: appLocalizations?.translate('service_doctor') ??
+            "Doctor\nConsultancy",
         lottie: "assets/lottie/booking_calendar.json",
         image: "assets/images/services/Doctor Appointment.png",
         gradient: [const Color(0xFF004D40), const Color(0xFF00897B)],
-        onTap: () => _handleGuestRestriction(
-            () => HomeScreenState.of(context)?.setIndex(2)),
+        onTap: () => HomeScreenState.of(context)?.handleGuestRestriction(
+          () => HomeScreenState.of(context)?.setIndex(2),
+        ),
       ),
       _ServiceCardData(
-        title: "Healthcare\nProducts",
+        title: appLocalizations?.translate('service_products') ??
+            "Healthcare\nProducts",
         lottie: "assets/lottie/upload.json",
         image: "assets/images/services/Products.png",
         gradient: [const Color(0xFF3E2723), const Color(0xFF6D4C41)],
@@ -1120,7 +1133,8 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
         ),
       ),
       _ServiceCardData(
-        title: "HealthKarma\nScore",
+        title: appLocalizations?.translate('service_healthkarma') ??
+            "HealthKarma\nScore",
         lottie: "assets/lottie/Health.json",
         image: "assets/images/services/HealthKarama.png",
         gradient: [const Color(0xFF311B92), const Color(0xFF512DA8)],
@@ -1153,6 +1167,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
       builder: (context, provider, child) {
         final result = provider.result;
         final int score = result?.score ?? 0;
+        var appLocalizations = AppLocalizations.of(context);
 
         final String status;
         final String buttonText;
@@ -1160,23 +1175,30 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
         final String subText;
 
         if (result == null) {
-          status = "Start Assessment";
-          buttonText = "Start";
-          subText = "Take the quiz to get your score.";
+          status = appLocalizations?.translate('hk_start_assessment') ??
+              "Start Assessment";
+          buttonText = appLocalizations?.translate('hk_start') ?? "Start";
+          subText = appLocalizations?.translate('hk_quiz_prompt') ??
+              "Take the quiz to get your score.";
           onButtonPressed = () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const HealthKarmaScreen()),
-            );
+            HomeScreenState.of(context)?.handleGuestRestriction(() {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const HealthKarmaScreen()),
+              );
+            });
           };
         } else {
           status = score >= 80
-              ? "Excellent"
+              ? (appLocalizations?.translate('hk_excellent') ?? "Excellent")
               : score >= 60
-                  ? "Good"
-                  : "Needs Attention";
-          buttonText = "View Detailed Report";
-          subText = "You're doing great! Keep up the daily goals.";
+                  ? (appLocalizations?.translate('hk_good') ?? "Good")
+                  : (appLocalizations?.translate('hk_needs_attention') ??
+                      "Needs Attention");
+          buttonText = appLocalizations?.translate('hk_view_report') ??
+              "View Detailed Report";
+          subText = appLocalizations?.translate('hk_great_job') ??
+              "You're doing great! Keep up the daily goals.";
           onButtonPressed = () {
             // Navigate to HealthKarma Screen (Results)
             HomeScreenState.of(context)?.setIndex(3);
@@ -1246,7 +1268,10 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        "Your HealthKarma",
+                                        appLocalizations?.translate(
+                                              'hk_your_score',
+                                            ) ??
+                                            "Your HealthKarma",
                                         style: GoogleFonts.outfit(
                                           fontSize: isSmallScreen ? 18 : 22,
                                           fontWeight: FontWeight.w700,
@@ -1255,7 +1280,10 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
-                                        "AI-powered personal insights",
+                                        appLocalizations?.translate(
+                                              'hk_ai_insights',
+                                            ) ??
+                                            "AI-powered personal insights",
                                         style: GoogleFonts.plusJakartaSans(
                                           fontSize: isSmallScreen ? 11 : 13,
                                           color: Colors.white.withValues(
@@ -1270,9 +1298,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                                 Container(
                                   padding: const EdgeInsets.all(10),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withValues(
-                                      alpha: 0.1,
-                                    ),
+                                    color: Colors.white.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(16),
                                   ),
                                   child: Icon(
@@ -1380,6 +1406,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   // ==================== 5️⃣ QUICK ACTIONS ====================
   // ==================== 5️⃣ BENTO QUICK ACTIONS ====================
   Widget _buildQuickActionsGrid() {
+    var appLocalizations = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
       child: Column(
@@ -1389,8 +1416,10 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
             children: [
               Expanded(
                 child: _QuickActionBentoCard(
-                  title: "Book\nExpert",
-                  subtitle: "Consultation",
+                  title: appLocalizations?.translate('qa_book_expert') ??
+                      "Book\nExpert",
+                  subtitle: appLocalizations?.translate('qa_consultation') ??
+                      "Consultation",
                   icon: Icons.personal_injury_outlined,
                   gradient: const [Color(0xFF2E3192), Color(0xFF1BFFFF)],
                   height: 180,
@@ -1400,20 +1429,24 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
               const SizedBox(width: 12),
               Expanded(
                 child: _QuickActionBentoCard(
-                  title: "Lab\nTests",
-                  subtitle: "Home Collect",
+                  title: appLocalizations?.translate('qa_lab_tests') ??
+                      "Lab\nTests",
+                  subtitle: appLocalizations?.translate('qa_home_collect') ??
+                      "Home Collect",
                   icon: Icons.science_outlined,
                   gradient: const [Color(0xFFD4145A), Color(0xFFFBB03B)],
                   height: 180,
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const MyAppointmentsScreen(
-                          filterType: AppointmentType.lab,
+                    HomeScreenState.of(context)?.handleGuestRestriction(() {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const MyAppointmentsScreen(
+                            filterType: AppointmentType.lab,
+                          ),
                         ),
-                      ),
-                    );
+                      );
+                    });
                   },
                 ),
               ),
@@ -1425,8 +1458,10 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
             children: [
               Expanded(
                 child: _QuickActionBentoCard(
-                  title: "Order\nMeds",
-                  subtitle: "Delivery",
+                  title: appLocalizations?.translate('qa_order_meds') ??
+                      "Order\nMeds",
+                  subtitle:
+                      appLocalizations?.translate('qa_delivery') ?? "Delivery",
                   icon: Icons.medication_liquid_outlined,
                   gradient: const [Color(0xFF009245), Color(0xFFFCEE21)],
                   height: 180,
@@ -1436,8 +1471,10 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
               const SizedBox(width: 12),
               Expanded(
                 child: _QuickActionBentoCard(
-                  title: "AI\nAnalysis",
-                  subtitle: "Insights",
+                  title: appLocalizations?.translate('qa_ai_analysis') ??
+                      "AI\nAnalysis",
+                  subtitle:
+                      appLocalizations?.translate('qa_insights') ?? "Insights",
                   icon: Icons.analytics_outlined,
                   gradient: const [Color(0xFF662D8C), Color(0xFFED1E79)],
                   height: 180,
@@ -1455,6 +1492,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   // ==================== 6️⃣ TOP PICKS ====================
 
   Widget _buildProductsPreview() {
+    var appLocalizations = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1598,8 +1636,9 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: AppTheme.primaryGreen
-                                    .withValues(alpha: 0.1),
+                                color: AppTheme.primaryGreen.withValues(
+                                  alpha: 0.1,
+                                ),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
@@ -1619,7 +1658,9 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                         // "Earn coins" badge
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.amber.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(4),
@@ -1627,8 +1668,11 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.monetization_on,
-                                  size: 10, color: Colors.amber),
+                              const Icon(
+                                Icons.monetization_on,
+                                size: 10,
+                                color: Colors.amber,
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 "EARN 65 coins",
@@ -1650,11 +1694,12 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                           alignment: Alignment.center,
                           padding: const EdgeInsets.only(bottom: 8),
                           child: Text(
-                            "🚚 Get it tomorrow",
+                            "🚚 ${appLocalizations?.translate('product_get_tomorrow') ?? "Get it tomorrow"}",
                             style: GoogleFonts.plusJakartaSans(
-                                fontSize: 11,
-                                color: const Color(0xFF536130),
-                                fontWeight: FontWeight.w600),
+                              fontSize: 11,
+                              color: const Color(0xFF536130),
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
 
@@ -1666,13 +1711,17 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                               height: 40,
                               width: 40,
                               decoration: BoxDecoration(
-                                border:
-                                    Border.all(color: const Color(0xFF536130)),
+                                border: Border.all(
+                                  color: const Color(0xFF536130),
+                                ),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: IconButton(
-                                icon: const Icon(Icons.shopping_cart_outlined,
-                                    size: 18, color: Color(0xFF536130)),
+                                icon: const Icon(
+                                  Icons.shopping_cart_outlined,
+                                  size: 18,
+                                  color: Color(0xFF536130),
+                                ),
                                 onPressed: () {},
                                 padding: EdgeInsets.zero,
                               ),
@@ -1686,14 +1735,16 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                                   onPressed: () {},
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: const Color(
-                                        0xFF4A5928), // Dark Green like image
+                                      0xFF4A5928,
+                                    ), // Dark Green like image
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     elevation: 0,
                                   ),
                                   child: Text(
-                                    "Buy Now",
+                                    appLocalizations?.translate('buy_now') ??
+                                        "Buy Now",
                                     style: GoogleFonts.plusJakartaSans(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w700,
@@ -1825,41 +1876,53 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
 
   // ==================== 8️⃣ ARTICLES SECTION ====================
   Widget _buildArticlesSection() {
+    var appLocalizations = AppLocalizations.of(context);
     final articles = [
       _ArticleData(
-        title: "Nutrition Guide",
-        subtitle: "Balanced diet secrets",
+        title: appLocalizations?.translate('art_nutrition_title') ??
+            "Nutrition Guide",
+        subtitle: appLocalizations?.translate('art_nutrition_sub') ??
+            "Balanced diet secrets",
         image: "assets/images/article_nutrition.png",
         color: Colors.green,
       ),
       _ArticleData(
-        title: "Mental Wellness",
-        subtitle: "Yoga & mindfulness",
+        title: appLocalizations?.translate('art_mental_title') ??
+            "Mental Wellness",
+        subtitle: appLocalizations?.translate('art_mental_sub') ??
+            "Yoga & mindfulness",
         image: "assets/images/article_mental_health.png",
         color: Colors.indigo,
       ),
       _ArticleData(
-        title: "Sleep Hygiene",
-        subtitle: "The science of rest",
+        title:
+            appLocalizations?.translate('art_sleep_title') ?? "Sleep Hygiene",
+        subtitle: appLocalizations?.translate('art_sleep_sub') ??
+            "The science of rest",
         image: "assets/images/article_sleep.png",
         color: Colors.blueGrey,
       ),
       _ArticleData(
-        title: "Heart Health",
-        subtitle: "Cardio tips for you",
+        title: appLocalizations?.translate('art_heart_title') ?? "Heart Health",
+        subtitle: appLocalizations?.translate('art_heart_sub') ??
+            "Cardio tips for you",
         image: "assets/images/article_nutrition.png", // Reusing image for demo
         color: Colors.redAccent,
       ),
       _ArticleData(
-        title: "Digital Detox",
-        subtitle: "Unplug to recharge",
+        title: appLocalizations?.translate('art_digital_detox_title') ??
+            "Digital Detox",
+        subtitle: appLocalizations?.translate('art_digital_detox_sub') ??
+            "Unplug to recharge",
         image:
             "assets/images/article_mental_health.png", // Reusing image for demo
         color: Colors.teal,
       ),
       _ArticleData(
-        title: "Immunity Boost",
-        subtitle: "Stay strong & healthy",
+        title: appLocalizations?.translate('art_immunity_title') ??
+            "Immunity Boost",
+        subtitle: appLocalizations?.translate('art_immunity_sub') ??
+            "Stay strong & healthy",
         image: "assets/images/article_nutrition.png", // Reusing image for demo
         color: Colors.orange,
       ),
@@ -1880,9 +1943,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
               decoration: BoxDecoration(
                 color: article.color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                  color: article.color.withValues(alpha: 0.3),
-                ),
+                border: Border.all(color: article.color.withValues(alpha: 0.3)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1905,7 +1966,8 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'FEATURED',
+                          appLocalizations?.translate('featured_tag') ??
+                              'FEATURED',
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
@@ -1948,11 +2010,25 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
 
   // ==================== 9️⃣ TRUST & SAFETY ====================
   Widget _buildTrustSafetySection() {
+    var appLocalizations = AppLocalizations.of(context);
     final items = [
-      _TrustItem(Icons.verified_user, "Trained Phlebotomists"),
-      _TrustItem(Icons.cleaning_services, "Sterile Equipment"),
-      _TrustItem(Icons.access_time, "On-Time Collection"),
-      _TrustItem(Icons.shield, "Secure Reports"),
+      _TrustItem(
+        Icons.verified_user,
+        appLocalizations?.translate('trust_phlebotomists') ??
+            "Trained Phlebotomists",
+      ),
+      _TrustItem(
+        Icons.cleaning_services,
+        appLocalizations?.translate('trust_equipment') ?? "Sterile Equipment",
+      ),
+      _TrustItem(
+        Icons.access_time,
+        appLocalizations?.translate('trust_on_time') ?? "On-Time Collection",
+      ),
+      _TrustItem(
+        Icons.shield,
+        appLocalizations?.translate('trust_secure_reports') ?? "Secure Reports",
+      ),
     ];
 
     return Center(
@@ -1985,9 +2061,10 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                         ),
                       ),
                     ],
-                  ).animate().fadeIn(delay: 200.ms).scale(
-                        end: const Offset(1, 1),
-                      ),
+                  )
+                      .animate()
+                      .fadeIn(delay: 200.ms)
+                      .scale(end: const Offset(1, 1)),
                 ),
               )
               .toList(),
@@ -2045,7 +2122,8 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
         // const SizedBox(height: 0),
         GestureDetector(
           onTap: () => WhatsAppHelper.launchWhatsApp(
-              message: "Hi, I need support with KayaOne app."),
+            message: "Hi, I need support with KayaOne app.",
+          ),
           child: Container(
             height: 60,
             width: 60,
@@ -2258,10 +2336,7 @@ class _QuickActionBentoCard extends StatelessWidget {
                 Positioned.fill(
                   child: Opacity(
                     opacity: 0.3,
-                    child: Image.asset(
-                      image!,
-                      fit: BoxFit.cover,
-                    ),
+                    child: Image.asset(image!, fit: BoxFit.cover),
                   ),
                 ),
 
@@ -2289,8 +2364,11 @@ class _QuickActionBentoCard extends StatelessWidget {
                           _buildIconBox(),
                           const SizedBox(width: 16),
                           Expanded(child: _buildTextContent()),
-                          const Icon(Icons.arrow_forward_ios_rounded,
-                              color: Colors.white70, size: 16),
+                          const Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            color: Colors.white70,
+                            size: 16,
+                          ),
                         ],
                       )
                     : Column(
@@ -2329,7 +2407,8 @@ class _QuickActionBentoCard extends StatelessWidget {
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(
-                0.2), // Correct opacity method if needed or use withValues
+              0.2,
+            ), // Correct opacity method if needed or use withValues
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: Colors.white.withOpacity(0.2)),
           ),
@@ -2457,7 +2536,7 @@ class _VideoPopupState extends State<_VideoPopup> {
                   color: Colors.black.withValues(alpha: 0.3),
                   blurRadius: 25,
                   offset: const Offset(0, 10),
-                )
+                ),
               ],
             ),
             clipBehavior: Clip.antiAlias,
@@ -2468,7 +2547,8 @@ class _VideoPopupState extends State<_VideoPopup> {
               child: _isInitialized
                   ? VideoPlayer(_controller)
                   : const Center(
-                      child: CircularProgressIndicator(color: Colors.white)),
+                      child: CircularProgressIndicator(color: Colors.white),
+                    ),
             ),
           ),
 
@@ -2506,14 +2586,16 @@ class _VideoPopupState extends State<_VideoPopup> {
                   shadowColor: AppTheme.primaryGreen.withValues(alpha: 0.4),
                   elevation: 8,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20)),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                 ),
                 child: Text(
                   "Get Started",
                   style: GoogleFonts.plusJakartaSans(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold),
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
@@ -2541,7 +2623,10 @@ class HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     final progress = shrinkOffset / maxExtent;
     final isCollapsed = progress > 0.5;
 
@@ -2584,8 +2669,11 @@ class HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                             color: AppTheme.primaryGreen.withOpacity(0.1),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.menu_rounded,
-                              color: AppTheme.darkBlue, size: 20),
+                          child: const Icon(
+                            Icons.menu_rounded,
+                            color: AppTheme.darkBlue,
+                            size: 20,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -2616,7 +2704,8 @@ class HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (_) => const NotificationsScreen()),
+                            builder: (_) => const NotificationsScreen(),
+                          ),
                         ),
                         child: Container(
                           padding: const EdgeInsets.all(8),
@@ -2653,8 +2742,11 @@ class HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                   // LOCATION ROW
                   Row(
                     children: [
-                      const Icon(Icons.location_on,
-                          color: AppTheme.primaryGreen, size: 16),
+                      const Icon(
+                        Icons.location_on,
+                        color: AppTheme.primaryGreen,
+                        size: 16,
+                      ),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Consumer<LocationProvider>(
@@ -2689,8 +2781,11 @@ class HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.search_rounded,
-                              color: Colors.grey, size: 24),
+                          const Icon(
+                            Icons.search_rounded,
+                            color: Colors.grey,
+                            size: 24,
+                          ),
                           const SizedBox(width: 12),
                           Text(
                             "Search healthcare products",
@@ -2710,11 +2805,14 @@ class HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                                 BoxShadow(
                                   color: Colors.black.withOpacity(0.05),
                                   blurRadius: 4,
-                                )
+                                ),
                               ],
                             ),
-                            child: const Icon(Icons.tune_rounded,
-                                size: 18, color: AppTheme.darkBlue),
+                            child: const Icon(
+                              Icons.tune_rounded,
+                              size: 18,
+                              color: AppTheme.darkBlue,
+                            ),
                           ),
                         ],
                       ),
@@ -2728,11 +2826,17 @@ class HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
           // 2. COLLAPSED CONTENT (Opacity fades in)
           // Layout: Menu | Search (Small) | Cart | Profile
           Opacity(
-            opacity: (progress - 0.5 < 0 ? 0.0 : (progress - 0.5) * 2)
-                .clamp(0.0, 1.0),
+            opacity: (progress - 0.5 < 0 ? 0.0 : (progress - 0.5) * 2).clamp(
+              0.0,
+              1.0,
+            ),
             child: Container(
               padding: EdgeInsets.fromLTRB(
-                  20, MediaQuery.of(context).padding.top + 10, 20, 10),
+                20,
+                MediaQuery.of(context).padding.top + 10,
+                20,
+                10,
+              ),
               alignment: Alignment.bottomCenter,
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -2740,8 +2844,11 @@ class HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                   // Menu
                   GestureDetector(
                     onTap: onMenuTap,
-                    child: const Icon(Icons.menu_rounded,
-                        color: AppTheme.darkBlue, size: 24),
+                    child: const Icon(
+                      Icons.menu_rounded,
+                      color: AppTheme.darkBlue,
+                      size: 24,
+                    ),
                   ),
                   const SizedBox(width: 16),
                   // Search (Expanded)
@@ -2758,8 +2865,11 @@ class HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.search_rounded,
-                                color: Colors.grey, size: 18),
+                            const Icon(
+                              Icons.search_rounded,
+                              color: Colors.grey,
+                              size: 18,
+                            ),
                             const SizedBox(width: 8),
                             Text(
                               "Search...", // Placeholder
@@ -2783,8 +2893,11 @@ class HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                           isLabelVisible: provider.itemCount > 0,
                           label: Text('${provider.itemCount}'),
                           smallSize: 8,
-                          child: const Icon(Icons.shopping_cart_outlined,
-                              color: AppTheme.darkBlue, size: 24),
+                          child: const Icon(
+                            Icons.shopping_cart_outlined,
+                            color: AppTheme.darkBlue,
+                            size: 24,
+                          ),
                         );
                       },
                     ),
@@ -2799,18 +2912,22 @@ class HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                            color: AppTheme.primaryGreen, width: 1.5),
+                          color: AppTheme.primaryGreen,
+                          width: 1.5,
+                        ),
                         image: const DecorationImage(
                           image: AssetImage(
-                              'assets/images/user_avatar.png'), // Fallback or provider
+                            'assets/images/user_avatar.png',
+                          ), // Fallback or provider
                           fit: BoxFit.cover,
                         ),
                       ),
                       // Fallback logic if image fails or uses text
                       child: const CircleAvatar(
                         backgroundColor: Colors.transparent,
-                        backgroundImage:
-                            AssetImage('assets/images/user_avatar.png'),
+                        backgroundImage: AssetImage(
+                          'assets/images/user_avatar.png',
+                        ),
                         onBackgroundImageError: null,
                       ),
                     ),
