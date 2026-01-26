@@ -4,12 +4,21 @@ const { ChatGoogleGenerativeAI } = require('@langchain/google-genai');
 const { SystemMessage, HumanMessage, AIMessage } = require('@langchain/core/messages');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-// Initialize Langchain Gemini Model for Chat
-const chatModel = new ChatGoogleGenerativeAI({
-    model: "gemini-3-pro-preview",
-    apiKey: process.env.GEMINI_API_KEY,
-    temperature: 0.7,
-});
+// Initialize Langchain Gemini Model for Chat (Lazy Initialization)
+let chatModel;
+function getChatModel() {
+    if (!chatModel) {
+        if (!process.env.GEMINI_API_KEY) {
+            throw new Error('Gemini API Key missing in server environment.');
+        }
+        chatModel = new ChatGoogleGenerativeAI({
+            model: "gemini-1.5-flash",
+            apiKey: process.env.GEMINI_API_KEY,
+            temperature: 0.7,
+        });
+    }
+    return chatModel;
+}
 
 // Route 1: Chat Endpoint (Existing)
 router.post('/chat', async (req, res) => {
@@ -42,7 +51,8 @@ router.post('/chat', async (req, res) => {
 
         messages.push(new HumanMessage(message));
 
-        const response = await chatModel.invoke(messages);
+        const model = getChatModel();
+        const response = await model.invoke(messages);
 
         res.status(200).json({
             success: true,
@@ -67,7 +77,7 @@ router.post('/analyze', async (req, res) => {
 
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         // Use gemini-1.5-flash for better speed and reliability
-        const model = genAI.getGenerativeModel({ model: "gemini-3-pro-preview" });
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         const prompt = `
         You are a professional medical AI assistant. Analyze the following lifestyle and health data from a user survey:

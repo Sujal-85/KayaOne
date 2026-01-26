@@ -124,10 +124,10 @@ router.put('/update-status/:id', async (req, res) => {
 });
 
 // Upload Prescription
-router.post('/upload-prescription', upload.single('prescription'), uploadToCloudinary, async (req, res) => {
+router.post('/upload-prescription', uploadToCloudinary, async (req, res) => {
     try {
         if (!req.file || !req.file.cloudinaryUrl) {
-            return res.status(400).json({ message: 'No file uploaded' });
+            return res.status(400).json({ message: 'No file uploaded or Cloudinary upload failed' });
         }
 
         res.status(200).json({
@@ -136,10 +136,10 @@ router.post('/upload-prescription', upload.single('prescription'), uploadToCloud
             url: req.file.cloudinaryUrl
         });
     } catch (error) {
-        console.error('Prescription Upload Error:', error);
+        console.error('Prescription Upload Route Error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to upload prescription',
+            message: 'Failed to process prescription upload',
             error: error.message
         });
     }

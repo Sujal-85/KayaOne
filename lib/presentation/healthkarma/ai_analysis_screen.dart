@@ -51,12 +51,13 @@ class _AIAnalysisScreenState extends State<AIAnalysisScreen> {
         );
       }
     } catch (e) {
+      debugPrint("Health Karma Analysis Error: $e");
       if (mounted) {
-        var appLocalizations = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(
-                  "${appLocalizations?.translate('analysis_failed') ?? 'Analysis failed'}: $e")),
+          const SnackBar(
+            content: Text("This service will be coming soon"),
+            duration: Duration(seconds: 2),
+          ),
         );
         Navigator.pop(context);
       }

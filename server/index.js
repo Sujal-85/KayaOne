@@ -30,26 +30,36 @@ app.get('/ping', (req, res) => {
     res.status(200).send('pong');
 });
 
+// Global Error Handler
+app.use((err, req, res, next) => {
+    console.error('Global Error Handler:', err);
+    res.status(500).json({
+        success: false,
+        message: 'Internal Server Error',
+        error: err.message
+    });
+});
+
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log('Connected to MongoDB'))
     .catch(err => console.error('Could not connect to MongoDB', err));
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+// Export app for Google Cloud Functions
+exports.api = app;
 
-    // Cron job to keep the server awake on Render (runs every 14 minutes)
-    cron.schedule('*/14 * * * *', async () => {
-        const publicUrl = process.env.PUBLIC_URL || `http://localhost:${PORT}`;
-        console.log(`[Cron] Pinging server at ${publicUrl}/ping to keep it awake...`);
-        try {
-            const response = await axios.get(`${publicUrl}/ping`);
-            console.log(`[Cron] Ping successful: ${response.data}`);
-        } catch (error) {
-            console.error(`[Cron] Ping failed: ${error.message}`);
-        }
+const PORT = process.env.PORT || 5000;
+
+// Only listen if not running in a function environment (local dev)
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
     });
-});
+}
+
+// Cron job disabled for Cloud Functions (Serverless instances scale to zero)
+// cron.schedule('*\/14 * * * *', async () => {
+//    ...
+// });
 

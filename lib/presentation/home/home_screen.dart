@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:kayaone/data/services/notification_service.dart';
 import 'package:kayaone/core/localization/app_localizations.dart';
 
@@ -1885,6 +1886,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
             "Balanced diet secrets",
         image: "assets/images/article_nutrition.png",
         color: Colors.green,
+        url: "https://www.nutrition.gov/",
       ),
       _ArticleData(
         title: appLocalizations?.translate('art_mental_title') ??
@@ -1893,6 +1895,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
             "Yoga & mindfulness",
         image: "assets/images/article_mental_health.png",
         color: Colors.indigo,
+        url: "https://www.mentalhealth.gov/",
       ),
       _ArticleData(
         title:
@@ -1901,6 +1904,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
             "The science of rest",
         image: "assets/images/article_sleep.png",
         color: Colors.blueGrey,
+        url: "https://www.sleepfoundation.org/sleep-hygiene",
       ),
       _ArticleData(
         title: appLocalizations?.translate('art_heart_title') ?? "Heart Health",
@@ -1908,6 +1912,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
             "Cardio tips for you",
         image: "assets/images/article_nutrition.png", // Reusing image for demo
         color: Colors.redAccent,
+        url: "https://www.heart.org/",
       ),
       _ArticleData(
         title: appLocalizations?.translate('art_digital_detox_title') ??
@@ -1917,6 +1922,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
         image:
             "assets/images/article_mental_health.png", // Reusing image for demo
         color: Colors.teal,
+        url: "https://www.webmd.com/balance/what-is-digital-detox",
       ),
       _ArticleData(
         title: appLocalizations?.translate('art_immunity_title') ??
@@ -1925,6 +1931,8 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
             "Stay strong & healthy",
         image: "assets/images/article_nutrition.png", // Reusing image for demo
         color: Colors.orange,
+        url:
+            "https://www.health.harvard.edu/staying-healthy/how-to-boost-your-immune-system",
       ),
     ];
 
@@ -1938,68 +1946,83 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
           final article = articles[index % articles.length];
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Container(
-              margin: const EdgeInsets.only(right: 0), // Handled by padding
-              decoration: BoxDecoration(
-                color: article.color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: article.color.withValues(alpha: 0.3)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: ClipRRect(
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(24),
-                      ),
-                      child: Image.asset(
-                        article.image,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
+            child: GestureDetector(
+              onTap: () async {
+                final Uri uri = Uri.parse(article.url);
+                if (!await launchUrl(uri,
+                    mode: LaunchMode.externalApplication)) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text("Could not open article link")),
+                    );
+                  }
+                }
+              },
+              child: Container(
+                margin: const EdgeInsets.only(right: 0), // Handled by padding
+                decoration: BoxDecoration(
+                  color: article.color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(24),
+                  border:
+                      Border.all(color: article.color.withValues(alpha: 0.3)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(24),
+                        ),
+                        child: Image.asset(
+                          article.image,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          appLocalizations?.translate('featured_tag') ??
-                              'FEATURED',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: article.color,
-                            letterSpacing: 1.2,
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            appLocalizations?.translate('featured_tag') ??
+                                'FEATURED',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: article.color,
+                              letterSpacing: 1.2,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          article.title,
-                          style: GoogleFonts.outfit(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.darkBlue,
+                          const SizedBox(height: 4),
+                          Text(
+                            article.title,
+                            style: GoogleFonts.outfit(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.darkBlue,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          article.subtitle,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 13,
-                            color: AppTheme.darkBlue.withValues(alpha: 0.6),
+                          const SizedBox(height: 4),
+                          Text(
+                            article.subtitle,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 13,
+                              color: AppTheme.darkBlue.withValues(alpha: 0.6),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           );
@@ -2460,12 +2483,14 @@ class _ArticleData {
   final String subtitle;
   final String image;
   final Color color;
+  final String url;
 
   _ArticleData({
     required this.title,
     required this.subtitle,
     required this.image,
     required this.color,
+    required this.url,
   });
 }
 

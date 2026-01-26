@@ -365,7 +365,7 @@ class _HealthKarmaScreenState extends State<HealthKarmaScreen>
                                         ),
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor:
-                                              const Color.fromARGB(255, 75, 169, 12),
+                                              AppTheme.primaryGreen,
                                           foregroundColor: Colors.white,
                                           padding: const EdgeInsets.symmetric(
                                               horizontal: 16, vertical: 12),

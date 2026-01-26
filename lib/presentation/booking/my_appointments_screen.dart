@@ -14,7 +14,7 @@ import 'package:kayaone/presentation/booking/doctor_booking_detail_screen.dart';
 import 'package:kayaone/presentation/booking/booking_guide_screen.dart';
 import 'package:kayaone/presentation/doctors/doctor_listing_screen.dart';
 import 'package:kayaone/core/localization/app_localizations.dart';
-import 'package:kayaone/presentation/booking/ai_booking_screen.dart'; // Add this import
+// Add this import
 
 enum AppointmentType { doctor, lab }
 
@@ -698,143 +698,252 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
   Widget _buildAdvancedAppointmentCard(AppointmentItem appointment) {
     final loc = AppLocalizations.of(context);
     final isUpcoming = appointment.status == 'upcoming';
-    final color = appointment.type == AppointmentType.doctor
-        ? AppTheme.primaryGreen
-        : Colors.blue;
 
-    return GestureDetector(onTap: () {
-      if (appointment.type == AppointmentType.doctor) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (_) =>
-                  DoctorBookingDetailScreen(appointment: appointment)),
-        );
-      } else {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (_) => LabBookingDetailScreen(appointment: appointment)),
-        );
-      }
-    }, child: LayoutBuilder(builder: (context, constraints) {
-      final isSmall = constraints.maxWidth < 340;
-      return Container(
+    // Gradients for types
+    final gradientColors = appointment.type == AppointmentType.doctor
+        ? [const Color(0xFF009245), const Color(0xFFFCEE21)] // Green/Yellow
+        : [const Color(0xFF662D8C), const Color(0xFFED1E79)]; // Purple/Pink
+
+    return GestureDetector(
+      onTap: () {
+        if (appointment.type == AppointmentType.doctor) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (_) =>
+                    DoctorBookingDetailScreen(appointment: appointment)),
+          );
+        } else {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (_) =>
+                    LabBookingDetailScreen(appointment: appointment)),
+          );
+        }
+      },
+      child: Container(
         margin: const EdgeInsets.only(bottom: 20),
-        padding: EdgeInsets.all(isSmall ? 16 : 20),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 12,
-                offset: const Offset(0, 6))
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 15,
+              offset: const Offset(0, 6),
+            ),
           ],
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: isSmall ? 20 : 24,
-                  backgroundColor: color.withOpacity(0.1),
-                  child: Icon(
-                    appointment.type == AppointmentType.doctor
-                        ? Icons.person_search_rounded
-                        : Icons.science_rounded,
-                    color: color,
-                    size: isSmall ? 22 : 28,
+            // TOP SECTION: Icon + Title + Status
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Gradient Icon Box
+                  Container(
+                    height: 56,
+                    width: 56,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: gradientColors,
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: gradientColors.first.withOpacity(0.3),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Icon(
+                        appointment.type == AppointmentType.doctor
+                            ? Icons.person_rounded
+                            : Icons.science_rounded,
+                        color: Colors.white,
+                        size: 28,
+                      ),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(appointment.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.outfit(
-                              fontWeight: FontWeight.w800,
-                              fontSize: isSmall ? 16 : 18,
-                              color: AppTheme.darkBlue)),
-                      Text(appointment.subtitle,
+                  const SizedBox(width: 16),
+                  // Title & Subtitle
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                appointment.title,
+                                style: GoogleFonts.outfit(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppTheme.darkBlue,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            // Status Badge
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isUpcoming
+                                    ? AppTheme.primaryGreen.withOpacity(0.1)
+                                    : Colors.grey[100],
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: isUpcoming
+                                      ? AppTheme.primaryGreen
+                                      : Colors.grey[300]!,
+                                ),
+                              ),
+                              child: Text(
+                                isUpcoming
+                                    ? (loc?.translate('upcoming') ?? "Upcoming")
+                                    : (loc?.translate('completed') ??
+                                        "Completed"),
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  color: isUpcoming
+                                      ? AppTheme.primaryGreen
+                                      : Colors.grey[600],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          appointment.subtitle,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey[500],
+                          ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.plusJakartaSans(
-                              fontSize: isSmall ? 12 : 13,
-                              color: Colors.grey[700])),
-                    ],
-                  ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text("₹${appointment.fee}",
-                        style: GoogleFonts.outfit(
-                            fontWeight: FontWeight.w900,
-                            fontSize: isSmall ? 16 : 18,
-                            color: color)),
-                    const SizedBox(height: 4),
-                    Chip(
-                      label: Text(
-                          isUpcoming
-                              ? (loc?.translate('upcoming') ?? "Upcoming")
-                              : (loc?.translate('completed') ?? "Completed"),
-                          style: TextStyle(
-                              fontSize: 10,
-                              color: isUpcoming
-                                  ? Colors.white
-                                  : Colors.grey[700])),
-                      backgroundColor: isUpcoming ? color : Colors.grey[200],
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _infoTile(Icons.calendar_month_rounded,
-                    DateFormat('EEE, MMM d').format(appointment.dateTime)),
-                _infoTile(Icons.access_time_rounded,
-                    DateFormat('h:mm a').format(appointment.dateTime)),
-              ],
+            // DIVIDER
+            Divider(height: 1, color: Colors.grey[100]),
+            // BOTTOM SECTION: Date | Time | Fee
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Row(
+                children: [
+                  _buildDetailItem(
+                    Icons.calendar_today_rounded,
+                    DateFormat('MMM d, yyyy').format(appointment.dateTime),
+                    "Date",
+                  ),
+                  _buildVerticalDivider(),
+                  _buildDetailItem(
+                    Icons.access_time_rounded,
+                    DateFormat('h:mm a').format(appointment.dateTime),
+                    "Time",
+                  ),
+                  _buildVerticalDivider(),
+                  _buildDetailItem(
+                    Icons.currency_rupee_rounded,
+                    appointment.fee,
+                    "Total Fee",
+                    isPrice: true,
+                  ),
+                ],
+              ),
             ),
+            // ACTION BUTTON (Only if upcoming)
             if (isUpcoming) ...[
-              const SizedBox(height: 16),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton.icon(
-                  onPressed: () => _cancelAppointment(appointment),
-                  icon: const Icon(Icons.cancel_outlined,
-                      size: 18, color: Colors.red),
-                  label: Text(loc?.translate('cancel') ?? "Cancel",
-                      style: const TextStyle(color: Colors.red)),
+              Divider(height: 1, color: Colors.grey[100]),
+              InkWell(
+                onTap: () => _cancelAppointment(appointment),
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(24),
+                  bottomRight: Radius.circular(24),
+                ),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  child: Center(
+                    child: Text(
+                      loc?.translate('cancel_booking') ?? "Cancel Booking",
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.redAccent,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ],
           ],
         ),
-      );
-    }));
+      ),
+    );
   }
 
-  Widget _infoTile(IconData icon, String text) {
-    return Row(
-      children: [
-        Icon(icon, size: 18, color: AppTheme.primaryGreen),
-        const SizedBox(width: 8),
-        Text(text,
-            style: GoogleFonts.plusJakartaSans(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.darkBlue)),
-      ],
+  Widget _buildVerticalDivider() {
+    return Container(
+      height: 30,
+      width: 1,
+      color: Colors.grey[200],
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+    );
+  }
+
+  Widget _buildDetailItem(IconData icon, String value, String label,
+      {bool isPrice = false}) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 14, color: Colors.grey[400]),
+              const SizedBox(width: 4),
+              Text(
+                label,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[400],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            isPrice ? "₹$value" : value,
+            style: GoogleFonts.outfit(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: isPrice ? AppTheme.darkBlue : const Color(0xFF2C3E50),
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
     );
   }
 }

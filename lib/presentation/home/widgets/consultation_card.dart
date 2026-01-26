@@ -14,7 +14,7 @@ class ConsultationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     var appLocalizations = AppLocalizations.of(context);
     return GestureDetector(
-      onTap: () => onTap,
+      onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(

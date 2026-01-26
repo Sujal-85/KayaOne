@@ -4,11 +4,21 @@ const DietPlan = require('../models/diet_plan');
 const { ChatGoogleGenerativeAI } = require('@langchain/google-genai');
 const { SystemMessage, HumanMessage } = require('@langchain/core/messages');
 
-const model = new ChatGoogleGenerativeAI({
-    model: "gemini-3-pro-preview",
-    apiKey: process.env.GEMINI_API_KEY,
-    temperature: 0.5,
-});
+// Initialize Langchain Gemini Model (Lazy Initialization)
+let chatModel;
+function getChatModel() {
+    if (!chatModel) {
+        if (!process.env.GEMINI_API_KEY) {
+            throw new Error('Gemini API Key missing in server environment.');
+        }
+        chatModel = new ChatGoogleGenerativeAI({
+            model: "gemini-1.5-flash",
+            apiKey: process.env.GEMINI_API_KEY,
+            temperature: 0.5,
+        });
+    }
+    return chatModel;
+}
 
 // Update or Initial Create Metrics & Goals
 router.post('/update-profile', async (req, res) => {
@@ -85,6 +95,7 @@ router.post('/generate-plan', async (req, res) => {
             ]
         }`;
 
+        const model = getChatModel();
         const response = await model.invoke([
             new SystemMessage("You are a professional nutritionist AI. Format replies as JSON only."),
             new HumanMessage(prompt)

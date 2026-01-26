@@ -135,13 +135,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                         Icons.person_rounded,
                                         "Patient",
                                         bookingProvider.patientName ?? "User"),
-                                    const Divider(height: 32),
+                                    // const Divider(height: 32),
                                     _buildDetailRow(
                                         Icons.location_on_rounded,
                                         "Address",
                                         bookingProvider.selectedAddress ??
                                             "Not set"),
-                                    const Divider(height: 32),
+                                    // const Divider(height: 32),
                                     _buildDetailRow(
                                         Icons.calendar_month_rounded,
                                         "Schedule",
@@ -241,10 +241,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                 child: Column(
                                   children: [
                                     _priceRow(
-                                        "Subtotal", "₹$total", Colors.white70),
-                                    _priceRow("Collection Fee", "₹99",
+                                        "Subtotal", "₹0", Colors.white70),
+                                    _priceRow("Collection Fee", "₹49",
                                         Colors.white70),
-                                    _priceRow("Platform Discount", "-₹50",
+                                    _priceRow("Platform Discount", "-₹49",
                                         AppTheme.primaryGreen,
                                         isDiscount: true),
                                     const Padding(
