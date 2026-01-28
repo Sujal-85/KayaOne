@@ -11,6 +11,9 @@ const bookingRoutes = require('./routes/booking');
 const doctorRoutes = require('./routes/doctor');
 const aiRoutes = require('./routes/ai');
 const dietRoutes = require('./routes/diet');
+const productRoutes = require('./routes/product');
+const orderRoutes = require('./routes/order');
+const offerRoutes = require('./routes/offer');
 
 const app = express();
 
@@ -24,6 +27,9 @@ app.use('/api/booking', bookingRoutes);
 app.use('/api/doctor', doctorRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/diet', dietRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/offers', offerRoutes);
 
 // Health check endpoint
 app.get('/ping', (req, res) => {
